@@ -31,3 +31,5 @@ export function createStore<Actions extends object>(
 ) {
   return new Store<Actions>(initialState, debug)
 }
+
+export * from './react'

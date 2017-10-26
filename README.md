@@ -41,7 +41,7 @@ export let store = createStore<Store>({
 ### 2. Connect your React components
 
 ```tsx
-import { connect } from 'babydux/react'
+import { connect } from 'babydux'
 import { store } from './store'
 
 let MyComponent = connect(store)(({ store }) =>

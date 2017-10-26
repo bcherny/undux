@@ -1,6 +1,5 @@
 import * as React from 'react'
-import { createStore } from '../src'
-import { connect } from '../src/react'
+import { connect, createStore } from '../src'
 import { Simulate } from 'react-dom/test-utils'
 import { render, unmountComponentAtNode } from 'react-dom'
 import { test, TestContext } from 'ava'
