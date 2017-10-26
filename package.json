@@ -1,0 +1,54 @@
+{
+  "name": "babydux",
+  "version": "1.0.0",
+  "description": "Typesafe Redux for babies",
+  "main": "dist/src/index.js",
+  "typings": "dist/src/index.d.ts",
+  "author": "Boris Cherny <boris@performancejs.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/bcherny/babydux.git"
+  },
+  "bugs": {
+    "url": "https://github.com/bcherny/babydux/issues"
+  },
+  "homepage": "https://github.com/bcherny/babydux#readme",
+  "scripts": {
+    "build": "npm run clean; npm run lint && tsc -d",
+    "clean": "rm -rf dist",
+    "lint": "tslint src",
+    "prepublishOnly": "npm run build",
+    "pretest": "npm run build",
+    "tdd": "concurrently -k 'tsc -w' 'ava -w'",
+    "test": "ava"
+  },
+  "dependencies": {
+    "typed-rx-emitter": "^0.3.0"
+  },
+  "devDependencies": {
+    "@types/jsdom": "^11.0.3",
+    "@types/react": "^16.0.18",
+    "@types/react-dom": "^16.0.2",
+    "ava": "^0.23.0",
+    "concurrently": "^3.5.0",
+    "jsdom": "^11.3.0",
+    "react": "^16.0.0",
+    "react-dom": "^16.0.0",
+    "tslint": "^5.8.0",
+    "typescript": "^2.5.3"
+  },
+  "peerDependencies": {
+    "react": "^16.0.0"
+  },
+  "keywords": ["redux", "flux", "rx", "reactive", "simple", "model", "state", "store"],
+  "ava": {
+    "files": [
+      "./dist/test/test.js"
+    ],
+    "source": [
+      "./dist/src/*.js"
+    ],
+    "vebose": true
+  }
+}
