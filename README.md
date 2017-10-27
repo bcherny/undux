@@ -44,7 +44,7 @@ export let store = createStore<Store>({
 import { connect } from 'babydux'
 import { store } from './store'
 
-let MyComponent = connect(store)(({ store }) =>
+let MyComponent = connect(store)()(({ store }) =>
   <div>
     Hello! Today is {store.get('today')}
     <button onClick={() => store.set('today', new Date)}>Update Date</button>
