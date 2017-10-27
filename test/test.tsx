@@ -22,7 +22,7 @@ let MyComponent = connect(store)()(({ store }) =>
   </div>
 )
 
-let MyComponentWithLens1 = connect(store)(['isTrue'])(({ store }) =>
+let MyComponentWithLens1 = connect(store)('isTrue')(({ store }) =>
   <div>
     {store.get('isTrue') ? 'True' : 'False'}
     <button onClick={() => store.set('isTrue', !store.get('isTrue'))}>Update</button>

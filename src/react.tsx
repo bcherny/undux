@@ -7,7 +7,7 @@ type Omit<T, K extends keyof T> = { [P in Diff<keyof T, K>]: T[P] }
 type Overwrite<T, U> = { [P in Diff<keyof T, keyof U>]: T[P] } & U
 
 export function connect<Actions extends object>(store: Store<Actions>) {
-  return (listenOn: (keyof Actions)[] = []) => {
+  return (...listenOn: (keyof Actions)[]) => {
     return function <Props extends { store: Store<Actions> }>(
       Component: React.ComponentType<Props>
     ) {
