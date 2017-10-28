@@ -18,14 +18,14 @@ let store = createStore<Store>({
 let MyComponent = connect(store)()(({ store }) =>
   <div>
     {store.get('isTrue') ? 'True' : 'False'}
-    <button onClick={() => store.set('isTrue', false)}>Update</button>
+    <button onClick={() => store.set('isTrue')(false)}>Update</button>
   </div>
 )
 
 let MyComponentWithLens1 = connect(store)('isTrue')(({ store }) =>
   <div>
     {store.get('isTrue') ? 'True' : 'False'}
-    <button onClick={() => store.set('isTrue', !store.get('isTrue'))}>Update</button>
+    <button onClick={() => store.set('isTrue')(!store.get('isTrue'))}>Update</button>
   </div>
 )
 

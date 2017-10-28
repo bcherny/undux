@@ -20,8 +20,9 @@ export class Store<Actions extends object> extends Emitter<Actions> {
   get<K extends keyof Actions>(key: K) {
     return this.state[key]
   }
-  set<K extends keyof Actions>(key: K, value: Actions[K]) {
-    return this.emitter.emit(key, value)
+  set<K extends keyof Actions>(key: K) {
+    return (value: Actions[K]) =>
+      this.emitter.emit(key, value)
   }
 }
 

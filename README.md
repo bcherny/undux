@@ -47,7 +47,7 @@ import { store } from './store'
 let MyComponent = connect(store)()(({ store }) =>
   <div>
     Hello! Today is {store.get('today')}
-    <button onClick={() => store.set('today', new Date)}>Update Date</button>
+    <button onClick={() => store.set('today')(new Date)}>Update Date</button>
   </div>
 )
 ```
