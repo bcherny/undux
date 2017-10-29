@@ -1,4 +1,4 @@
-![Babydux](logo.png)
+<img src="logo.png" width="362" alt="Babydux" />
 
 [![Build Status][build]](https://circleci.com/gh/bcherny/babydux) [![npm]](https://www.npmjs.com/package/babydux) [![mit]](https://opensource.org/licenses/MIT)
 
