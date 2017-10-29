@@ -37,7 +37,7 @@ type Store = {
 let store = createStore<Store>({
   today: new Date,
   users: []
-}, true)
+})
 
 export let withStore = connect(store)
 ```
@@ -100,6 +100,20 @@ let setUsers = store.set('users')
 setUsers(['amy'])
 setUsers(['amy', 'bob'])
 ```
+
+### Built-in logger
+
+If you create your store with the debug flag set to `true`, all model updates (which key was updated, previous value, and new value) will be logged to the console.
+
+To enable debug mode, pass `true` as the second argument to `createStore`:
+
+```ts
+let store = createStore<Store>({...}, true)
+```
+
+And logs look like this:
+
+<img src="logger.png" width="895" />
 
 ## Design philosophy
 
