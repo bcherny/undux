@@ -4,7 +4,7 @@
 [npm]: https://img.shields.io/npm/v/babydux.svg?style=flat-square
 [mit]: https://img.shields.io/npm/l/babydux.svg?style=flat-square
 
-> Typesafe Redux for babies
+> A paper-thin, 100% typesafe Redux for babies
 
 ## Install
 
@@ -32,19 +32,23 @@ type Store = {
 // Create a store. The 1st argument is the store's initial value,
 // the 2nd argument is whether we're in debug mode (if we are, model
 // changes will be logged out in devtools).
-export let store = createStore<Store>({
+let store = createStore<Store>({
   today: new Date,
   users: []
 }, true)
+
+export let withStore = connect(store)
 ```
+
+*Be sure to define a key for each value in your model, even if the value is initially `undefined`.*
 
 ### 2. Connect your React components
 
 ```tsx
-import { connect } from 'babydux'
+import { withStore } from 'babydux'
 import { store } from './store'
 
-let MyComponent = connect(store)()(({ store }) =>
+let MyComponent = withStore()(({ store }) =>
   <div>
     Hello! Today is {store.get('today')}
     <button onClick={() => store.set('today')(new Date)}>Update Date</button>
@@ -52,7 +56,13 @@ let MyComponent = connect(store)()(({ store }) =>
 )
 ```
 
-### 3. (Optional) Add side effects
+**That's all there is to it.**
+
+## Features
+
+### Effects
+
+Though Babydux automatically updates your model for you, it also lets you listen on and react to model updates, similar to how vanilla Redux lets you subscribe to Actions. Babydux subscriptions are full Rx observables, so you are in full control of how you react to a change:
 
 ```tsx
 store
@@ -62,17 +72,43 @@ store
   .subscribe(_ => console.log('Date changed', _))
 ```
 
+### Lensed connects
+
+Instead of updating your React component when anything on the model changed, you can subscribe to specific properties on your model. Let's modify our React example to only update when `today` changes:
+
+```tsx
+let MyComponent = withStore('today')(
+  ({ store }) => ...
+)
+```
+
+Everything is the same as before, I just added `'today'` as an argument to the function returned by `connect`.
+
+### Partial application all the way through
+
+Partially apply the `connect` function to yield a convenient `withStore` function:
+
+```tsx
+let withStore = connect(store)
+```
+
+Or, partially apply a `set` function to yield a convenient setter:
+
+```tsx
+let setUsers = store.set('users')
+setUsers(['amy'])
+setUsers(['amy', 'bob'])
+```
+
 ## Design philosophy
 
-**Goal #1 is total type-safety.**
+**Goal #1 is total type-safety.** Getting, setting, reading, and listening on model updates is 100% type-safe: use a key that isn't defined in your model or set a key to the wrong type, and you'll get a compile-time type error. And connected components are just as type-safe.
 
 **Goal #2 is letting you write as little boilerplate as possible.**
 
-Babydux is like Redux, but reducers are already baked-in. Babydux automatically creates an action and a reducer for each key on your state.
+Babydux is like [Redux](http://redux.js.org/), but reducers are already baked-in. Babydux automatically creates an action and a reducer for each key on your state, so you don't have to write tedious boilerplate.
 
-You can optionally listen into actions using the `.on` API. Rather than being just a callback like in Redux reducers, `.on` gives an Rx observable, which you can `filter`, `debounce`, and so on.
-
-If you're using Babydux with the provided React connector, Babydux will update your React component any time a reducer fires (just like Redux). You can optionally filter on specific state keys that you care about for more targeted updates.
+If you're using Babydux with the provided React connector, Babydux will update your React component any time a reducer fires (just like [React-Redux](https://github.com/reactjs/react-redux)). You can optionally filter on specific state keys that you care about for more targeted updates.
 
 ## Tests
 

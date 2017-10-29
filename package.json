@@ -1,7 +1,7 @@
 {
   "name": "babydux",
-  "version": "1.3.0",
-  "description": "Typesafe Redux for babies",
+  "version": "1.3.1",
+  "description": "A paper-thin, 100% typesafe Redux for babies",
   "main": "dist/src/index.js",
   "typings": "dist/src/index.d.ts",
   "author": "Boris Cherny <boris@performancejs.com>",
