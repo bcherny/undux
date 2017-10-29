@@ -1,6 +1,6 @@
 {
   "name": "babydux",
-  "version": "1.3.2",
+  "version": "1.3.3",
   "description": "A paper-thin, 100% typesafe Redux for babies",
   "main": "dist/src/index.js",
   "typings": "dist/src/index.d.ts",
