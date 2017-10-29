@@ -1,4 +1,6 @@
-# Babydux [![Build Status][build]](https://circleci.com/gh/bcherny/babydux) [![npm]](https://www.npmjs.com/package/babydux) [![mit]](https://opensource.org/licenses/MIT)
+![Babydux](logo.png)
+
+[![Build Status][build]](https://circleci.com/gh/bcherny/babydux) [![npm]](https://www.npmjs.com/package/babydux) [![mit]](https://opensource.org/licenses/MIT)
 
 [build]: https://img.shields.io/circleci/project/bcherny/babydux.svg?branch=master&style=flat-square
 [npm]: https://img.shields.io/npm/v/babydux.svg?style=flat-square
