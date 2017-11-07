@@ -1,19 +1,23 @@
 import { Emitter } from 'typed-rx-emitter'
 
-export class Store<Actions extends object> extends Emitter<Actions> {
+export type Babydux<Actions extends object> = {
+  [K in keyof Actions]: {
+    key: K
+    previousValue: Actions[K],
+    value: Actions[K]
+  }
+}
+
+export class Store<Actions extends object> extends Emitter<Babydux<Actions>> {
   private emitter = new Emitter<Actions>()
-  constructor(private state: Actions, debug = false) {
+  constructor(private state: Actions) {
     super()
 
     for (let key in state) {
       this.emitter.on(key).subscribe(value => {
         let previousValue = state[key]
         state[key] = value
-        this.emit(key, value)
-
-        if (debug) {
-          console.info(`%c ⥁ ${key}`, 'background-color: rgb(96, 125, 139); color: #fff; padding: 2px 8px 2px 0;', previousValue, '→', value)
-        }
+        this.emit(key, { key, previousValue, value })
       })
     }
   }
@@ -26,11 +30,11 @@ export class Store<Actions extends object> extends Emitter<Actions> {
   }
 }
 
-export function createStore<Actions extends object>(
-  initialState: Actions,
-  debug = false
-) {
-  return new Store<Actions>(initialState, debug)
+export function createStore<Actions extends object>(initialState: Actions) {
+  return new Store<Actions>(initialState)
 }
 
+export type Plugin = <Actions extends object>(store: Store<Actions>) => Store<Actions>
+
+export * from './plugins/logger'
 export * from './react'

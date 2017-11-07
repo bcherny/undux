@@ -31,9 +31,7 @@ type Store = {
   users: string[]
 }
 
-// Create a store. The 1st argument is the store's initial value,
-// the 2nd argument is whether we're in debug mode (if we are, model
-// changes will be logged out in devtools).
+// Create a store with an initial value.
 let store = createStore<Store>({
   today: new Date,
   users: []
@@ -63,12 +61,13 @@ let MyComponent = withStore()(({ store }) =>
 
 ### Effects
 
-Though Babydux automatically updates your model for you, it also lets you listen on and react to model updates (similarly to how vanilla Redux lets you subscribe to Actions). Babydux subscriptions are full Rx observables, so you have fine control over how you react to a change:
+Though Babydux automatically updates your model for you, it also lets you listen on and react to model updates (similarly to how vanilla Redux lets you subscribe to Actions). Babydux subscriptions are full [Rx observables](http://reactivex.io/rxjs/class/es6/Observable.js~Observable.html), so you have fine control over how you react to a change:
 
 ```tsx
 store
   .on('today')
-  .filter(_ => _.getTime() % 2 === 0) // only even timestamps
+  .map(_ => _.value)
+  .filter(() => _.getTime() % 2 === 0) // only even timestamps
   .debounce(100)
   .subscribe(_ => console.log('Date changed', _))
 ```
@@ -103,12 +102,14 @@ setUsers(['amy', 'bob'])
 
 ### Built-in logger
 
-If you create your store with the debug flag set to `true`, all model updates (which key was updated, previous value, and new value) will be logged to the console.
+If you create your store with `withLogger` higher order store, all model updates (which key was updated, previous value, and new value) will be logged to the console.
 
-To enable debug mode, pass `true` as the second argument to `createStore`:
+To enable the logger, import `withLogger` and wrap your store with it:
 
 ```ts
-let store = createStore<Store>({...}, true)
+import { createStore, withLogger } from 'babydux'
+
+let store = withLogger(createStore<Store>({...}, true))
 ```
 
 And logs look like this:
