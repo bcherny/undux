@@ -66,7 +66,6 @@ Though Babydux automatically updates your model for you, it also lets you listen
 ```tsx
 store
   .on('today')
-  .map(_ => _.value)
   .filter(() => _.getTime() % 2 === 0) // only even timestamps
   .debounce(100)
   .subscribe(_ => console.log('Date changed', _))
@@ -115,6 +114,30 @@ let store = withLogger(createStore<Store>({...}, true))
 And logs look like this:
 
 <img src="logger.png" width="895" />
+
+### Plugins
+
+Babydux is easy to modify with plugins (also called "higher order stores"). Just define a function that takes a store as an argument and returns a store, adding listeners along the way. For convenience, Babydux supports 2 types of listeners for plugins:
+
+```ts
+import { createStore, Plugin } from 'babydux'
+
+let withLocalStorage: Plugin = store => {
+
+  // Listen on an event
+  store.onAll().subscribe(_ =>
+    console.log('something changed!', _)
+  )
+
+  // Listen on an event (fires before the model is updated)
+  store.beforeAll().subscribe(({ key, previousValue, value}) =>
+    localStorage.set(key, value)
+  )
+
+}
+```
+
+*Babydux also supports `.on()` and `.before()`, but because a plugin doesn't know what Actions will be bound to it, these are generally unsafe to use.*
 
 ## Design philosophy
 
