@@ -14,12 +14,14 @@ let store = createStore<Actions>({
   users: []
 })
 
-let MyComponent = connect(store)()(({ store }) =>
+let MyComponentRaw: React.StatelessComponent<{ store: Store<Actions> }> = ({ store }) =>
   <div>
     {store.get('isTrue') ? 'True' : 'False'}
     <button onClick={() => store.set('isTrue')(false)}>Update</button>
   </div>
-)
+MyComponentRaw.displayName = 'MyComponent'
+
+let MyComponent = connect(store)()(MyComponentRaw)
 
 let MyComponentWithLens = connect(store)('isTrue')(({ store }) =>
   <div>
@@ -115,3 +117,11 @@ test('[stateless] it should only re-render if something actually changed', t => 
     t.is(renderCount, 1)
   })
 })
+
+test('[stateless] it should set a displayName', t =>
+  t.is(MyComponent.displayName, 'withStore(MyComponent)')
+)
+
+test('[stateless] it should set a default displayName', t =>
+  t.is(MyComponentWithLens.displayName, 'withStore(Component)')
+)

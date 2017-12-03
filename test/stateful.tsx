@@ -19,7 +19,7 @@ type Props = {
 }
 
 let MyComponent = connect(store)()(
-  class extends React.Component<Props> {
+  class MyComponent extends React.Component<Props> {
     render() {
       return <div>
         {this.props.store.get('isTrue') ? 'True' : 'False'}
@@ -30,7 +30,7 @@ let MyComponent = connect(store)()(
 )
 
 let MyComponentWithLens = connect(store)('isTrue')(
-  class extends React.Component<Props> {
+  class MyComponentWithLens extends React.Component<Props> {
     render() {
       return <div>
         {this.props.store.get('isTrue') ? 'True' : 'False'}
@@ -131,3 +131,7 @@ test('[stateful] it should only re-render if something actually changed', t => {
     t.is(renderCount, 1)
   })
 })
+
+test('[stateful] it should set a displayName', t =>
+  t.is(MyComponent.displayName, 'withStore(MyComponent)')
+)
