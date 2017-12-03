@@ -47,7 +47,8 @@ export let withStore = connect(store)
 ```tsx
 import { withStore } from './store'
 
-let MyComponent = withStore()(({ store }) =>
+                            // Update the component when `today` changes
+let MyComponent = withStore('today')(({ store }) =>
   <div>
     Hello! Today is {store.get('today')}
     <button onClick={() => store.set('today')(new Date)}>Update Date</button>
@@ -73,7 +74,7 @@ store
 
 ### Lensed connects
 
-Instead of updating your React component when anything on the model changed, you can subscribe just to specific properties on your model. Let's modify our React example to only update when `today` changes:
+Instead of updating your React component when anything on the model changed, you subscribe just to specific properties on your model. Let's modify our React example to only update when `today` changes:
 
 ```tsx
 let MyComponent = withStore('today')(

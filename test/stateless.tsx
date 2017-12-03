@@ -29,14 +29,22 @@ let MyComponentWithLens = connect(store)('isTrue')(({ store }) =>
 )
 
 test('[stateless] it should render a component', t =>
-  withElement(MyComponent, _ =>
+  withElement(MyComponentWithLens, _ =>
     t.regex(_.innerHTML, /True/)
   )
 )
 
 test('[stateless] it should update the component', t =>
-  withElement(MyComponent, _ => {
+  withElement(MyComponentWithLens, _ => {
     t.regex(_.innerHTML, /True/)
+    Simulate.click(_.querySelector('button')!)
+    t.regex(_.innerHTML, /False/)
+  })
+)
+
+test('[stateless] it should not update the component if it has no lens', t =>
+  withElement(MyComponent, _ => {
+    t.regex(_.innerHTML, /False/)
     Simulate.click(_.querySelector('button')!)
     t.regex(_.innerHTML, /False/)
   })

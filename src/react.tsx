@@ -16,13 +16,9 @@ export function connect<Actions extends object>(store: Store<Actions>) {
 
       return class extends React.Component<Omit<Props, 'store'>> {
         componentDidMount() {
-          if (listenOn.length) {
-            state = listenOn.map(key =>
-              store.on(key).subscribe(() => this.forceUpdate())
-            )
-          } else {
-            state = [store.all().subscribe(() => this.forceUpdate())]
-          }
+          state = listenOn.map(key =>
+            store.on(key).subscribe(() => this.forceUpdate())
+          )
         }
         componentWillUnmount() {
           state.forEach(_ => _.dispose())
