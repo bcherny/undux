@@ -96,3 +96,22 @@ test('[stateless] it should call .on().subscribe() with the current value', t =>
     Simulate.click(_.querySelector('button')!)
   })
 )
+
+test('[stateless] it should only re-render if something actually changed', t => {
+
+  let renderCount = 0
+  let A = connect(store)('isTrue')(({ store }) => {
+    renderCount++
+    return <div>
+      {store.get('isTrue') ? 'True' : 'False'}
+      <button onClick={() => store.set('isTrue')(store.get('isTrue'))}>Update</button>
+    </div>
+  })
+
+  withElement(A, _ => {
+    Simulate.click(_.querySelector('button')!)
+    Simulate.click(_.querySelector('button')!)
+    Simulate.click(_.querySelector('button')!)
+    t.is(renderCount, 1)
+  })
+})

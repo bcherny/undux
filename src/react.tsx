@@ -12,16 +12,29 @@ export function connect<Actions extends object>(store: Store<Actions>) {
       Component: React.ComponentType<Props>
     ) {
 
-      let state: IDisposable[]
+      let state: IDisposable[][]
 
       return class extends React.Component<Omit<Props, 'store'>> {
         componentDidMount() {
-          state = listenOn.map(key =>
-            store.on(key).subscribe(() => this.forceUpdate())
-          )
+          state = listenOn.map(key => {
+            let ignore = false
+            return [
+              store.before(key).subscribe(({ previousValue, value }) => {
+                if (equals(previousValue, value)) {
+                  return ignore = true
+                }
+              }),
+              store.on(key).subscribe(() => {
+                if (ignore) {
+                  return ignore = false
+                }
+                this.forceUpdate()
+              })
+            ]
+          })
         }
         componentWillUnmount() {
-          state.forEach(_ => _.dispose())
+          state.forEach(_ => _.forEach(_ => _.dispose()))
         }
         render() {
           return <Component {...this.props} store={store} />
@@ -29,4 +42,13 @@ export function connect<Actions extends object>(store: Store<Actions>) {
       }
     }
   }
+}
+
+/**
+ * TODO: Avoid diffing by passing individual values into a React component
+ * rather than the whole `store`, and letting React and `shouldComponentUpdate`
+ * handle diffing for us.
+ */
+function equals<T>(a: T, b: T): boolean {
+  return a === b
 }

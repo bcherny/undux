@@ -108,3 +108,26 @@ withElement(MyComponentWithLens, _ => {
   Simulate.click(_.querySelector('button')!)
 })
 )
+
+test('[stateful] it should only re-render if something actually changed', t => {
+
+  let renderCount = 0
+  let A = connect(store)()(
+    class extends React.Component<Props> {
+      render() {
+        renderCount++
+        return <div>
+          {this.props.store.get('isTrue') ? 'True' : 'False'}
+          <button onClick={() => this.props.store.set('isTrue')(this.props.store.get('isTrue'))}>Update</button>
+        </div>
+      }
+    }
+  )
+
+  withElement(A, _ => {
+    Simulate.click(_.querySelector('button')!)
+    Simulate.click(_.querySelector('button')!)
+    Simulate.click(_.querySelector('button')!)
+    t.is(renderCount, 1)
+  })
+})
