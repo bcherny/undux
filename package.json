@@ -1,6 +1,6 @@
 {
   "name": "undux",
-  "version": "3.0.4",
+  "version": "3.0.5",
   "description": "100% Typesafe Redux alternative that just makes sense.",
   "main": "dist/src/index.js",
   "typings": "dist/src/index.d.ts",
