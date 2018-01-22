@@ -1,6 +1,6 @@
 {
-  "name": "babydux",
-  "version": "3.0.1",
+  "name": "undux",
+  "version": "3.0.2",
   "description": "A paper-thin, 100% typesafe Redux for babies",
   "main": "dist/src/index.js",
   "typings": "dist/src/index.d.ts",
@@ -8,12 +8,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/bcherny/babydux.git"
+    "url": "git+ssh://git@github.com/bcherny/undux.git"
   },
   "bugs": {
-    "url": "https://github.com/bcherny/babydux/issues"
+    "url": "https://github.com/bcherny/undux/issues"
   },
-  "homepage": "https://github.com/bcherny/babydux#readme",
+  "homepage": "https://github.com/bcherny/undux#readme",
   "scripts": {
     "build": "npm run clean; npm run lint && tsc -d",
     "clean": "rm -rf dist",

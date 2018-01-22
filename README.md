@@ -1,10 +1,10 @@
-<img src="logo.png" width="362" alt="Babydux" />
+<img src="logo.png" width="362" alt="undux" />
 
-[![Build Status][build]](https://circleci.com/gh/bcherny/babydux) [![npm]](https://www.npmjs.com/package/babydux) [![mit]](https://opensource.org/licenses/MIT)
+[![Build Status][build]](https://circleci.com/gh/bcherny/undux) [![npm]](https://www.npmjs.com/package/undux) [![mit]](https://opensource.org/licenses/MIT)
 
-[build]: https://img.shields.io/circleci/project/bcherny/babydux.svg?branch=master&style=flat-square
-[npm]: https://img.shields.io/npm/v/babydux.svg?style=flat-square
-[mit]: https://img.shields.io/npm/l/babydux.svg?style=flat-square
+[build]: https://img.shields.io/circleci/project/bcherny/undux.svg?branch=master&style=flat-square
+[npm]: https://img.shields.io/npm/v/undux.svg?style=flat-square
+[mit]: https://img.shields.io/npm/l/undux.svg?style=flat-square
 
 > A paper-thin, 100% typesafe Redux for babies
 
@@ -12,20 +12,27 @@
 
 ```sh
 # Using Yarn:
-yarn add babydux
+yarn add undux
 
 # Or, using NPM:
-npm install babydux --save
+npm install undux --save
 ```
+
+## Goals
+
+1. Complete type-safety
+2. Ease of use
+
+[Read more](#Design philosophy)
 
 ## Use
 
 ### 1. Create a store
 
 ```ts
-import { connect, createStore } from 'babydux'
+import { connect, createStore } from 'undux'
 
-// If you're using Babydux with TypeScript, declare your store's types.
+// If you're using Undux with TypeScript, declare your store's types.
 type Store = {
   today: Date
   users: string[]
@@ -47,7 +54,7 @@ export let withStore = connect(store)
 ```tsx
 import { withStore } from './store'
 
-                            // Update the component when `today` changes
+// Update the component when `today` changes
 let MyComponent = withStore('today')(({ store }) =>
   <div>
     Hello! Today is {store.get('today')}
@@ -62,27 +69,25 @@ let MyComponent = withStore('today')(({ store }) =>
 
 ### Effects
 
-Though Babydux automatically updates your model for you, it also lets you listen on and react to model updates (similarly to how vanilla Redux lets you subscribe to Actions). Babydux subscriptions are full [Rx observables](http://reactivex.io/rxjs/class/es6/Observable.js~Observable.html), so you have fine control over how you react to a change:
+Though Undux automatically updates your model for you, it also lets you listen on and react to model updates (similarly to how vanilla Redux lets you subscribe to Actions). Undux subscriptions are full [Rx observables](http://reactivex.io/rxjs/class/es6/Observable.js~Observable.html), so you have fine control over how you react to a change:
 
 ```tsx
 store
   .on('today')
-  .filter(() => _.getTime() % 2 === 0) // only even timestamps
+  .filter(_ => _.getTime() % 2 === 0) // only even timestamps
   .debounce(100)
   .subscribe(_ => console.log('Date changed', _))
 ```
 
 ### Lensed connects
 
-Instead of updating your React component when anything on the model changed, you subscribe just to specific properties on your model. Let's modify our React example to only update when `today` changes:
+Instead of updating your React component when anything on the model changed, with Undux you subscribe just to specific properties on your model. Notice how in our React example we only update when `today` changes:
 
 ```tsx
 let MyComponent = withStore('today')(
   ({ store }) => ...
 )
 ```
-
-*Everything is the same as before, I just added `'today'` as an argument to the function returned by `connect`.*
 
 ### Partial application all the way through
 
@@ -104,24 +109,24 @@ setUsers(['amy', 'bob'])
 
 If you create your store with `withLogger` higher order store, all model updates (which key was updated, previous value, and new value) will be logged to the console.
 
-To enable the logger, import `withLogger` and wrap your store with it:
+To enable the logger, simply import `withLogger` and wrap your store with it:
 
 ```ts
-import { createStore, withLogger } from 'babydux'
+import { createStore, withLogger } from 'undux'
 
 let store = withLogger(createStore<Store>({...}, true))
 ```
 
-And logs look like this:
+The logger will produce logs that look like this:
 
 <img src="logger.png" width="895" />
 
 ### Plugins
 
-Babydux is easy to modify with plugins (also called "higher order stores"). Just define a function that takes a store as an argument and returns a store, adding listeners along the way. For convenience, Babydux supports 2 types of listeners for plugins:
+Undux is easy to modify with plugins (also called "higher order stores"). Just define a function that takes a store as an argument and returns a store, adding listeners along the way. For convenience, Undux supports 2 types of listeners for plugins:
 
 ```ts
-import { createStore, Plugin } from 'babydux'
+import { createStore, Plugin } from 'undux'
 
 let withLocalStorage: Plugin = store => {
 
@@ -131,14 +136,14 @@ let withLocalStorage: Plugin = store => {
   )
 
   // Listen on an event (fires before the model is updated)
-  store.beforeAll().subscribe(({ key, previousValue, value}) =>
+  store.beforeAll().subscribe(({ key, previousValue, value }) =>
     localStorage.set(key, value)
   )
 
 }
 ```
 
-*Babydux also supports `.on()` and `.before()`, but because a plugin doesn't know what Actions will be bound to it, these are generally unsafe to use.*
+*Undux also supports `.on()` and `.before()`, but because a plugin doesn't know what Actions will be bound to it, these are generally unsafe to use.*
 
 ## Design philosophy
 
@@ -148,9 +153,9 @@ Getting, setting, reading, and listening on model updates is 100% type-safe: use
 
 **Goal #2 is letting you write as little boilerplate as possible.**
 
-Babydux is like [Redux](http://redux.js.org/), but reducers are already baked-in. Babydux automatically creates an action and a reducer for each key on your state, so you don't have to write tedious boilerplate. Babydux still emits Actions under the hood (which you can listen on to produce effects), but gives you an incredibly simple `get`/`set` API that covers most use cases.
+Undux is like [Redux](http://redux.js.org/), but reducers are already baked-in. Undux automatically creates an action and a reducer for each key on your state, so you don't have to write tedious boilerplate. Undux still emits Actions under the hood (which you can listen on to produce effects), but gives you an incredibly simple `get`/`set` API that covers most use cases.
 
-If you're using Babydux with the provided React connector, Babydux will update your React component any time a reducer fires (just like [React-Redux](https://github.com/reactjs/react-redux)). You can optionally filter on specific state keys that you care about for more targeted updates.
+If you're using Undux with the provided React connector, Undux will update your React component any time a reducer fires (just like [React-Redux](https://github.com/reactjs/react-redux)). You can optionally filter on specific state keys that you care about for more targeted updates.
 
 ## Tests
 

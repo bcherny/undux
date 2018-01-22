@@ -125,3 +125,24 @@ test('[stateless] it should set a displayName', t =>
 test('[stateless] it should set a default displayName', t =>
   t.is(MyComponentWithLens.displayName, 'withStore(Component)')
 )
+
+test('[stateless] it should typecheck with additional props', t => {
+
+  type Props = {
+    foo: number
+    bar: string
+  }
+
+  // Props should not include "store"
+  let Foo = connect(store)()<Props>(({ foo, store }) =>
+    <div>
+      {store.get('isTrue') ? 'True' : 'False'}
+      <button onClick={() => store.set('isTrue')(false)}>Update</button>
+    </div>
+  )
+
+  // We don't need to manually pass "store"
+  let foo = <Foo foo={1} bar='baz' />
+
+  t.pass()
+})

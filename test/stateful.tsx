@@ -135,3 +135,26 @@ test('[stateful] it should only re-render if something actually changed', t => {
 test('[stateful] it should set a displayName', t =>
   t.is(MyComponent.displayName, 'withStore(MyComponent)')
 )
+
+test('[stateful] it should typecheck with additional props', t => {
+
+  type Props2 = Props & {
+    foo: number
+    bar: string
+  }
+
+  // Props should not include "store"
+  let Foo = connect(store)()<Props2>(class Foo extends React.Component<Props2> {
+    render() {
+      return <div>
+        {this.props.store.get('isTrue') ? 'True' : 'False'}
+        {this.props.foo}
+      </div>
+    }
+  })
+
+  // We don't need to manually pass "store"
+  let foo = <Foo foo={1} bar='baz' />
+
+  t.pass()
+})

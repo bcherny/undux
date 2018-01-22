@@ -1,6 +1,6 @@
 import { Emitter } from 'typed-rx-emitter'
 
-export type Babydux<Actions extends object> = {
+export type Undux<Actions extends object> = {
   [K in keyof Actions]: {
     key: K
     previousValue: Actions[K],
@@ -9,7 +9,7 @@ export type Babydux<Actions extends object> = {
 }
 
 export class Store<Actions extends object> extends Emitter<Actions> {
-  private befores = new Emitter<Babydux<Actions>>()
+  private befores = new Emitter<Undux<Actions>>()
   private emitter = new Emitter<Actions>()
   constructor(private state: Actions) {
     super()

@@ -9,13 +9,16 @@ type Overwrite<T, U> = { [P in Diff<keyof T, keyof U>]: T[P] } & U
 
 export function connect<Actions extends object>(store: Store<Actions>) {
   return (...listenOn: (keyof Actions)[]) => {
-    return function <Props extends { store: Store<Actions> }>(
-      Component: React.ComponentType<Props>
-    ): React.ComponentType<Omit<Props, 'store'>> {
+    return function <
+      Props,
+      PropsWithStore extends { store: Store<Actions> } & Props = { store: Store<Actions> } & Props
+    >(
+      Component: React.ComponentType<PropsWithStore>
+    ): React.ComponentClass<Omit<PropsWithStore, 'store'>> {
 
       let state: IDisposable[][]
 
-      let Class: ComponentClass<Omit<Props, 'store'>> = class extends React.Component<Omit<Props, 'store'>> {
+      let Class: ComponentClass<Omit<PropsWithStore, 'store'>> = class extends React.Component<Omit<PropsWithStore, 'store'>> {
         componentDidMount() {
           state = listenOn.map(key => {
             let ignore = false
