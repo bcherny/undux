@@ -1,6 +1,6 @@
 {
   "name": "undux",
-  "version": "3.0.3",
+  "version": "3.0.4",
   "description": "A paper-thin, 100% typesafe Redux for babies",
   "main": "dist/src/index.js",
   "typings": "dist/src/index.d.ts",
