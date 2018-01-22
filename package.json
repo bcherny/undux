@@ -1,7 +1,7 @@
 {
   "name": "undux",
   "version": "3.0.4",
-  "description": "A paper-thin, 100% typesafe Redux for babies",
+  "description": "100% Typesafe Redux alternative that just makes sense.",
   "main": "dist/src/index.js",
   "typings": "dist/src/index.d.ts",
   "author": "Boris Cherny <boris@performancejs.com>",

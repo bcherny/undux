@@ -6,7 +6,7 @@
 [npm]: https://img.shields.io/npm/v/undux.svg?style=flat-square
 [mit]: https://img.shields.io/npm/l/undux.svg?style=flat-square
 
-> A paper-thin, 100% typesafe Redux for babies
+> 100% Typesafe Redux alternative that just makes sense.
 
 ## Install
 
@@ -18,12 +18,13 @@ yarn add undux
 npm install undux --save
 ```
 
-## Goals
+## Design Goals
 
-1. Complete type-safety
-2. Ease of use
+1. Complete type-safety, no exceptions
+2. As little boilerplate as possible
+3. Familiar abstractions
 
-[Read more](#Design philosophy)
+[Read more here](https://github.com/bcherny/undux#design-philosophy)
 
 ## Use
 
@@ -156,6 +157,10 @@ Getting, setting, reading, and listening on model updates is 100% type-safe: use
 Undux is like [Redux](http://redux.js.org/), but reducers are already baked-in. Undux automatically creates an action and a reducer for each key on your state, so you don't have to write tedious boilerplate. Undux still emits Actions under the hood (which you can listen on to produce effects), but gives you an incredibly simple `get`/`set` API that covers most use cases.
 
 If you're using Undux with the provided React connector, Undux will update your React component any time a reducer fires (just like [React-Redux](https://github.com/reactjs/react-redux)). You can optionally filter on specific state keys that you care about for more targeted updates.
+
+**Goal #3 is familiar abstractions.**
+
+No need to learn about Actions, Reducers, or any of that. Just call `get` and `set`, and everything works just as you expect.
 
 ## Tests
 
