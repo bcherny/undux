@@ -1,5 +1,5 @@
 {
-  "extends": ["tslint-no-circular-imports", "tslint-react"],
+  "extends": ["tslint-react"],
   "rules": {
     "adjacent-overload-signatures": true,
     "class-name": true,
