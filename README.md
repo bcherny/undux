@@ -6,7 +6,7 @@
 [npm]: https://img.shields.io/npm/v/undux.svg?style=flat-square
 [mit]: https://img.shields.io/npm/l/undux.svg?style=flat-square
 
-> 100% Typesafe Redux alternative that just makes sense.
+> Dead simple state management for React
 
 ## Install
 
