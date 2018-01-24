@@ -230,6 +230,11 @@ If you're using Undux with the provided React connector, Undux will update your 
 
 No need to learn about Actions, Reducers, or any of that. Just call `get` and `set`, and everything works just as you expect.
 
+## More examples
+
+- [Todo MVC Example](https://github.com/bcherny/undux-todomvc)
+- [Bayes Impact Healthcare Network Analyzer](https://github.com/bayesimpact/tds/tree/master/frontend)
+
 ## Tests
 
 ```sh
