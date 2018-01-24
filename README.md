@@ -21,7 +21,7 @@ npm install undux --save
 ## Design Goals
 
 1. Complete type-safety, no exceptions
-2. As little boilerplate as possible
+2. One file: forget actions, reducers, dispatchers, containers, etc.
 3. Familiar abstractions
 
 [Read more here](https://github.com/bcherny/undux#design-philosophy)
