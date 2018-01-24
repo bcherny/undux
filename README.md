@@ -146,6 +146,74 @@ let withLocalStorage: Plugin = store => {
 
 *Undux also supports `.on()` and `.before()`, but because a plugin doesn't know what Actions will be bound to it, these are generally unsafe to use.*
 
+## Recipes
+
+### Creating a store
+
+```ts
+import { connect, createStore, Store } from 'undux'
+
+type MyStore = {
+  foo: number
+  bar: string[]
+}
+
+let store = createStore<MyStore>({
+  foo: 12,
+  bar: []
+})
+
+export type StoreProps = {
+  store: Store<MyStore>
+}
+
+export let withStore = connect(store)
+```
+
+### Stateless component with props
+
+Have your own props? No problem.
+
+```ts
+import { withStore } from './store'
+
+type Props = {
+  foo: number
+}
+
+let MyComponent = withStore('today')<Props>(({ foo, store }) =>
+  <div>
+    Today is {store.get('today')}
+    Foo is {foo}
+  </div>
+)
+
+<MyComponent foo={3} />
+```
+
+### Stateful component with props
+
+Undux is as easy to use with stateful components as with stateless ones.
+
+```ts
+import { StoreProps, withStore } from './store'
+
+type Props = {
+  foo: number
+}
+
+let MyComponent = withStore('today')(class extends React.Component<StoreProps & Props>{
+  render() {
+    <div>
+      Today is {this.props.store.get('today')}
+      Foo is {this.props.foo}
+    </div>
+  }
+})
+
+<MyComponent foo={3} />
+```
+
 ## Design philosophy
 
 **Goal #1 is total type-safety.**
