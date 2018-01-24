@@ -3,4 +3,5 @@ node_modules
 test
 circle.yml
 *.png
-*.sketch
+*.psd
+
