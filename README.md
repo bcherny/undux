@@ -22,7 +22,7 @@ npm install undux --save
 
 1. Complete type-safety, no exceptions
 2. One file: forget actions, reducers, dispatchers, containers, etc.
-3. Familiar abstractions
+3. Familiar abstractions: just `get` and `set`
 
 [Read more here](https://github.com/bcherny/undux#design-philosophy)
 
