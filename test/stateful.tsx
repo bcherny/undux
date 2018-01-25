@@ -1,7 +1,7 @@
-import * as React from 'react'
-import { connect, createStore, Store } from '../src'
-import { Simulate } from 'react-dom/test-utils'
 import { test } from 'ava'
+import * as React from 'react'
+import { Simulate } from 'react-dom/test-utils'
+import { connect, createStore, Store } from '../src'
 import { withElement } from './util'
 
 type Actions = {
@@ -18,7 +18,7 @@ type Props = {
   store: Store<Actions>
 }
 
-let MyComponent = connect(store)()(
+let MyComponent = connect(store)(
   class MyComponent extends React.Component<Props> {
     render() {
       return <div>
@@ -29,7 +29,7 @@ let MyComponent = connect(store)()(
   }
 )
 
-let MyComponentWithLens = connect(store)('isTrue')(
+let MyComponentWithLens = connect(store)(
   class MyComponentWithLens extends React.Component<Props> {
     render() {
       return <div>
@@ -112,7 +112,7 @@ withElement(MyComponentWithLens, _ => {
 test('[stateful] it should only re-render if something actually changed', t => {
 
   let renderCount = 0
-  let A = connect(store)()(
+  let A = connect(store)(
     class extends React.Component<Props> {
       render() {
         renderCount++
@@ -144,7 +144,7 @@ test('[stateful] it should typecheck with additional props', t => {
   }
 
   // Props should not include "store"
-  let Foo = connect(store)()<Props2>(class Foo extends React.Component<Props2> {
+  let Foo = connect(store)<Props2>(class Foo extends React.Component<Props2> {
     render() {
       return <div>
         {this.props.store.get('isTrue') ? 'True' : 'False'}

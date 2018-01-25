@@ -1,7 +1,7 @@
-import * as React from 'react'
-import { connect, createStore, Store } from '../src'
-import { Simulate } from 'react-dom/test-utils'
 import { test } from 'ava'
+import * as React from 'react'
+import { Simulate } from 'react-dom/test-utils'
+import { connect, createStore, Store } from '../src'
 import { withElement } from './util'
 
 type Actions = {
@@ -21,9 +21,9 @@ let MyComponentRaw: React.StatelessComponent<{ store: Store<Actions> }> = ({ sto
   </div>
 MyComponentRaw.displayName = 'MyComponent'
 
-let MyComponent = connect(store)()(MyComponentRaw)
+let MyComponent = connect(store)(MyComponentRaw)
 
-let MyComponentWithLens = connect(store)('isTrue')(({ store }) =>
+let MyComponentWithLens = connect(store)(({ store }) =>
   <div>
     {store.get('isTrue') ? 'True' : 'False'}
     <button onClick={() => store.set('isTrue')(!store.get('isTrue'))}>Update</button>
@@ -102,7 +102,7 @@ test('[stateless] it should call .on().subscribe() with the current value', t =>
 test('[stateless] it should only re-render if something actually changed', t => {
 
   let renderCount = 0
-  let A = connect(store)('isTrue')(({ store }) => {
+  let A = connect(store)(({ store }) => {
     renderCount++
     return <div>
       {store.get('isTrue') ? 'True' : 'False'}
@@ -134,7 +134,7 @@ test('[stateless] it should typecheck with additional props', t => {
   }
 
   // Props should not include "store"
-  let Foo = connect(store)()<Props>(({ foo, store }) =>
+  let Foo = connect(store)<Props>(({ foo, store }) =>
     <div>
       {store.get('isTrue') ? 'True' : 'False'}
       <button onClick={() => store.set('isTrue')(false)}>Update</button>

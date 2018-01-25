@@ -55,8 +55,8 @@ export let withStore = connect(store)
 ```tsx
 import { withStore } from './store'
 
-// Update the component when `today` changes
-let MyComponent = withStore('today')(({ store }) =>
+// MyComponent will automatically re-render when `today` changes
+let MyComponent = withStore(({ store }) =>
   <div>
     Hello! Today is {store.get('today')}
     <button onClick={() => store.set('today')(new Date)}>Update Date</button>
@@ -92,17 +92,9 @@ store
   })
 ```
 
-### Lensed connects
+### Automatically updating connects
 
-Instead of updating your React component when anything on the model changed, with Undux you subscribe just to specific properties on your model. Notice how in our React example we only update when `today` changes:
-
-```tsx
-let MyComponent = withStore('today')(
-  ({ store }) => ...
-)
-```
-
-To make your component re-render when a property changed, just pass it to `withStore` as a string.
+When your component uses a particular property on your Store, Undux knows to automatically re-render your component anytime that property changes. Under the hood, it does this by observing a property after it's accessed for the first time.
 
 ### Partial application all the way through
 
@@ -188,14 +180,14 @@ export let withStore = connect(store)
 
 Have your own props? No problem.
 
-```ts
+```tsx
 import { withStore } from './store'
 
 type Props = {
   foo: number
 }
 
-let MyComponent = withStore('today')<Props>(({ foo, store }) =>
+let MyComponent = withStore<Props>(({ foo, store }) =>
   <div>
     Today is {store.get('today')}
     Foo is {foo}
@@ -209,14 +201,14 @@ let MyComponent = withStore('today')<Props>(({ foo, store }) =>
 
 Undux is as easy to use with stateful components as with stateless ones.
 
-```ts
+```tsx
 import { StoreProps, withStore } from './store'
 
 type Props = {
   foo: number
 }
 
-let MyComponent = withStore('today')(class extends React.Component<StoreProps & Props>{
+let MyComponent = withStore(class extends React.Component<StoreProps & Props>{
   render() {
     <div>
       Today is {this.props.store.get('today')}
