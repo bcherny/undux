@@ -16,7 +16,7 @@
   "homepage": "https://github.com/bcherny/undux#readme",
   "scripts": {
     "build": "npm run clean; npm run lint && tsc -d",
-    "clean": "rm -rf dist",
+    "clean": "shx rm -rf dist",
     "lint": "tslint src/**/*",
     "prepublishOnly": "npm run build",
     "pretest": "npm run build",
@@ -35,6 +35,7 @@
     "jsdom": "^11.5.1",
     "react": "^16.2.0",
     "react-dom": "^16.2.0",
+    "shx": "^0.2.2",
     "tslint": "^5.9.1",
     "tslint-react": "^3.4.0",
     "typescript": "^2.6.2"
