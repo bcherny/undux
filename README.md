@@ -72,12 +72,24 @@ let MyComponent = withStore('today')(({ store }) =>
 
 Though Undux automatically updates your model for you, it also lets you listen on and react to model updates (similarly to how vanilla Redux lets you subscribe to Actions). Undux subscriptions are full [Rx observables](http://reactivex.io/rxjs/class/es6/Observable.js~Observable.html), so you have fine control over how you react to a change:
 
-```tsx
+```ts
 store
   .on('today')
   .filter(_ => _.getTime() % 2 === 0) // only even timestamps
   .debounce(100)
   .subscribe(_ => console.log('Date changed', _))
+```
+
+You can even use Effects to trigger a change in response to an update:
+
+```ts
+store
+  .on('today')
+  .debounce(100)
+  .subscribe(async time => {
+    let users = await api.get({ time })
+    store.set('users')(users)
+  })
 ```
 
 ### Lensed connects
