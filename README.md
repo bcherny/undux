@@ -86,8 +86,8 @@ You can even use Effects to trigger a change in response to an update:
 store
   .on('today')
   .debounce(100)
-  .subscribe(async time => {
-    let users = await api.get({ time })
+  .subscribe(async date => {
+    let users = await api.get({ since: date })
     store.set('users')(users)
   })
 ```
