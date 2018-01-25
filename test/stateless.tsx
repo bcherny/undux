@@ -1,16 +1,18 @@
-import * as React from 'react'
-import { connect, createStore, Store } from '../src'
-import { Simulate } from 'react-dom/test-utils'
 import { test } from 'ava'
+import * as React from 'react'
+import { Simulate } from 'react-dom/test-utils'
+import { connect, createStore, Store } from '../src'
 import { withElement } from './util'
 
 type Actions = {
   isTrue: boolean
+  theNumber: number
   users: string[]
 }
 
 let store = createStore<Actions>({
   isTrue: true,
+  theNumber: 42,
   users: []
 })
 
@@ -23,10 +25,10 @@ MyComponentRaw.displayName = 'MyComponent'
 
 let MyComponent = connect(store)()(MyComponentRaw)
 
-let MyComponentWithLens = connect(store)('isTrue')(({ store }) =>
+let MyComponentWithLens = connect(store)('isTrue', 'theNumber')(({ isTrue, theNumber, set }) =>
   <div>
-    {store.get('isTrue') ? 'True' : 'False'}
-    <button onClick={() => store.set('isTrue')(!store.get('isTrue'))}>Update</button>
+    {isTrue ? 'True' : 'False'}
+    <button onClick={() => set('isTrue')(!isTrue)}>Update</button>
   </div>
 )
 

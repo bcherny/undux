@@ -56,10 +56,10 @@ export let withStore = connect(store)
 import { withStore } from './store'
 
 // Update the component when `today` changes
-let MyComponent = withStore('today')(({ store }) =>
+let MyComponent = withStore('today')(({ set, today }) =>
   <div>
-    Hello! Today is {store.get('today')}
-    <button onClick={() => store.set('today')(new Date)}>Update Date</button>
+    Hello! Today is {today}
+    <button onClick={() => set('today')(new Date)}>Update Date</button>
   </div>
 )
 ```
@@ -98,7 +98,7 @@ Instead of updating your React component when anything on the model changed, wit
 
 ```tsx
 let MyComponent = withStore('today')(
-  ({ store }) => ...
+  ({ today }) => ...
 )
 ```
 
@@ -195,9 +195,9 @@ type Props = {
   foo: number
 }
 
-let MyComponent = withStore('today')<Props>(({ foo, store }) =>
+let MyComponent = withStore('today')<Props>(({ foo, today }) =>
   <div>
-    Today is {store.get('today')}
+    Today is {today}
     Foo is {foo}
   </div>
 )
@@ -219,7 +219,7 @@ type Props = {
 let MyComponent = withStore('today')(class extends React.Component<StoreProps & Props>{
   render() {
     <div>
-      Today is {this.props.store.get('today')}
+      Today is {this.props.today}
       Foo is {this.props.foo}
     </div>
   }
