@@ -102,6 +102,8 @@ let MyComponent = withStore('today')(
 )
 ```
 
+To make your component re-render when a property changed, just pass it to `withStore` as a string.
+
 ### Partial application all the way through
 
 Partially apply the `connect` function to yield a convenient `withStore` function:
