@@ -30,7 +30,7 @@ npm install undux --save
 
 ### 1. Create a store
 
-```ts
+```jsx
 import { connect, createStore } from 'undux'
 
 // If you're using Undux with TypeScript, declare your store's types.
@@ -52,7 +52,7 @@ export let withStore = connect(store)
 
 ### 2. Connect your React components
 
-```tsx
+```jsx
 import { withStore } from './store'
 
 // Update the component when `today` changes
