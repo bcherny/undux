@@ -52,9 +52,9 @@
     "@types/tough-cookie" "*"
     parse5 "^3.0.2"
 
-"@types/lodash@^4.14.80":
-  version "4.14.93"
-  resolved "https://registry.yarnpkg.com/@types/lodash/-/lodash-4.14.93.tgz#a6d2a1e1601a3c29196f38ef1990b68a9afa1e1c"
+"@types/lodash@^4.14.97":
+  version "4.14.97"
+  resolved "https://registry.yarnpkg.com/@types/lodash/-/lodash-4.14.97.tgz#7262d6d5fc5e87cdb3f68eb33accd4024f2b211e"
 
 "@types/node@*":
   version "9.3.0"
@@ -1406,6 +1406,10 @@ find-up@^2.0.0, find-up@^2.1.0:
   resolved "https://registry.yarnpkg.com/find-up/-/find-up-2.1.0.tgz#45d1b7e506c717ddd482775a2b77920a3c0c57a7"
   dependencies:
     locate-path "^2.0.0"
+
+flow-bin@^0.64.0:
+  version "0.64.0"
+  resolved "https://registry.yarnpkg.com/flow-bin/-/flow-bin-0.64.0.tgz#ddd3fb3b183ab1ab35a5d5dec9caf5ebbcded167"
 
 fn-name@^2.0.0:
   version "2.0.1"
@@ -3356,11 +3360,11 @@ type-check@~0.3.2:
   dependencies:
     prelude-ls "~1.1.2"
 
-typed-rx-emitter@^0.3.0:
-  version "0.3.0"
-  resolved "https://registry.yarnpkg.com/typed-rx-emitter/-/typed-rx-emitter-0.3.0.tgz#402fa150f9c958d14bb85f0e6a77e2e31239a9fa"
+typed-rx-emitter@^0.3.1:
+  version "0.3.1"
+  resolved "https://registry.yarnpkg.com/typed-rx-emitter/-/typed-rx-emitter-0.3.1.tgz#6e8e2f22ff6ba6786fc892743659a8f3865ac644"
   dependencies:
-    "@types/lodash" "^4.14.80"
+    "@types/lodash" "^4.14.97"
     "@types/rx" "^4.1.1"
     rx "^4.1.0"
 

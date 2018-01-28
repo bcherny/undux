@@ -29,7 +29,6 @@
     "no-reference": true,
     "no-trailing-whitespace": true,
     "no-unused-expression": true,
-    "no-unused-variable": [true, "react"],
     "no-var-keyword": true,
     "no-var-requires": true,
     "object-literal-key-quotes": [true, "as-needed"],

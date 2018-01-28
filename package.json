@@ -15,16 +15,16 @@
   },
   "homepage": "https://github.com/bcherny/undux#readme",
   "scripts": {
-    "build": "npm run clean; npm run lint && tsc -d",
+    "build": "npm run clean; npm run lint && tsc -d && cp src/index.js.flow dist/src/index.js.flow && flow check test/test.flow.js",
     "clean": "shx rm -rf dist",
     "lint": "tslint src/**/*",
     "prepublishOnly": "npm run build",
     "pretest": "npm run build",
     "tdd": "concurrently -k 'tsc -w' 'ava -w'",
-    "test": "ava"
+    "test": "ava && flow check src/types.js.flow"
   },
   "dependencies": {
-    "typed-rx-emitter": "^0.3.0"
+    "typed-rx-emitter": "^0.3.1"
   },
   "devDependencies": {
     "@types/jsdom": "^11.0.4",
@@ -32,6 +32,7 @@
     "@types/react-dom": "^16.0.3",
     "ava": "^0.24.0",
     "concurrently": "^3.5.1",
+    "flow-bin": "^0.64.0",
     "jsdom": "^11.5.1",
     "react": "^16.2.0",
     "react-dom": "^16.2.0",
