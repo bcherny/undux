@@ -1,7 +1,7 @@
-import * as React from 'react'
-import { connect, createStore, Store } from '../src'
-import { Simulate } from 'react-dom/test-utils'
 import { test } from 'ava'
+import * as React from 'react'
+import { Simulate } from 'react-dom/test-utils'
+import { connect, createStore, Store } from '../src'
 import { withElement } from './util'
 
 type Actions = {
