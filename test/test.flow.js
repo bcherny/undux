@@ -76,3 +76,26 @@ let E = connect(store)()(class extends React.Component<StoreProps & Props> {
   }
 })
 let e = <E foo={1} bar='baz' />
+
+/////////////////// F ///////////////////
+
+store
+  .on('isTrue')
+  .debounce(100)
+  .subscribe(_ => _ === false)
+
+store.get('isTrue')
+store.set('isTrue')
+store.set('isTrue')(false)
+
+store.before('isTrue').subscribe(_ => {
+  _.key === 'isTrue'
+  _.previousValue === false
+  _.value === true
+})
+
+store.beforeAll().subscribe(_ => {
+  _.key === 'isTrue'
+  _.previousValue === false
+  _.value === true
+})

@@ -22,11 +22,9 @@ declare export function createStore<Actions: {}>(initialState: Actions): Store<A
 export type Plugin = <Actions: {}>(store: Store<Actions>) => Store<Actions>
 declare export var withLogger: Plugin
 
-declare type Omit<T, K: $Keys<T>> = $Values<$Diff<$Keys<T>, K>>;
-
 declare export function connect<Actions: {}>(
   store: Store<Actions>
 ): (...listenOn: $Keys<Actions>[]) => <
   Props,
   PropsWithStore: ({ store: Store<Actions> } & Props)
->(Component: React.ComponentType<PropsWithStore>) => React.Component<Omit<PropsWithStore, "store">>;
+>(Component: React.ComponentType<PropsWithStore>) => Class<React.Component<Props>>

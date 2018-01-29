@@ -21,7 +21,7 @@
     "prepublishOnly": "npm run build",
     "pretest": "npm run build",
     "tdd": "concurrently -k 'tsc -w' 'ava -w'",
-    "test": "ava && flow check src/types.js.flow"
+    "test": "ava && flow check src/index.js.flow"
   },
   "dependencies": {
     "typed-rx-emitter": "^0.3.1"
