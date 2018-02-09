@@ -2,7 +2,7 @@ import { test } from 'ava'
 import * as React from 'react'
 import { Simulate } from 'react-dom/test-utils'
 import { connect, createStore, Store } from '../src'
-import { withElement } from './util'
+import { withElement } from './testUtils'
 
 type Actions = {
   isTrue: boolean

@@ -33,6 +33,7 @@
     "ava": "^0.25.0",
     "concurrently": "^3.5.1",
     "flow-bin": "^0.65.0",
+    "immutable": "^3.8.2",
     "jsdom": "^11.6.2",
     "react": "^16.2.0",
     "react-dom": "^16.2.0",
