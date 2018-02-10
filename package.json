@@ -27,6 +27,7 @@
     "typed-rx-emitter": "^0.3.1"
   },
   "devDependencies": {
+    "@types/immutable": "^3.8.7",
     "@types/jsdom": "^11.0.4",
     "@types/react": "^16.0.36",
     "@types/react-dom": "^16.0.3",
