@@ -53,12 +53,6 @@
     pretty-ms "^0.2.1"
     text-table "^0.2.0"
 
-"@types/immutable@^3.8.7":
-  version "3.8.7"
-  resolved "https://registry.yarnpkg.com/@types/immutable/-/immutable-3.8.7.tgz#536d33d30f3f3d9a6d4642a219419fd82af633fb"
-  dependencies:
-    immutable "*"
-
 "@types/jsdom@^11.0.4":
   version "11.0.4"
   resolved "https://registry.yarnpkg.com/@types/jsdom/-/jsdom-11.0.4.tgz#a645db4704cf7e4f811f583926ad12525c719400"
