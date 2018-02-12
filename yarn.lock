@@ -1725,6 +1725,10 @@ ignore-by-default@^1.0.0:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/ignore-by-default/-/ignore-by-default-1.0.1.tgz#48ca6d72f6c6a3af00a9ad4ae6876be3889e2b09"
 
+immutable-is@^3.7.6:
+  version "3.7.6"
+  resolved "https://registry.yarnpkg.com/immutable-is/-/immutable-is-3.7.6.tgz#efad8bcf21443392402e10fa08b7aa91b65f6c30"
+
 immutable@^3.8.2:
   version "3.8.2"
   resolved "https://registry.yarnpkg.com/immutable/-/immutable-3.8.2.tgz#c2439951455bb39913daf281376f1530e104adf3"
