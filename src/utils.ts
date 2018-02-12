@@ -10,7 +10,7 @@ export function equals<T>(a: T, b: T): boolean {
   if (isImmutable(a) && isImmutable(b)) {
     return is(a, b)
   }
-  return a === b;
+  return a === b
 }
 
 export function isImmutable(obj: any): boolean {
