@@ -7,14 +7,14 @@ import * as React from 'react'
  */
 export function equals<T>(a: T, b: T): boolean {
   if (isImmutable(a) && isImmutable(b)) {
-    return a.equals(b);
+    return a.equals(b)
   }
   return a === b
 }
 
 export type Immutable = {
   equals(b: any): boolean
-};
+}
 
 export function isImmutable(a: any): a is Immutable {
   return !!a && typeof a === 'object' && (
