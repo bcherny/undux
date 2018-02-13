@@ -62,6 +62,6 @@
     "source": [
       "./dist/src/*.js"
     ],
-    "vebose": true
+    "verbose": true
   }
 }
