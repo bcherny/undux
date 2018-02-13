@@ -24,7 +24,6 @@
     "test": "ava && flow check src/index.js.flow"
   },
   "dependencies": {
-    "immutable-is": "^3.7.6",
     "typed-rx-emitter": "^0.3.1"
   },
   "devDependencies": {
