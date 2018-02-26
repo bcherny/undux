@@ -35,9 +35,9 @@ npm install undux --save
 ```jsx
 import { connect, createStore } from 'undux'
 
-// If you're using Undux with TypeScript, declare your store's types.
+// If you're using Undux with TypeScript or Flow, declare your store's types.
 type Store = {
-  today: Date
+  today: Date,
   users: string[]
 }
 
@@ -170,7 +170,7 @@ let withLocalStorage: Plugin = store => {
 import { connect, createStore, Store } from 'undux'
 
 type MyStore = {
-  foo: number
+  foo: number,
   bar: string[]
 }
 
