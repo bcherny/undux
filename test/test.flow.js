@@ -8,6 +8,21 @@ type Actions = {
   users: string[]
 }
 
+createStore(
+  {
+    isTrue: true,
+    users: []
+  },
+  {
+    shouldEmit(data) {
+      if (data.key === 'users') {
+        data.previousValue.join()
+      }
+      return true
+    }
+  }
+)
+
 let store: Store<Actions> = createStore({
   isTrue: true,
   users: []
@@ -24,58 +39,71 @@ type StoreProps = {
 
 /////////////////// A ///////////////////
 
-let A = connect(store)()(({ store }: StoreProps) =>
+let A = connect(store)()(({ store }: StoreProps) => (
   <div>
     {store.get('isTrue') ? 'True' : 'False'}
     <button onClick={() => store.set('isTrue')(false)}>Update</button>
   </div>
-)
+))
 let a = <A />
+let aw = <A.WrappedComponent store={store} />
 
 /////////////////// B ///////////////////
 
-let BRaw = ({ foo, bar }: Props) =>
-  <div>
-    {foo}
-    {bar}
-  </div>
-let B = connect(store)()(BRaw)
-let b = <B foo={1} bar='baz' />
-
-/////////////////// C ///////////////////
-
-let C = connect(store)()(({ foo, bar }: Props) =>
+let BRaw = ({ foo, bar }: Props) => (
   <div>
     {foo}
     {bar}
   </div>
 )
-let c = <C foo={1} bar='baz' />
+let B = connect(store)()(BRaw)
+let b = <B foo={1} bar="baz" />
+let bw = <A.WrappedComponent store={store} foo={1} bar="baz" />
+
+/////////////////// C ///////////////////
+
+let C = connect(store)()(({ foo, bar }: Props) => (
+  <div>
+    {foo}
+    {bar}
+  </div>
+))
+let c = <C foo={1} bar="baz" />
 
 /////////////////// D ///////////////////
 
-let D = connect(store)()(class extends React.Component<StoreProps> {
-  render() {
-    return <div>
-      {this.props.store.get('isTrue') ? 'True' : 'False'}
-      <button onClick={() => this.props.store.set('isTrue')(false)}>Update</button>
-    </div>
+let D = connect(store)()(
+  class extends React.Component<StoreProps> {
+    render() {
+      return (
+        <div>
+          {this.props.store.get('isTrue') ? 'True' : 'False'}
+          <button onClick={() => this.props.store.set('isTrue')(false)}>
+            Update
+          </button>
+        </div>
+      )
+    }
   }
-})
+)
 let d = <D />
 
 /////////////////// E ///////////////////
 
-let E = connect(store)()(class extends React.Component<StoreProps & Props> {
-  render() {
-    return <div>
-      {this.props.store.get('isTrue') ? 'True' : 'False'}
-      {this.props.foo}
-      {this.props.bar}
-    </div>
+let E = connect(store)()(
+  class extends React.Component<StoreProps & Props> {
+    render() {
+      return (
+        <div>
+          {this.props.store.get('isTrue') ? 'True' : 'False'}
+          {this.props.foo}
+          {this.props.bar}
+        </div>
+      )
+    }
   }
-})
-let e = <E foo={1} bar='baz' />
+)
+let e = <E foo={1} bar="baz" />
 
 /////////////////// F ///////////////////
 

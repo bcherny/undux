@@ -1,25 +1,42 @@
 import { Emitter } from 'typed-rx-emitter'
+import { objectIs } from './utils'
 
 export type Undux<Actions extends object> = {
   [K in keyof Actions]: {
     key: K
-    previousValue: Actions[K],
+    previousValue: Actions[K]
     value: Actions[K]
   }
+}
+
+export type StoreOptions<Actions extends object> = {
+  shouldEmit: (data: Undux<Actions>[keyof Actions]) => boolean
+}
+
+export const defaultStoreOptions: StoreOptions<any> = {
+  shouldEmit: ({ previousValue, value }) => !objectIs(previousValue, value)
 }
 
 export class Store<Actions extends object> extends Emitter<Actions> {
   private befores = new Emitter<Undux<Actions>>()
   private emitter = new Emitter<Actions>()
-  constructor(private state: Actions) {
+  constructor(
+    private state: Actions,
+    {
+      shouldEmit = defaultStoreOptions.shouldEmit
+    }: Partial<StoreOptions<Actions>> = defaultStoreOptions
+  ) {
     super()
 
     for (let key in state) {
       this.emitter.on(key).subscribe(value => {
         let previousValue = state[key]
-        this.befores.emit(key, { key, previousValue, value })
-        state[key] = value
-        this.emit(key, value)
+
+        if (shouldEmit({ key, previousValue, value })) {
+          this.befores.emit(key, { key, previousValue, value })
+          state[key] = value
+          this.emit(key, value)
+        }
       })
     }
   }
@@ -33,16 +50,20 @@ export class Store<Actions extends object> extends Emitter<Actions> {
     return this.state[key]
   }
   set<K extends keyof Actions>(key: K) {
-    return (value: Actions[K]) =>
-      this.emitter.emit(key, value)
+    return (value: Actions[K]) => this.emitter.emit(key, value)
   }
 }
 
-export function createStore<Actions extends object>(initialState: Actions) {
-  return new Store<Actions>(initialState)
+export function createStore<Actions extends object>(
+  initialState: Actions,
+  options?: Partial<StoreOptions<Actions>>
+) {
+  return new Store<Actions>(initialState, options)
 }
 
-export type Plugin = <Actions extends object>(store: Store<Actions>) => Store<Actions>
+export type Plugin = <Actions extends object>(
+  store: Store<Actions>
+) => Store<Actions>
 
 export * from './plugins/logger'
 export * from './react'
