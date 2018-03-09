@@ -1,5 +1,5 @@
 import { Emitter } from 'typed-rx-emitter'
-import { equals } from './utils'
+import { objectIs } from './utils'
 
 export type Undux<Actions extends object> = {
   [K in keyof Actions]: {
@@ -9,17 +9,30 @@ export type Undux<Actions extends object> = {
   }
 }
 
+export type StoreOptions<Actions extends object> = {
+  shouldEmit: (data: Undux<Actions>[keyof Actions]) => boolean
+}
+
+export const defaultStoreOptions: StoreOptions<any> = {
+  shouldEmit: ({ previousValue, value }) => !objectIs(previousValue, value)
+}
+
 export class Store<Actions extends object> extends Emitter<Actions> {
   private befores = new Emitter<Undux<Actions>>()
   private emitter = new Emitter<Actions>()
-  constructor(private state: Actions) {
+  constructor(
+    private state: Actions,
+    {
+      shouldEmit = defaultStoreOptions.shouldEmit
+    }: Partial<StoreOptions<Actions>> = defaultStoreOptions
+  ) {
     super()
 
     for (let key in state) {
       this.emitter.on(key).subscribe(value => {
         let previousValue = state[key]
 
-        if (!equals(previousValue, value)) {
+        if (shouldEmit({ key, previousValue, value })) {
           this.befores.emit(key, { key, previousValue, value })
           state[key] = value
           this.emit(key, value)
@@ -41,8 +54,11 @@ export class Store<Actions extends object> extends Emitter<Actions> {
   }
 }
 
-export function createStore<Actions extends object>(initialState: Actions) {
-  return new Store<Actions>(initialState)
+export function createStore<Actions extends object>(
+  initialState: Actions,
+  options?: Partial<StoreOptions<Actions>>
+) {
+  return new Store<Actions>(initialState, options)
 }
 
 export type Plugin = <Actions extends object>(
