@@ -18,20 +18,41 @@ export function connect<Actions extends object>(store: Store<Actions>) {
     >(
       Component: React.ComponentType<PropsWithStore>
     ): React.ComponentClass<Omit<PropsWithStore, 'store'>> {
-      let state: IDisposable[]
+      let instances: React.Component<Omit<PropsWithStore, 'store'>>[] = []
+      let disposers: IDisposable[] | null
+
+      function subscribe() {
+        if (!disposers) {
+          disposers = listenOn.map(key => {
+            return store.on(key).subscribe(() => {
+              instances.forEach(_ => _.forceUpdate())
+            })
+          })
+        }
+      }
+
+      function unsubscribe() {
+        if (instances.length) {
+          return
+        }
+        if (disposers) {
+          disposers.forEach(_ => _.dispose())
+          disposers = null
+        }
+      }
 
       let Class: ComponentClass<
         Omit<PropsWithStore, 'store'>
       > = class extends React.Component<Omit<PropsWithStore, 'store'>> {
         componentDidMount() {
-          state = listenOn.map(key => {
-            return store.on(key).subscribe(() => {
-              this.forceUpdate()
-            })
-          })
+          if (instances.indexOf(this) === -1) {
+            instances.push(this)
+          }
+          subscribe()
         }
         componentWillUnmount() {
-          state.forEach(_ => _.dispose())
+          instances = instances.filter(_ => _ !== this)
+          unsubscribe()
         }
         render() {
           return <Component {...this.props} store={store} />
