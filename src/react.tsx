@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { ComponentClass } from 'react'
-import { IDisposable } from 'rx'
+import { Subscription } from 'rxjs'
 import { Store } from './'
 import { equals, getDisplayName } from './utils'
 
@@ -16,7 +16,7 @@ export function connect<Actions extends object>(store: Store<Actions>) {
       Component: React.ComponentType<PropsWithStore>
     ): React.ComponentClass<Omit<PropsWithStore, 'store'>> {
 
-      let state: IDisposable[][]
+      let state: Subscription[][]
 
       let Class: ComponentClass<Omit<PropsWithStore, 'store'>> = class extends React.Component<Omit<PropsWithStore, 'store'>> {
         componentDidMount() {
@@ -38,7 +38,7 @@ export function connect<Actions extends object>(store: Store<Actions>) {
           })
         }
         componentWillUnmount() {
-          state.forEach(_ => _.forEach(_ => _.dispose()))
+          state.forEach(_ => _.forEach(_ => _.unsubscribe()))
         }
         render() {
           return <Component {...this.props} store={store} />

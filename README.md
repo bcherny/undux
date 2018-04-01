@@ -10,14 +10,24 @@
 
 > Dead simple state management for React
 
-## Install
+## Install (with RxJS v5 - recommended)
 
 ```sh
 # Using Yarn:
-yarn add undux
+yarn add undux rxjs
 
 # Or, using NPM:
-npm install undux --save
+npm install undux rxjs --save
+```
+
+## Install (with RxJS v4)
+
+```sh
+# Using Yarn:
+yarn add undux@^3.2.1
+
+# Or, using NPM:
+npm install undux@^3.2.1 --save
 ```
 
 ## Design Goals

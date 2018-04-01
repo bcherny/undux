@@ -1,3 +1,4 @@
+import * as RxJS from 'rxjs'
 import { Emitter } from 'typed-rx-emitter'
 
 export type Undux<Actions extends object> = {
@@ -23,10 +24,10 @@ export class Store<Actions extends object> extends Emitter<Actions> {
       })
     }
   }
-  before<K extends keyof Actions>(key: K) {
+  before<K extends keyof Actions>(key: K): RxJS.Observable<Undux<Actions>[K]> {
     return this.befores.on(key)
   }
-  beforeAll<K extends keyof Actions>() {
+  beforeAll<K extends keyof Actions>(): RxJS.Observable<Undux<Actions>[keyof Actions]> {
     return this.befores.all()
   }
   get<K extends keyof Actions>(key: K) {

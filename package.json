@@ -1,6 +1,6 @@
 {
   "name": "undux",
-  "version": "3.2.1",
+  "version": "4.0.0",
   "description": "Dead simple state management for React",
   "main": "dist/src/index.js",
   "typings": "dist/src/index.d.ts",
@@ -18,34 +18,36 @@
     "build": "npm run clean && npm run lint && tsc -d && cp src/index.js.flow dist/src/index.js.flow && flow check test/test.flow.js",
     "clean": "shx rm -rf dist",
     "format": "prettier --write src/**/* test/**/*",
-    "lint": "tslint src/**/*",
+    "lint": "tslint -p tsconfig.json src/**/*",
     "prepublishOnly": "npm run build",
     "pretest": "npm run build",
     "tdd": "concurrently -k \"tsc -w\" \"ava -w\"",
     "test": "ava && flow check"
   },
   "dependencies": {
-    "typed-rx-emitter": "^0.3.1"
+    "typed-rx-emitter": "1.0.0"
   },
   "devDependencies": {
     "@types/jsdom": "^11.0.4",
-    "@types/react": "^16.0.40",
+    "@types/react": "^16.1.0",
     "@types/react-dom": "^16.0.4",
     "ava": "^0.25.0",
     "concurrently": "^3.5.1",
-    "flow-bin": "^0.66.0",
+    "flow-bin": "^0.69.0",
     "immutable": "^3.8.2",
-    "jsdom": "^11.6.2",
+    "jsdom": "^11.7.0",
     "prettier": "^1.11.1",
-    "react": "^16.2.0",
-    "react-dom": "^16.2.0",
+    "react": "^16.3.0",
+    "react-dom": "^16.3.0",
+    "rxjs": "^5.5.8",
     "shx": "^0.2.2",
     "tslint": "^5.9.1",
-    "tslint-react": "^3.4.0",
-    "typescript": "^2.7.2"
+    "tslint-react": "^3.5.1",
+    "typescript": "^2.8.1"
   },
   "peerDependencies": {
-    "react": "^16.0.0"
+    "react": ">=16.0.0",
+    "rxjs": ">=5.0.0"
   },
   "keywords": [
     "redux",
