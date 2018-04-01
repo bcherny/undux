@@ -1,8 +1,8 @@
-import * as React from 'react';
-import * as I from 'immutable';
-import { test } from 'ava';
-import { Simulate } from 'react-dom/test-utils';
-import { connect, createStore, Store } from '../src';
+import { test } from 'ava'
+import * as I from 'immutable'
+import * as React from 'react'
+import { Simulate } from 'react-dom/test-utils'
+import { connect, createStore, Store } from '../src'
 import { withElement } from './testUtils'
 
 interface AppStore {
@@ -10,36 +10,36 @@ interface AppStore {
 }
 
 const initialFruits = {
-  banana: 100,
-};
+  banana: 100
+}
 
 const store = createStore<AppStore>({
-  fruits: I.Map(initialFruits),
-});
+  fruits: I.Map(initialFruits)
+})
 
-const withStore = connect(store);
+const withStore = connect(store)
 
 test('[immutable] it should only re-render if something actually changed', t => {
-  let renderCount = 0;
+  let renderCount = 0
 
   const TestingComponent = withStore('fruits')(({ store }) => {
-    const fruits = store.get('fruits');
+    const fruits = store.get('fruits')
     const updateBanana = () =>
-      store.set('fruits')(I.Map(initialFruits));
+      store.set('fruits')(I.Map(initialFruits))
 
-    renderCount++;
+    renderCount++
     return (
       <div>
         <button onClick={updateBanana}>Update</button>
         <div>{fruits.get('banana')}</div>
       </div>
-    );
-  });
+    )
+  })
 
   withElement(TestingComponent, _ => {
     Simulate.click(_.querySelector('button')!)
     Simulate.click(_.querySelector('button')!)
     Simulate.click(_.querySelector('button')!)
-    t.is(renderCount, 1);
-  });
-});
+    t.is(renderCount, 1)
+  })
+})

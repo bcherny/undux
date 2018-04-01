@@ -1,4 +1,4 @@
-import * as React from 'react'
+import { ComponentType } from 'react'
 
 /**
  * TODO: Avoid diffing by passing individual values into a React component
@@ -23,6 +23,6 @@ export function isImmutable(a: any): a is Immutable {
   )
 }
 
-export function getDisplayName<T>(Component: React.ComponentType<T>): string {
+export function getDisplayName<T>(Component: ComponentType<T>): string {
   return Component.displayName || Component.name || 'Component'
 }
