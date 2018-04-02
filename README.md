@@ -6,7 +6,7 @@
 [npm]: https://img.shields.io/npm/v/undux.svg?style=flat-square
 [mit]: https://img.shields.io/npm/l/undux.svg?style=flat-square
 [ts]: https://img.shields.io/badge/TypeScript-%E2%9C%93-007ACC.svg?style=flat-square
-[flow]: https://img.shields.io/badge/Flow-%E2%9C%93-E8BD36.svg?style=flat-square
+[flow]: https://img.shields.io/badge/Flow-%E2%9C%93-007ACC.svg?style=flat-square
 
 > Dead simple state management for React
 
@@ -67,8 +67,8 @@ export let withStore = connect(store)
 ```jsx
 import { withStore } from './store'
 
-// Update the component when `today` changes
-let MyComponent = withStore('today')(({ store }) =>
+// Update the component when the store updates
+let MyComponent = withStore(({ store }) =>
   <div>
     Hello! Today is {store.get('today')}
     <button onClick={() => store.set('today')(new Date)}>Update Date</button>
@@ -103,18 +103,6 @@ store
     store.set('users')(users)
   })
 ```
-
-### Lensed connects
-
-Instead of updating your React component when anything on the model changed, with Undux you subscribe just to specific properties on your model. Notice how in our React example we only update when `today` changes:
-
-```tsx
-let MyComponent = withStore('today')(
-  ({ store }) => ...
-)
-```
-
-To make your component re-render when a property changed, just pass it to `withStore` as a string.
 
 ### Partial application all the way through
 
@@ -207,7 +195,7 @@ type Props = {
   foo: number
 }
 
-let MyComponent = withStore('today')<Props>(({ foo, store }) =>
+let MyComponent = withStore<Props>(({ foo, store }) =>
   <div>
     Today is {store.get('today')}
     Foo is {foo}
@@ -228,7 +216,7 @@ type Props = {
   foo: number
 }
 
-let MyComponent = withStore('today')(class extends React.Component<StoreProps & Props>{
+let MyComponent = withStore(class extends React.Component<StoreProps & Props>{
   render() {
     <div>
       Today is {this.props.store.get('today')}

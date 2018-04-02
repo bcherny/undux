@@ -1,7 +1,7 @@
 // @flow
 import { Emitter } from 'typed-rx-emitter'
 import * as React from 'react'
-import type { Observable } from 'rx'
+import type { Observable } from 'rxjs'
 export type Undux<Actions: {}> = $ObjMap<Actions, Hash>
 
 type Hash = <K, V>(value: V, key: K) => {
@@ -11,11 +11,12 @@ type Hash = <K, V>(value: V, key: K) => {
 }
 
 declare export class Store<Actions: {}> extends Emitter<Actions> {
-  constructor(state: Actions): this;
-  before<K: $Keys<Actions>>(key: K): Observable<$ElementType<Undux<Actions>, K>>;
-  beforeAll<K: $Keys<Actions>>(): Observable<$Values<Undux<Actions>>>;
   get<K: $Keys<Actions>>(key: K): $ElementType<Actions, K>;
-  set<K: $Keys<Actions>>(key: K): (value: $ElementType<Actions, K>) => Emitter<Actions>;
+  set<K: $Keys<Actions >> (key: K): (value: $ElementType<Actions, K>) => void;
+  on<K: $Keys<Actions >> (key: K): Observable<$ElementType<Actions, K>>;
+  onAll<K: $Keys<Actions >> (): Observable<$Values<Undux<Actions>>>;
+  before<K: $Keys<Actions >> (key: K): Observable<$ElementType<Actions, K>>;
+  beforeAll<K: $Keys<Actions >> (): Observable<$Values<Undux<Actions>>>;
 }
 
 declare export function createStore<Actions: {}>(initialState: Actions): Store<Actions>
@@ -24,7 +25,7 @@ declare export var withLogger: Plugin
 
 declare export function connect<Actions: {}>(
   store: Store<Actions>
-): (...listenOn: $Keys<Actions>[]) => <
+): <
   Props,
   PropsWithStore: ({ store: Store<Actions> } & Props)
 >(Component: React.ComponentType<PropsWithStore>) => Class<React.Component<Props>>

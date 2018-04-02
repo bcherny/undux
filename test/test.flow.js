@@ -24,7 +24,7 @@ type StoreProps = {
 
 /////////////////// A ///////////////////
 
-let A = connect(store)()(({ store }: StoreProps) =>
+let A = connect(store)(({ store }: StoreProps) =>
   <div>
     {store.get('isTrue') ? 'True' : 'False'}
     <button onClick={() => store.set('isTrue')(false)}>Update</button>

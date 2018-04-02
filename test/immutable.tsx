@@ -22,7 +22,7 @@ const withStore = connect(store)
 test('[immutable] it should only re-render if something actually changed', t => {
   let renderCount = 0
 
-  const TestingComponent = withStore('fruits')(({ store }) => {
+  const TestingComponent = withStore(({ store }) => {
     const fruits = store.get('fruits')
     const updateBanana = () =>
       store.set('fruits')(I.Map(initialFruits))

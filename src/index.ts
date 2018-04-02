@@ -13,7 +13,7 @@ export interface Store<Actions extends object> {
   get<K extends keyof Actions>(key: K): Actions[K]
   set<K extends keyof Actions>(key: K): (value: Actions[K]) => void
   on<K extends keyof Actions>(key: K): RxJS.Observable<Actions[K]>
-  onAll<K extends keyof Actions>(): RxJS.Observable<Actions[keyof Actions]>
+  onAll<K extends keyof Actions>(): RxJS.Observable<Undux<Actions>[keyof Actions]>
   before<K extends keyof Actions>(key: K): RxJS.Observable<Undux<Actions>[K]>
   beforeAll<K extends keyof Actions>(): RxJS.Observable<Undux<Actions>[keyof Actions]>
 }
@@ -29,16 +29,16 @@ export class StoreSnapshot<Actions extends object> implements Store<Actions> {
   set<K extends keyof Actions>(key: K) {
     return this.store.set(key)
   }
-  on<K extends keyof Actions>(key: K): RxJS.Observable<Actions[K]> {
+  on<K extends keyof Actions>(key: K) {
     return this.store.on(key)
   }
-  onAll<K extends keyof Actions>(): RxJS.Observable<Actions[keyof Actions]> {
+  onAll<K extends keyof Actions>() {
     return this.store.onAll()
   }
-  before<K extends keyof Actions>(key: K): RxJS.Observable<Undux<Actions>[K]> {
+  before<K extends keyof Actions>(key: K) {
     return this.store.before(key)
   }
-  beforeAll<K extends keyof Actions>(): RxJS.Observable<Undux<Actions>[keyof Actions]> {
+  beforeAll<K extends keyof Actions>() {
     return this.store.beforeAll()
   }
 
@@ -50,6 +50,7 @@ export class StoreSnapshot<Actions extends object> implements Store<Actions> {
 
 export class StoreProxy<Actions extends object> implements Store<Actions> {
   private store: StoreSnapshot<Actions>
+  private alls: Emitter<Undux<Actions>> = new Emitter
   private befores: Emitter<Undux<Actions>> = new Emitter
   private emitter: Emitter<Actions> = new Emitter
   constructor(state: Actions) {
@@ -59,13 +60,13 @@ export class StoreProxy<Actions extends object> implements Store<Actions> {
     return this.befores.on(key)
   }
   beforeAll<K extends keyof Actions>(): RxJS.Observable<Undux<Actions>[keyof Actions]> {
-    return this.befores.all()
+    return this.alls.all()
   }
   on<K extends keyof Actions>(key: K): RxJS.Observable<Actions[K]> {
     return this.emitter.on(key)
   }
-  onAll<K extends keyof Actions>(): RxJS.Observable<Actions[keyof Actions]> {
-    return this.emitter.all()
+  onAll<K extends keyof Actions>(): RxJS.Observable<Undux<Actions>[keyof Actions]> {
+    return this.alls.all()
   }
   get<K extends keyof Actions>(key: K) {
     return this.store.get(key)
@@ -76,6 +77,7 @@ export class StoreProxy<Actions extends object> implements Store<Actions> {
       this.befores.emit(key, { key, previousValue, value })
       this.store = this.store['assign'](key, value)
       this.emitter.emit(key, value)
+      this.alls.emit(key, { key, previousValue, value })
     }
   }
 }
