@@ -158,3 +158,50 @@ test('[stateful] it should typecheck with additional props', t => {
 
   t.pass()
 })
+
+test('[stateful] it should support lifecycle methods', t => {
+
+  let renderCount = 0
+  let updateCount = 0
+  let willReceivePropsCount = 0
+  let store = createStore<Actions>({
+    isTrue: true,
+    users: []
+  })
+  let A = connect(store)('users')(
+    class extends React.Component<Props> {
+      shouldComponentUpdate({ store }: Props) {
+        return store.get('users').length > 3
+      }
+      componentDidUpdate() {
+        updateCount++
+      }
+      componentWillReceiveProps() {
+        willReceivePropsCount++
+      }
+      render() {
+        renderCount++
+        return <div>
+          {this.props.store.get('users').length > 3 ? 'FRESH' : 'STALE'}
+          <button onClick={() =>
+            this.props.store.set('users')(this.props.store.get('users').concat('x'))
+          }>Update</button>
+        </div>
+      }
+    }
+  )
+
+  withElement(A, _ => {
+    Simulate.click(_.querySelector('button')!)
+    t.regex(_.innerHTML, /STALE/)
+    Simulate.click(_.querySelector('button')!)
+    t.regex(_.innerHTML, /STALE/)
+    Simulate.click(_.querySelector('button')!)
+    t.regex(_.innerHTML, /STALE/)
+    Simulate.click(_.querySelector('button')!)
+    t.regex(_.innerHTML, /FRESH/)
+    t.is(renderCount, 2)
+    t.is(updateCount, 1)
+    t.is(willReceivePropsCount, 4)
+  })
+})
