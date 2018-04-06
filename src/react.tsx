@@ -1,13 +1,13 @@
 import * as React from 'react'
 import { ComponentClass } from 'react'
 import { Subscription } from 'rxjs'
-import { Store, StoreProxy, StoreSnapshot } from './'
+import { Store, StoreDefinition, StoreSnapshot } from './'
 import { equals, getDisplayName } from './utils'
 
 export type Diff<T extends string, U extends string> = ({ [P in T]: P } & { [P in U]: never } & { [x: string]: never })[T]
 export type Omit<T, K extends keyof T> = { [P in Diff<keyof T, K>]: T[P] }
 
-export function connect<Actions extends object>(store: StoreProxy<Actions>) {
+export function connect<Actions extends object>(store: StoreDefinition<Actions>) {
   return function <
     Props,
     PropsWithStore extends { store: Store<Actions> } & Props = { store: Store<Actions> } & Props

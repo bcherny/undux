@@ -21,7 +21,7 @@ export interface Store<Actions extends object> {
 export class StoreSnapshot<Actions extends object> implements Store<Actions> {
   constructor(
     private state: Actions,
-    private store: StoreProxy<Actions>
+    private store: StoreDefinition<Actions>
   ) { }
   get<K extends keyof Actions>(key: K) {
     return this.state[key]
@@ -48,7 +48,7 @@ export class StoreSnapshot<Actions extends object> implements Store<Actions> {
   }
 }
 
-export class StoreProxy<Actions extends object> implements Store<Actions> {
+export class StoreDefinition<Actions extends object> implements Store<Actions> {
   private store: StoreSnapshot<Actions>
   private alls: Emitter<Undux<Actions>> = new Emitter
   private befores: Emitter<Undux<Actions>> = new Emitter
@@ -82,11 +82,15 @@ export class StoreProxy<Actions extends object> implements Store<Actions> {
   }
 }
 
-export function createStore<Actions extends object>(initialState: Actions) {
-  return new StoreProxy<Actions>(initialState)
+export function createStore<Actions extends object>(
+  initialState: Actions
+): StoreDefinition<Actions> {
+  return new StoreDefinition<Actions>(initialState)
 }
 
-export type Plugin = <Actions extends object>(store: StoreProxy<Actions>) => StoreProxy<Actions>
+export type Plugin = <Actions extends object>(
+  store: StoreDefinition<Actions>
+) => StoreDefinition<Actions>
 
 export * from './plugins/logger'
 export * from './react'

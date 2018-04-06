@@ -24,10 +24,10 @@ npm install undux rxjs --save
 
 ```sh
 # Using Yarn:
-yarn add undux@^3.2.1
+yarn add undux@^3
 
 # Or, using NPM:
-npm install undux@^3.2.1 --save
+npm install undux@^3 --save
 ```
 
 ## Design Goals

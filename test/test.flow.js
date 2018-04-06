@@ -39,12 +39,12 @@ let BRaw = ({ foo, bar }: Props) =>
     {foo}
     {bar}
   </div>
-let B = connect(store)()(BRaw)
+let B = connect(store)(BRaw)
 let b = <B foo={1} bar='baz' />
 
 /////////////////// C ///////////////////
 
-let C = connect(store)()(({ foo, bar }: Props) =>
+let C = connect(store)(({ foo, bar }: Props) =>
   <div>
     {foo}
     {bar}
@@ -54,7 +54,7 @@ let c = <C foo={1} bar='baz' />
 
 /////////////////// D ///////////////////
 
-let D = connect(store)()(class extends React.Component<StoreProps> {
+let D = connect(store)(class extends React.Component<StoreProps> {
   render() {
     return <div>
       {this.props.store.get('isTrue') ? 'True' : 'False'}
@@ -66,7 +66,7 @@ let d = <D />
 
 /////////////////// E ///////////////////
 
-let E = connect(store)()(class extends React.Component<StoreProps & Props> {
+let E = connect(store)(class extends React.Component<StoreProps & Props> {
   render() {
     return <div>
       {this.props.store.get('isTrue') ? 'True' : 'False'}
@@ -81,7 +81,6 @@ let e = <E foo={1} bar='baz' />
 
 store
   .on('isTrue')
-  .debounce(100)
   .subscribe(_ => _ === false)
 
 store.get('isTrue')
@@ -89,9 +88,7 @@ store.set('isTrue')
 store.set('isTrue')(false)
 
 store.before('isTrue').subscribe(_ => {
-  _.key === 'isTrue'
-  _.previousValue === false
-  _.value === true
+  _ === true
 })
 
 store.beforeAll().subscribe(_ => {

@@ -1,5 +1,4 @@
 // @flow
-import { Emitter } from 'typed-rx-emitter'
 import * as React from 'react'
 import type { Observable } from 'rxjs'
 export type Undux<Actions: {}> = $ObjMap<Actions, Hash>
@@ -10,13 +9,31 @@ type Hash = <K, V>(value: V, key: K) => {
   value: V
 }
 
-declare export class Store<Actions: {}> extends Emitter<Actions> {
+export interface Store<Actions: {}> {
   get<K: $Keys<Actions>>(key: K): $ElementType<Actions, K>;
-  set<K: $Keys<Actions >> (key: K): (value: $ElementType<Actions, K>) => void;
-  on<K: $Keys<Actions >> (key: K): Observable<$ElementType<Actions, K>>;
-  onAll<K: $Keys<Actions >> (): Observable<$Values<Undux<Actions>>>;
-  before<K: $Keys<Actions >> (key: K): Observable<$ElementType<Actions, K>>;
-  beforeAll<K: $Keys<Actions >> (): Observable<$Values<Undux<Actions>>>;
+  set<K: $Keys<Actions>>(key: K): (value: $ElementType<Actions, K>) => void;
+  on<K: $Keys<Actions>>(key: K): Observable<$ElementType<Actions, K>>;
+  onAll<K: $Keys<Actions>>(): Observable<$Values<Undux<Actions>>>;
+  before<K: $Keys<Actions>>(key: K): Observable<$ElementType<Actions, K>>;
+  beforeAll<K: $Keys<Actions>>(): Observable<$Values<Undux<Actions>>>;
+}
+
+declare export class StoreSnapshot<Actions: { }> implements Store<Actions> {
+  get<K: $Keys<Actions>>(key: K): $ElementType<Actions, K>;
+  set<K: $Keys<Actions>>(key: K): (value: $ElementType<Actions, K>) => void;
+  on<K: $Keys<Actions>>(key: K): Observable<$ElementType<Actions, K>>;
+  onAll<K: $Keys<Actions>>(): Observable<$Values<Undux<Actions>>>;
+  before<K: $Keys<Actions>>(key: K): Observable<$ElementType<Actions, K>>;
+  beforeAll<K: $Keys<Actions>>(): Observable<$Values<Undux<Actions>>>;
+}
+
+declare export class StoreDefinition<Actions: { }> implements Store<Actions> {
+  get<K: $Keys<Actions>>(key: K): $ElementType<Actions, K>;
+  set<K: $Keys<Actions>>(key: K): (value: $ElementType<Actions, K>) => void;
+  on<K: $Keys<Actions>>(key: K): Observable<$ElementType<Actions, K>>;
+  onAll<K: $Keys<Actions>>(): Observable<$Values<Undux<Actions>>>;
+  before<K: $Keys<Actions>>(key: K): Observable<$ElementType<Actions, K>>;
+  beforeAll<K: $Keys<Actions>>(): Observable<$Values<Undux<Actions>>>;
 }
 
 declare export function createStore<Actions: {}>(initialState: Actions): Store<Actions>
