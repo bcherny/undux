@@ -45,4 +45,4 @@ declare export function connect<Actions: {}>(
 ): <
   Props,
   PropsWithStore: ({ store: Store<Actions> } & Props)
->(Component: React.ComponentType<PropsWithStore>) => Class<React.Component<Props>>
+>(Component: React.ComponentType<PropsWithStore>) => Class<React.Component<$Diff<Props, { store: Store<Actions> }>>>

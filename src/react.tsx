@@ -45,8 +45,9 @@ export function connect<Actions extends object>(store: StoreDefinition<Actions>)
       componentWillUnmount() {
         this.state.subscriptions.forEach(_ => _.unsubscribe())
       }
-      shouldComponentUpdate(_: Omit<PropsWithStore, 'store'>, state: State) {
+      shouldComponentUpdate(props: Omit<PropsWithStore, 'store'>, state: State) {
         return state.store !== this.state.store
+          || Object.keys(props).some(_ => (props as any)[_] !== (this.props as any)[_])
       }
       render() {
         return <Component {...this.props} store={this.state.store} />
