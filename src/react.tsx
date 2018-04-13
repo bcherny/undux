@@ -22,13 +22,11 @@ export function connect<Actions extends object>(store: StoreDefinition<Actions>)
 
     return class extends React.Component<Omit<PropsWithStore, 'store'>, State> {
       static displayName = `withStore(${getDisplayName(Component)})`
-      state: State = {
-        store: store['store'],
-        subscriptions: []
-      }
-      componentDidMount() {
+      constructor(props: Omit<PropsWithStore, 'store'>) {
+        super(props)
         let lasts: Partial<Record<keyof Actions, Actions[keyof Actions]>> = {}
-        this.setState({
+        this.state = {
+          store: store['store'],
           subscriptions: [
             store.beforeAll().subscribe(({ key, previousValue }) => {
               lasts[key] = previousValue
@@ -40,7 +38,7 @@ export function connect<Actions extends object>(store: StoreDefinition<Actions>)
               this.setState({ store: store['store'] })
             })
           ]
-        })
+        }
       }
       componentWillUnmount() {
         this.state.subscriptions.forEach(_ => _.unsubscribe())
