@@ -37,8 +37,8 @@ declare export class StoreDefinition<Actions: { }> implements Store<Actions> {
 }
 
 declare export function createStore<Actions: { }> (initialState: Actions): Store < Actions >
-export type Plugin = <S: Store<Object>>(store: S) => S
-declare export var withLogger: Plugin
+export type Plugin<S: Store<Object>> = (store: S) => S
+declare export var withLogger: Plugin<{}>
 
 declare export function connect<Actions: {}>(
   store: Store<Actions>
