@@ -88,9 +88,7 @@ export function createStore<Actions extends object>(
   return new StoreDefinition<Actions>(initialState)
 }
 
-export type Plugin = <Actions extends object>(
-  store: StoreDefinition<Actions>
-) => StoreDefinition<Actions>
+export type Plugin = <S extends Store<object>>(store: S) => S
 
 export * from './plugins/logger'
 export * from './react'
