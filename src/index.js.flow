@@ -18,7 +18,7 @@ export interface Store<Actions: {}> {
   beforeAll<K: $Keys<Actions>>(): Observable<$Values<Undux<Actions>>>;
 }
 
-declare export class StoreSnapshot<Actions: { }> implements Store<Actions> {
+declare export class StoreSnapshot<Actions: {}> implements Store<Actions> {
   get<K: $Keys<Actions>>(key: K): $ElementType<Actions, K>;
   set<K: $Keys<Actions>>(key: K): (value: $ElementType<Actions, K>) => void;
   on<K: $Keys<Actions>>(key: K): Observable<$ElementType<Actions, K>>;
@@ -27,7 +27,7 @@ declare export class StoreSnapshot<Actions: { }> implements Store<Actions> {
   beforeAll<K: $Keys<Actions>>(): Observable<$Values<Undux<Actions>>>;
 }
 
-declare export class StoreDefinition<Actions: { }> implements Store<Actions> {
+declare export class StoreDefinition<Actions: {}> implements Store<Actions> {
   get<K: $Keys<Actions>>(key: K): $ElementType<Actions, K>;
   set<K: $Keys<Actions>>(key: K): (value: $ElementType<Actions, K>) => void;
   on<K: $Keys<Actions>>(key: K): Observable<$ElementType<Actions, K>>;
@@ -36,12 +36,12 @@ declare export class StoreDefinition<Actions: { }> implements Store<Actions> {
   beforeAll<K: $Keys<Actions>>(): Observable<$Values<Undux<Actions>>>;
 }
 
-declare export function createStore<Actions: { }> (initialState: Actions): Store < Actions >
-export type Plugin<S: Store<Object>> = (store: S) => S
-declare export var withLogger: Plugin<{}>
+declare export function createStore<Actions: {}>(initialState: Actions): StoreDefinition<Actions>
+export type Plugin<Actions: {}> = (store: StoreDefinition<Actions>) => StoreDefinition<Actions>
+declare export var withLogger: Plugin<*>
 
 declare export function connect<Actions: {}>(
-  store: Store<Actions>
+  store: StoreDefinition<Actions>
 ): <
   Props,
   PropsWithStore: ({ store: Store<Actions> } & Props)
