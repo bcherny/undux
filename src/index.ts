@@ -16,6 +16,7 @@ export interface Store<Actions extends object> {
   onAll<K extends keyof Actions>(): RxJS.Observable<Undux<Actions>[keyof Actions]>
   before<K extends keyof Actions>(key: K): RxJS.Observable<Undux<Actions>[K]>
   beforeAll<K extends keyof Actions>(): RxJS.Observable<Undux<Actions>[keyof Actions]>
+  getState(): Readonly<Actions>
 }
 
 export class StoreSnapshot<Actions extends object> implements Store<Actions> {
@@ -40,6 +41,9 @@ export class StoreSnapshot<Actions extends object> implements Store<Actions> {
   }
   beforeAll<K extends keyof Actions>() {
     return this.store.beforeAll()
+  }
+  getState() {
+    return Object.freeze(Object.assign({}, this.state))
   }
 
   private assign<Actions extends object, K extends keyof Actions>(
@@ -79,6 +83,9 @@ export class StoreDefinition<Actions extends object> implements Store<Actions> {
       this.emitter.emit(key, value)
       this.alls.emit(key, { key, previousValue, value })
     }
+  }
+  getState() {
+    return this.store.getState()
   }
 }
 

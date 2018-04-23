@@ -168,3 +168,31 @@ test('[stateless] it should typecheck with additional props', t => {
 
   t.pass()
 })
+
+test('#getState should return up to date state', t => {
+  let A = connect(store)(({ store }) =>
+    <div>
+      {store.get('isTrue') ? 'True' : 'False'}
+      <button onClick={() => store.set('isTrue')(!store.get('isTrue'))}>Update</button>
+    </div>
+  )
+
+  withElement(A, _ => {
+    t.deepEqual(store.getState(), { isTrue: true, users: [] })
+    Simulate.click(_.querySelector('button')!)
+    t.deepEqual(store.getState(), { isTrue: false, users: [] })
+    Simulate.click(_.querySelector('button')!)
+    t.deepEqual(store.getState(), { isTrue: true, users: [] })
+    Simulate.click(_.querySelector('button')!)
+    t.deepEqual(store.getState(), { isTrue: false, users: [] })
+  })
+})
+
+test('#getState should not be writeable', t => {
+  let A = connect(store)(({ store }) =>
+    <div />
+  )
+  withElement(A, _ =>
+    t.throws(() => (store.getState() as any).isTrue = false)
+  )
+})
