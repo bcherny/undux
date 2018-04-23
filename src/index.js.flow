@@ -1,4 +1,4 @@
-// @flow strict
+// @flow
 import * as React from 'react'
 import type { Observable } from 'rxjs'
 export type Undux<Actions: {}> = $ObjMap<Actions, Hash>
