@@ -36,11 +36,11 @@ declare export class StoreDefinition<Actions: {}> implements Store<Actions> {
   beforeAll<K: $Keys<Actions>>(): Observable<$Values<Undux<Actions>>>;
 }
 
-declare export function createStore<Actions: {}>(initialState: Actions): StoreDefinition<Actions>
-export type Plugin<Actions: {}> = (store: StoreDefinition<Actions>) => StoreDefinition<Actions>
+declare export function createStore<Actions: Object>(initialState: Actions): StoreDefinition<Actions>
+export type Plugin<Actions: Object> = (store: StoreDefinition<Actions>) => StoreDefinition<Actions>
 declare export var withLogger: Plugin<*>
 
-declare export function connect<Actions: {}>(
+declare export function connect<Actions: Object>(
   store: StoreDefinition<Actions>
 ): <
   Props,

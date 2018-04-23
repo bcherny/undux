@@ -103,3 +103,9 @@ store.beforeAll().subscribe(_ => {
   _.previousValue === false
   _.value === true
 })
+
+store.onAll().subscribe(_ => {
+  _.key === 'isTrue'
+  _.previousValue === false
+  _.value === true
+})
