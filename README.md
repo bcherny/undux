@@ -14,10 +14,10 @@
 
 ```sh
 # Using Yarn:
-yarn add undux rxjs
+yarn add undux rxjs@5
 
 # Or, using NPM:
-npm install undux rxjs --save
+npm install undux rxjs@5 --save
 ```
 
 ## Install (with RxJS v4)
