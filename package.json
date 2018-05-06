@@ -1,6 +1,6 @@
 {
   "name": "undux",
-  "version": "4.3.0",
+  "version": "4.3.1",
   "description": "Dead simple state management for React",
   "main": "dist/src/index.js",
   "typings": "dist/src/index.d.ts",
@@ -19,7 +19,7 @@
     "clean": "shx rm -rf dist",
     "format": "prettier --write src/**/* test/**/*",
     "lint": "tslint -p tsconfig.json src/**/*",
-    "prepublishOnly": "npm run build",
+    "prepublishOnly": "npm test",
     "pretest": "npm run build",
     "tdd": "concurrently -k \"tsc -w\" \"ava -w\"",
     "test": "ava && flow focus-check ./test/test.flow.js && ./test/bad-cases/run.sh"
