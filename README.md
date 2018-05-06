@@ -10,14 +10,14 @@
 
 > Dead simple state management for React
 
-## Install (with RxJS v5 - recommended)
+## Install (with RxJS v5 or v6 - recommended)
 
 ```sh
 # Using Yarn:
-yarn add undux rxjs@5
+yarn add undux rxjs
 
 # Or, using NPM:
-npm install undux rxjs@5 --save
+npm install undux rxjs --save
 ```
 
 ## Install (with RxJS v4)
@@ -85,10 +85,13 @@ let MyComponent = withStore(({ store }) =>
 Though Undux automatically updates your model for you, it also lets you listen on and react to model updates (similarly to how vanilla Redux lets you subscribe to Actions). Undux subscriptions are full [Rx observables](http://reactivex.io/rxjs/class/es6/Observable.js~Observable.html), so you have fine control over how you react to a change:
 
 ```ts
+import {debounce, filter} from 'rxjs/operators'
 store
   .on('today')
-  .filter(_ => _.getTime() % 2 === 0) // only even timestamps
-  .debounce(100)
+  .pipe(
+    filter(_ => _.getTime() % 2 === 0), // only even timestamps
+    debounce(100)
+  )
   .subscribe(_ => console.log('Date changed', _))
 ```
 
@@ -97,7 +100,9 @@ You can even use Effects to trigger a change in response to an update:
 ```ts
 store
   .on('today')
-  .debounce(100)
+  .pipe(
+    debounce(100)
+  )
   .subscribe(async date => {
     let users = await api.get({ since: date })
     store.set('users')(users)

@@ -2,11 +2,12 @@
 import { connect, createStore, withLogger } from '../dist/src'
 import type { Plugin, Store } from '../dist/src'
 import * as React from 'react'
+import { debounceTime, filter } from 'rxjs/operators'
 
-type State = {
+type State = {|
   isTrue: boolean,
   users: string[]
-}
+|}
 
 let initialState: State = {
   isTrue: true,
@@ -20,14 +21,14 @@ let withEffects: Plugin<State> = store => {
 
 let store = withEffects(withLogger(createStore(initialState)))
 
-type Props = {
+type Props = {|
   foo: number,
   bar: string
-}
+|}
 
-type StoreProps = {
+type StoreProps = {|
   store: Store<State>
-}
+|}
 
 /////////////////// A ///////////////////
 
@@ -88,6 +89,10 @@ let e = <E foo={1} bar='baz' />
 
 store
   .on('isTrue')
+  .pipe(
+    debounceTime(100),
+    filter(_ => _ !== true)
+  )
   .subscribe(_ => _ === false)
 
 store.get('isTrue')

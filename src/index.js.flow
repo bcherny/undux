@@ -1,15 +1,16 @@
-// @flow
+// @flow strict-local
+
 import * as React from 'react'
 import type { Observable } from 'rxjs'
-export type Undux<Actions: {}> = $ObjMap<Actions, Hash>
+export type Undux<Actions: Object> = $ObjMap<Actions, Hash>
 
-type Hash = <K, V>(value: V, key: K) => {
-  key: K,
+type Hash = <V>(value: V) => {
+  key: string,
   previousValue: V,
   value: V
 }
 
-export interface Store<Actions: {}> {
+export interface Store<Actions: Object> {
   get<K: $Keys<Actions>>(key: K): $ElementType<Actions, K>;
   set<K: $Keys<Actions>>(key: K): (value: $ElementType<Actions, K>) => void;
   on<K: $Keys<Actions>>(key: K): Observable<$ElementType<Actions, K>>;
@@ -19,7 +20,7 @@ export interface Store<Actions: {}> {
   getState(): $ReadOnly<Actions>;
 }
 
-declare export class StoreSnapshot<Actions: {}> implements Store<Actions> {
+declare export class StoreSnapshot<Actions: Object> implements Store<Actions> {
   get<K: $Keys<Actions>>(key: K): $ElementType<Actions, K>;
   set<K: $Keys<Actions>>(key: K): (value: $ElementType<Actions, K>) => void;
   on<K: $Keys<Actions>>(key: K): Observable<$ElementType<Actions, K>>;
@@ -29,7 +30,7 @@ declare export class StoreSnapshot<Actions: {}> implements Store<Actions> {
   getState(): $ReadOnly<Actions>;
 }
 
-declare export class StoreDefinition<Actions: {}> implements Store<Actions> {
+declare export class StoreDefinition<Actions: Object> implements Store<Actions> {
   get<K: $Keys<Actions>>(key: K): $ElementType<Actions, K>;
   set<K: $Keys<Actions>>(key: K): (value: $ElementType<Actions, K>) => void;
   on<K: $Keys<Actions>>(key: K): Observable<$ElementType<Actions, K>>;

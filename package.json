@@ -1,6 +1,6 @@
 {
   "name": "undux",
-  "version": "4.2.0",
+  "version": "4.3.0",
   "description": "Dead simple state management for React",
   "main": "dist/src/index.js",
   "typings": "dist/src/index.d.ts",
@@ -25,23 +25,23 @@
     "test": "ava && flow focus-check ./test/test.flow.js && ./test/bad-cases/run.sh"
   },
   "dependencies": {
-    "typed-rx-emitter": "^1.0.3"
+    "typed-rx-emitter": "^1.1.1"
   },
   "devDependencies": {
     "@types/jsdom": "^11.0.4",
-    "@types/react": "^16.3.10",
+    "@types/react": "^16.3.13",
     "@types/react-dom": "^16.0.5",
     "ava": "^0.25.0",
     "concurrently": "^3.5.1",
-    "flow-bin": "^0.70.0",
+    "flow-bin": "^0.71.0",
     "immutable": "^3.8.2",
-    "jsdom": "^11.7.0",
-    "prettier": "^1.12.0",
-    "react": "^16.3.1",
-    "react-dom": "^16.3.1",
-    "rxjs": "^5.5.10",
+    "jsdom": "^11.10.0",
+    "prettier": "^1.12.1",
+    "react": "^16.3.2",
+    "react-dom": "^16.3.2",
+    "rxjs": "^6.1.0",
     "shx": "^0.2.2",
-    "tslint": "^5.9.1",
+    "tslint": "^5.10.0",
     "tslint-react": "^3.5.1",
     "typescript": "^2.8.3"
   },
