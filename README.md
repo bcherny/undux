@@ -252,6 +252,7 @@ No need to learn about Actions, Reducers, or any of that. Just call `get` and `s
 ## More examples
 
 - [Todo MVC Example](https://github.com/bcherny/undux-todomvc)
+- [Hot Module Reloading Demo](https://github.com/bcherny/undux-hot-module-reloading-demo)
 - [Bayes Impact Healthcare Network Analyzer](https://github.com/bayesimpact/tds/tree/master/frontend)
 
 ## Tests
