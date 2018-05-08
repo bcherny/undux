@@ -43,6 +43,7 @@ declare export class StoreDefinition<Actions: Object> implements Store<Actions> 
 declare export function createStore<Actions: Object>(initialState: Actions): StoreDefinition<Actions>
 export type Plugin<Actions: Object> = (store: StoreDefinition<Actions>) => StoreDefinition<Actions>
 declare export var withLogger: Plugin<*>
+declare export var withReduxDevtools: Plugin<*>
 
 declare export function connect<Actions: Object>(
   store: StoreDefinition<Actions>
