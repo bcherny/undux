@@ -1,5 +1,5 @@
 // @flow
-import { connect, createStore, withLogger } from '../dist/src'
+import { connect, createStore, withLogger, withReduxDevtools } from '../dist/src'
 import type { Plugin, Store } from '../dist/src'
 import * as React from 'react'
 import { debounceTime, filter } from 'rxjs/operators'
@@ -19,7 +19,7 @@ let withEffects: Plugin<State> = store => {
   return store
 }
 
-let store = withEffects(withLogger(createStore(initialState)))
+let store = withEffects(withReduxDevtools(withLogger(createStore(initialState))))
 
 type Props = {|
   foo: number,
