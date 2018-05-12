@@ -1,5 +1,6 @@
 import * as RxJS from 'rxjs'
 import { Emitter } from 'typed-rx-emitter'
+import { withReduxDevtools } from './plugins/reduxDevtools'
 
 export type Undux<Actions extends object> = {
   [K in keyof Actions]: {
@@ -99,4 +100,5 @@ export type Plugin<Actions extends object> =
   (store: StoreDefinition<Actions>) => StoreDefinition<Actions>
 
 export * from './plugins/logger'
+export * from './plugins/reduxDevtools'
 export * from './react'

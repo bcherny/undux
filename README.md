@@ -127,14 +127,26 @@ setUsers(['amy', 'bob'])
 
 ### Built-in logger
 
-If you create your store with `withLogger` higher order store, all model updates (which key was updated, previous value, and new value) will be logged to the console.
+Undux works out of the box with the Redux Devtools browser extension (download: [Chrome](https://chrome.google.com/webstore/detail/redux-devtools/lmhkpmbekcpmknklioeibfkpmmfibljd), [Firefox](https://addons.mozilla.org/firefox/addon/remotedev/), [React Native](https://github.com/zalmoxisus/remote-redux-devtools)). To enable it, just wrap your store with the Redux Devtools plugin:
+
+```ts
+import { createStore, withReduxDevtools } from 'undux'
+
+let store = withReduxDevtools(createStore(...))
+```
+
+Redux Devtools has an inspector, a time travel debugger, and jump-to-state built in. All of these features are enabled for Undux as well. It looks like this:
+
+<img src="redux-logger.png" width="895" />
+
+Alternatively, Undux has a simple, console-based debugger built in. Just create your store with `withLogger` higher order store, and all model updates (which key was updated, previous value, and new value) will be logged to the console.
 
 To enable the logger, simply import `withLogger` and wrap your store with it:
 
 ```ts
 import { createStore, withLogger } from 'undux'
 
-let store = withLogger(createStore<Store>({...}, true))
+let store = withLogger(createStore(...))
 ```
 
 The logger will produce logs that look like this:
@@ -162,8 +174,6 @@ let withLocalStorage: Plugin = store => {
 
 }
 ```
-
-*Undux also supports `.on()` and `.before()`, but because a plugin doesn't know what Actions will be bound to it, these are generally unsafe to use.*
 
 ## Recipes
 
