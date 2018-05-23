@@ -15,6 +15,11 @@ let initialState: State = {
 }
 
 let withEffects: Plugin<State> = store => {
+  store.before('users').subscribe(({ key, value, previousValue }) => {
+    key.toUpperCase()
+    previousValue.slice(0, 1)
+    value.slice(0, 1)
+  })
   store.on('users').subscribe(_ => _.slice(0, 1))
   return store
 }
@@ -30,6 +35,11 @@ type StoreProps = {|
   store: Store<State>
 |}
 
+type PropsWithStore = {|
+  ...StoreProps,
+  ...Props
+|}
+
 /////////////////// A ///////////////////
 
 let A = connect(store)(({ store }: StoreProps) =>
@@ -42,7 +52,7 @@ let a = <A />
 
 /////////////////// B ///////////////////
 
-let BRaw = ({ foo, bar }: Props) =>
+let BRaw = ({ foo, bar }: PropsWithStore) =>
   <div>
     {foo}
     {bar}
@@ -52,7 +62,7 @@ let b = <B foo={1} bar='baz' />
 
 /////////////////// C ///////////////////
 
-let C = connect(store)(({ foo, bar }: Props) =>
+let C = connect(store)(({ foo, bar }: PropsWithStore) =>
   <div>
     {foo}
     {bar}
@@ -74,7 +84,7 @@ let d = <D />
 
 /////////////////// E ///////////////////
 
-let E = connect(store)(class extends React.Component<StoreProps & Props> {
+let E = connect(store)(class extends React.Component<PropsWithStore> {
   render() {
     return <div>
       {this.props.store.get('isTrue') ? 'True' : 'False'}
@@ -99,8 +109,10 @@ store.get('isTrue')
 store.set('isTrue')
 store.set('isTrue')(false)
 
-store.before('isTrue').subscribe(_ => {
-  _ === true
+store.before('isTrue').subscribe(({ key, value, previousValue }) => {
+  key.toUpperCase()
+  value === true
+  previousValue === true
 })
 
 store.beforeAll().subscribe(_ => {

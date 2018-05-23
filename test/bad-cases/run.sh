@@ -4,6 +4,7 @@
 ! ./node_modules/.bin/flow focus-check test/bad-cases/badval.set.flow.js
 ! ./node_modules/.bin/flow focus-check test/bad-cases/stateless.badkey.get.flow.js
 ! ./node_modules/.bin/flow focus-check test/bad-cases/stateless.badkey.get2.flow.js
+! ./node_modules/.bin/flow focus-check test/bad-cases/stateless.badkey.get3.flow.js
 ! ./node_modules/.bin/flow focus-check test/bad-cases/stateless.badkey.set.flow.js
 ! ./node_modules/.bin/flow focus-check test/bad-cases/stateless.badval.set.flow.js
 ! ./node_modules/.bin/flow focus-check test/bad-cases/stateful.badkey.get.flow.js
