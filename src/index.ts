@@ -15,8 +15,6 @@ export interface Store<Actions extends object> {
   set<K extends keyof Actions>(key: K): (value: Actions[K]) => void
   on<K extends keyof Actions>(key: K): RxJS.Observable<Actions[K]>
   onAll<K extends keyof Actions>(): RxJS.Observable<Undux<Actions>[keyof Actions]>
-  before<K extends keyof Actions>(key: K): RxJS.Observable<Undux<Actions>[K]>
-  beforeAll<K extends keyof Actions>(): RxJS.Observable<Undux<Actions>[keyof Actions]>
   getState(): Readonly<Actions>
 }
 
@@ -37,12 +35,6 @@ export class StoreSnapshot<Actions extends object> implements Store<Actions> {
   onAll<K extends keyof Actions>() {
     return this.store.onAll()
   }
-  before<K extends keyof Actions>(key: K) {
-    return this.store.before(key)
-  }
-  beforeAll<K extends keyof Actions>() {
-    return this.store.beforeAll()
-  }
   getState() {
     return Object.freeze(Object.assign({}, this.state))
   }
@@ -56,16 +48,9 @@ export class StoreSnapshot<Actions extends object> implements Store<Actions> {
 export class StoreDefinition<Actions extends object> implements Store<Actions> {
   private store: StoreSnapshot<Actions>
   private alls: Emitter<Undux<Actions>> = new Emitter
-  private befores: Emitter<Undux<Actions>> = new Emitter
   private emitter: Emitter<Actions> = new Emitter
   constructor(state: Actions) {
     this.store = new StoreSnapshot(state, this)
-  }
-  before<K extends keyof Actions>(key: K): RxJS.Observable<Undux<Actions>[K]> {
-    return this.befores.on(key)
-  }
-  beforeAll<K extends keyof Actions>(): RxJS.Observable<Undux<Actions>[keyof Actions]> {
-    return this.alls.all()
   }
   on<K extends keyof Actions>(key: K): RxJS.Observable<Actions[K]> {
     return this.emitter.on(key)
@@ -79,7 +64,6 @@ export class StoreDefinition<Actions extends object> implements Store<Actions> {
   set<K extends keyof Actions>(key: K) {
     return (value: Actions[K]) => {
       let previousValue = this.store.get(key)
-      this.befores.emit(key, { key, previousValue, value })
       this.store = this.store['assign'](key, value)
       this.emitter.emit(key, value)
       this.alls.emit(key, { key, previousValue, value })

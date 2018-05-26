@@ -79,34 +79,26 @@ test('[stateful] it should support effects', t =>
   })
 )
 
-test('[stateful] it should call .beforeAll().subscribe() with the key, current value, and previous value', t =>
-withElement(MyComponentWithLens, _ => {
-  t.plan(1)
-  store.beforeAll().subscribe(_ =>
-    t.deepEqual(_, { key: 'isTrue', previousValue: false, value: true })
-  )
-  Simulate.click(_.querySelector('button')!)
-})
-)
-
-test('[stateful] it should call .before().subscribe() with the key, current value, and previous value', t =>
-withElement(MyComponentWithLens, _ => {
-  t.plan(1)
-  store.before('isTrue').subscribe(_ =>
-    t.deepEqual(_, { key: 'isTrue', previousValue: true, value: false })
-  )
-  Simulate.click(_.querySelector('button')!)
-})
-)
-
 test('[stateful] it should call .on().subscribe() with the current value', t =>
-withElement(MyComponentWithLens, _ => {
-  t.plan(1)
-  store.on('isTrue').subscribe(_ =>
-    t.is(_, true)
-  )
-  Simulate.click(_.querySelector('button')!)
-})
+  withElement(MyComponentWithLens, _ => {
+    t.plan(1)
+    store.on('isTrue').subscribe(_ =>
+      t.is(_, true)
+    )
+    Simulate.click(_.querySelector('button')!)
+  })
+)
+
+test('[statelful] it should call .onAll().subscribe() with the key, current value, and previous value', t =>
+  withElement(MyComponentWithLens, _ => {
+    t.plan(3)
+    store.onAll().subscribe(_ => {
+      t.is(_.key, 'isTrue')
+      t.is(_.previousValue, true)
+      t.is(_.value, false)
+    })
+    Simulate.click(_.querySelector('button')!)
+  })
 )
 
 test('[stateful] it should only re-render if something actually changed', t => {

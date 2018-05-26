@@ -69,32 +69,24 @@ test('[stateless] it should support effects', t =>
   })
 )
 
-test('[stateless] it should call .beforeAll().subscribe() with the key, current value, and previous value', t =>
-  withElement(MyComponentWithLens, _ => {
-    t.plan(1)
-    store.beforeAll().subscribe(_ =>
-      t.deepEqual(_, { key: 'isTrue', previousValue: false, value: true })
-    )
-    Simulate.click(_.querySelector('button')!)
-  })
-)
-
-test('[stateless] it should call .before().subscribe() with the key, current value, and previous value', t =>
-  withElement(MyComponentWithLens, _ => {
-    t.plan(1)
-    store.before('isTrue').subscribe(_ =>
-      t.deepEqual(_, { key: 'isTrue', previousValue: true, value: false })
-    )
-    Simulate.click(_.querySelector('button')!)
-  })
-)
-
 test('[stateless] it should call .on().subscribe() with the current value', t =>
   withElement(MyComponentWithLens, _ => {
     t.plan(1)
     store.on('isTrue').subscribe(_ =>
       t.is(_, true)
     )
+    Simulate.click(_.querySelector('button')!)
+  })
+)
+
+test('[stateless] it should call .onAll().subscribe() with the key, current value, and previous value', t =>
+  withElement(MyComponentWithLens, _ => {
+    t.plan(3)
+    store.onAll().subscribe(_ => {
+      t.is(_.key, 'isTrue')
+      t.is(_.previousValue, true)
+      t.is(_.value, false)
+    })
     Simulate.click(_.querySelector('button')!)
   })
 )
@@ -178,13 +170,13 @@ test('#getState should return up to date state', t => {
   )
 
   withElement(A, _ => {
-    t.deepEqual(store.getState(), { isTrue: true, users: [] })
-    Simulate.click(_.querySelector('button')!)
     t.deepEqual(store.getState(), { isTrue: false, users: [] })
     Simulate.click(_.querySelector('button')!)
     t.deepEqual(store.getState(), { isTrue: true, users: [] })
     Simulate.click(_.querySelector('button')!)
     t.deepEqual(store.getState(), { isTrue: false, users: [] })
+    Simulate.click(_.querySelector('button')!)
+    t.deepEqual(store.getState(), { isTrue: true, users: [] })
   })
 })
 

@@ -15,10 +15,15 @@ let initialState: State = {
 }
 
 let withEffects: Plugin<State> = store => {
-  store.before('users').subscribe(({ key, value, previousValue }) => {
+  store.onAll().subscribe(({ key, value, previousValue }) => {
     key.toUpperCase()
-    previousValue.slice(0, 1)
-    value.slice(0, 1)
+    if (typeof previousValue === 'boolean' || typeof value === 'boolean') {
+      !previousValue
+      !value
+    } else {
+      previousValue.slice(0, 1)
+      value.slice(0, 1)
+    }
   })
   store.on('users').subscribe(_ => _.slice(0, 1))
   return store
@@ -108,18 +113,6 @@ store
 store.get('isTrue')
 store.set('isTrue')
 store.set('isTrue')(false)
-
-store.before('isTrue').subscribe(({ key, value, previousValue }) => {
-  key.toUpperCase()
-  value === true
-  previousValue === true
-})
-
-store.beforeAll().subscribe(_ => {
-  _.key === 'isTrue'
-  _.previousValue === false
-  _.value === true
-})
 
 store.onAll().subscribe(_ => {
   _.key === 'isTrue'
