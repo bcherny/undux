@@ -17,31 +17,22 @@ export function connect<Actions extends object>(store: StoreDefinition<Actions>)
 
     type State = {
       store: StoreSnapshot<Actions>
-      subscriptions: Subscription[]
+      subscription: Subscription
     }
 
     return class extends React.Component<Omit<PropsWithStore, 'store'>, State> {
       static displayName = `withStore(${getDisplayName(Component)})`
-      constructor(props: Omit<PropsWithStore, 'store'>) {
-        super(props)
-        let lasts: Partial<Record<keyof Actions, Actions[keyof Actions]>> = {}
-        this.state = {
-          store: store['store'],
-          subscriptions: [
-            store.beforeAll().subscribe(({ key, previousValue }) => {
-              lasts[key] = previousValue
-            }),
-            store.onAll().subscribe(({ key, value }) => {
-              if (lasts[key] && equals(lasts[key], value)) {
-                return false
-              }
-              this.setState({ store: store['store'] })
-            })
-          ]
-        }
+      state = {
+        store: store['store'],
+        subscription: store.onAll().subscribe(({ key, previousValue, value }) => {
+          if (equals(previousValue, value)) {
+            return false
+          }
+          this.setState({ store: store['store'] })
+        })
       }
       componentWillUnmount() {
-        this.state.subscriptions.forEach(_ => _.unsubscribe())
+        this.state.subscription.unsubscribe()
       }
       shouldComponentUpdate(props: Omit<PropsWithStore, 'store'>, state: State) {
         return state.store !== this.state.store
