@@ -1,4 +1,3 @@
-import './cross-dependencies'
 import './immutable'
 import './stateful'
 import './stateless'

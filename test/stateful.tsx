@@ -205,3 +205,52 @@ test('[stateful] it should support lifecycle methods', t => {
     t.is(willReceivePropsCount, 4)
   })
 })
+
+test('[stateful] it should update correctly when using nested stores', t => {
+
+  let storeA = createStore({ a: 1 })
+  let storeB = createStore({ b: 2 })
+  let withStoreA = connect(storeA)
+  let withStoreB = connect(storeB)
+
+  type StateA = {
+    a: number
+  }
+  type StateB = {
+    b: number
+  }
+
+  type PropsA = {
+    store: Store<StateA>
+  }
+  type PropsB = {
+    storeA: Store<StateA>
+    store: Store<StateB>
+  }
+
+  let A = withStoreA(class extends React.Component<PropsA> {
+    render() {
+      return <B storeA={this.props.store} />
+    }
+  })
+
+  let B = withStoreB(class extends React.Component<PropsB> {
+    render() {
+      return <div>{this.props.storeA.get('a')}-{this.props.store.get('b')}</div>
+    }
+  })
+
+  class App extends React.Component {
+    render() {
+      return <A />
+    }
+  }
+
+  withElement(App, _ => {
+    t.is(_.innerHTML, '<div>1-2</div>')
+    storeA.set('a')(3)
+    t.is(_.innerHTML, '<div>3-2</div>')
+    storeB.set('b')(4)
+    t.is(_.innerHTML, '<div>3-4</div>')
+  })
+})

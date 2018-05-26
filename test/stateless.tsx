@@ -196,3 +196,43 @@ test('#getState should not be writeable', t => {
     t.throws(() => (store.getState() as any).isTrue = false)
   )
 })
+
+test('[stateless] it should update correctly when using nested stores', t => {
+
+  let storeA = createStore({ a: 1 })
+  let storeB = createStore({ b: 2 })
+  let withStoreA = connect(storeA)
+  let withStoreB = connect(storeB)
+
+  type StateA = {
+    a: number
+  }
+  type StateB = {
+    b: number
+  }
+
+  type PropsA = {
+    store: Store<StateA>
+  }
+  type PropsB = {
+    storeA: Store<StateA>
+    store: Store<StateB>
+  }
+
+  let A = withStoreA(({ store }: PropsA) =>
+    <B storeA={store} />
+  )
+  let B = withStoreB(({ storeA, store: storeB }: PropsB) =>
+    <div>{storeA.get('a')}-{storeB.get('b')}</div>
+  )
+  let App = () =>
+    <A />
+
+  withElement(App, _ => {
+    t.is(_.innerHTML, '<div>1-2</div>')
+    storeA.set('a')(3)
+    t.is(_.innerHTML, '<div>3-2</div>')
+    storeB.set('b')(4)
+    t.is(_.innerHTML, '<div>3-4</div>')
+  })
+})
