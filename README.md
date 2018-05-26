@@ -45,14 +45,8 @@ npm install undux@^3 --save
 ```jsx
 import { connect, createStore } from 'undux'
 
-// If you're using Undux with TypeScript or Flow, declare your store's types.
-type Store = {
-  today: Date,
-  users: string[]
-}
-
 // Create a store with an initial value.
-let store = createStore<Store>({
+let store = createStore({
   today: new Date,
   users: []
 })
@@ -67,12 +61,17 @@ export let withStore = connect(store)
 ```jsx
 import { withStore } from './store'
 
-// Update the component when the store updates
-let MyComponent = withStore(({ store }) =>
-  <div>
-    Hello! Today is {store.get('today')}
-    <button onClick={() => store.set('today')(new Date)}>Update Date</button>
-  </div>
+// Update the component when the store updates.
+let MyComponent = withStore(
+  class extends React.Component {
+    render() {
+      let store = this.props.store
+      return <div>
+        Hello! Today is {store.get('today')}
+        <button onClick={() => store.set('today')(new Date)}>Update Date</button>
+      </div>
+    }
+  }
 )
 ```
 
@@ -82,17 +81,20 @@ let MyComponent = withStore(({ store }) =>
 
 ### Effects
 
-Though Undux automatically updates your model for you, it also lets you listen on and react to model updates (similarly to how vanilla Redux lets you subscribe to Actions). Undux subscriptions are full [Rx observables](http://reactivex.io/rxjs/class/es6/Observable.js~Observable.html), so you have fine control over how you react to a change:
+Though Undux automatically re-renders your connected React components for you when the store updates, it also lets you subscribe to changes to specific fields on your store. Undux subscriptions are full [Rx observables](http://reactivex.io/rxjs/class/es6/Observable.js~Observable.html), so you have fine control over how you react to a change:
 
 ```ts
-import {debounce, filter} from 'rxjs/operators'
+import { debounce, filter } from 'rxjs/operators'
+
 store
   .on('today')
   .pipe(
-    filter(_ => _.getTime() % 2 === 0), // only even timestamps
-    debounce(100)
+    filter(date => date.getTime() % 2 === 0), // Only even timestamps.
+    debounce(100) // Fire at most once every 100ms.
   )
-  .subscribe(_ => console.log('Date changed', _))
+  .subscribe(date =>
+    console.log('Date changed to', date)
+  )
 ```
 
 You can even use Effects to trigger a change in response to an update:
@@ -155,21 +157,16 @@ The logger will produce logs that look like this:
 
 ### Plugins
 
-Undux is easy to modify with plugins (also called "higher order stores"). Just define a function that takes a store as an argument and returns a store, adding listeners along the way. For convenience, Undux supports 2 types of listeners for plugins:
+Undux is easy to modify with plugins (also called "higher order stores", or "middleware"). Just define a function that takes a store as an argument and returns a store, adding listeners along the way. For generic plugins that work across different stores, use the `.onAll` method to listen on all changes on a store:
 
 ```ts
 import { createStore, Plugin } from 'undux'
 
 let withLocalStorage: Plugin = store => {
 
-  // Listen on an event
-  store.onAll().subscribe(_ =>
-    console.log('something changed!', _)
-  )
-
-  // Listen on an event (fires before the model is updated)
-  store.beforeAll().subscribe(({ key, previousValue, value }) =>
-    localStorage.set(key, value)
+  // Listen on all changes to the store.
+  store.onAll().subscribe(({ key, value, previousValue }) =>
+    console.log(key, 'changed from', previousValue, 'to', value)
   )
 
 }
@@ -227,13 +224,13 @@ Undux is as easy to use with stateful components as with stateless ones.
 ```ts
 import { StoreProps, withStore } from './store'
 
-type Props = {
+type Props = StoreProps & {
   foo: number
 }
 
-let MyComponent = withStore(class extends React.Component<StoreProps & Props>{
+let MyComponent = withStore(class extends React.Component<Props>{
   render() {
-    <div>
+    return <div>
       Today is {this.props.store.get('today')}
       Foo is {this.props.foo}
     </div>
@@ -243,27 +240,27 @@ let MyComponent = withStore(class extends React.Component<StoreProps & Props>{
 <MyComponent foo={3} />
 ```
 
+### Undux + Hot module reloading
+
+See a full example [here](https://github.com/bcherny/undux-hot-module-reloading-demo).
+
+### Undux + TodoMVC
+
+See the Undux TodoMVC example [here](https://github.com/bcherny/undux-todomvc).
+
 ## Design philosophy
 
 **Goal #1 is total type-safety.**
 
-Getting, setting, reading, and listening on model updates is 100% type-safe: use a key that isn't defined in your model or set a key to the wrong type, and you'll get a compile-time error. And connected components are just as type-safe.
+Getting, setting, reading, and listening on model updates is 100% type-safe: use a key that isn't defined in your model or set a key to the wrong type, and you'll get a compile-time error. And connected components and Effects are just as type-safe.
 
 **Goal #2 is letting you write as little boilerplate as possible.**
 
-Undux is like [Redux](http://redux.js.org/), but reducers are already baked-in. Undux automatically creates an action and a reducer for each key on your state, so you don't have to write tedious boilerplate. Undux still emits Actions under the hood (which you can listen on to produce effects), but gives you an incredibly simple `get`/`set` API that covers most use cases.
-
-If you're using Undux with the provided React connector, Undux will update your React component any time a reducer fires (just like [React-Redux](https://github.com/reactjs/react-redux)). You can optionally filter on specific state keys that you care about for more targeted updates.
+Define your model in a single place, and use it anywhere safely. No need to define tedious boilerplate for each field on your model. Container components and action creators are optional - most of the time you don't need them, and can introduce them only where needed as your application grows.
 
 **Goal #3 is familiar abstractions.**
 
 No need to learn about Actions, Reducers, or any of that. Just call `get` and `set`, and everything works just as you expect.
-
-## More examples
-
-- [Todo MVC Example](https://github.com/bcherny/undux-todomvc)
-- [Hot Module Reloading Demo](https://github.com/bcherny/undux-hot-module-reloading-demo)
-- [Bayes Impact Healthcare Network Analyzer](https://github.com/bayesimpact/tds/tree/master/frontend)
 
 ## Tests
 
