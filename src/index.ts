@@ -1,6 +1,5 @@
 import * as RxJS from 'rxjs'
 import { Emitter } from 'typed-rx-emitter'
-import { withReduxDevtools } from './plugins/reduxDevtools'
 import { mapValues } from './utils'
 
 export type Undux<State extends object> = {
@@ -92,6 +91,6 @@ export function createStore<State extends object>(
 export type Plugin<State extends object> =
   (store: StoreDefinition<State>) => StoreDefinition<State>
 
-export * from './plugins/logger'
-export * from './plugins/reduxDevtools'
+export * from './plugins/withLogger'
+export * from './plugins/withReduxDevtools'
 export * from './react'
