@@ -3,37 +3,37 @@ import { Emitter } from 'typed-rx-emitter'
 import { withReduxDevtools } from './plugins/reduxDevtools'
 import { mapValues } from './utils'
 
-export type Undux<Actions extends object> = {
-  [K in keyof Actions]: {
+export type Undux<State extends object> = {
+  [K in keyof State]: {
     key: K
-    previousValue: Actions[K]
-    value: Actions[K]
+    previousValue: State[K]
+    value: State[K]
   }
 }
 
-export interface Store<Actions extends object> {
-  get<K extends keyof Actions>(key: K): Actions[K]
-  set<K extends keyof Actions>(key: K): (value: Actions[K]) => void
-  on<K extends keyof Actions>(key: K): RxJS.Observable<Actions[K]>
-  onAll<K extends keyof Actions>(): RxJS.Observable<Undux<Actions>[keyof Actions]>
-  getState(): Readonly<Actions>
+export interface Store<State extends object> {
+  get<K extends keyof State>(key: K): State[K]
+  set<K extends keyof State>(key: K): (value: State[K]) => void
+  on<K extends keyof State>(key: K): RxJS.Observable<State[K]>
+  onAll<K extends keyof State>(): RxJS.Observable<Undux<State>[keyof State]>
+  getState(): Readonly<State>
 }
 
-export class StoreSnapshot<Actions extends object> implements Store<Actions> {
+export class StoreSnapshot<State extends object> implements Store<State> {
   constructor(
-    private state: Actions,
-    private store: StoreDefinition<Actions>
+    private state: State,
+    private store: StoreDefinition<State>
   ) { }
-  get<K extends keyof Actions>(key: K) {
+  get<K extends keyof State>(key: K) {
     return this.state[key]
   }
-  set<K extends keyof Actions>(key: K) {
+  set<K extends keyof State>(key: K) {
     return this.store.set(key)
   }
-  on<K extends keyof Actions>(key: K) {
+  on<K extends keyof State>(key: K) {
     return this.store.on(key)
   }
-  onAll<K extends keyof Actions>() {
+  onAll<K extends keyof State>() {
     return this.store.onAll()
   }
   getState() {
@@ -41,14 +41,14 @@ export class StoreSnapshot<Actions extends object> implements Store<Actions> {
   }
 }
 
-export class StoreDefinition<Actions extends object> implements Store<Actions> {
-  private store: StoreSnapshot<Actions>
-  private alls: Emitter<Undux<Actions>> = new Emitter
-  private emitter: Emitter<Actions> = new Emitter
+export class StoreDefinition<State extends object> implements Store<State> {
+  private store: StoreSnapshot<State>
+  private alls: Emitter<Undux<State>> = new Emitter
+  private emitter: Emitter<State> = new Emitter
   private setters: {
-    readonly [K in keyof Actions]: (value: Actions[K]) => void
+    readonly [K in keyof State]: (value: State[K]) => void
   }
-  constructor(state: Actions) {
+  constructor(state: State) {
 
     // Set initial state
     this.store = new StoreSnapshot(state, this)
@@ -66,16 +66,16 @@ export class StoreDefinition<Actions extends object> implements Store<Actions> {
       }
     )
   }
-  on<K extends keyof Actions>(key: K): RxJS.Observable<Actions[K]> {
+  on<K extends keyof State>(key: K): RxJS.Observable<State[K]> {
     return this.emitter.on(key)
   }
-  onAll<K extends keyof Actions>(): RxJS.Observable<Undux<Actions>[keyof Actions]> {
+  onAll<K extends keyof State>(): RxJS.Observable<Undux<State>[keyof State]> {
     return this.alls.all()
   }
-  get<K extends keyof Actions>(key: K) {
+  get<K extends keyof State>(key: K) {
     return this.store.get(key)
   }
-  set<K extends keyof Actions>(key: K) {
+  set<K extends keyof State>(key: K) {
     return this.setters[key]
   }
   getState() {
@@ -83,14 +83,14 @@ export class StoreDefinition<Actions extends object> implements Store<Actions> {
   }
 }
 
-export function createStore<Actions extends object>(
-  initialState: Actions
-): StoreDefinition<Actions> {
-  return new StoreDefinition<Actions>(initialState)
+export function createStore<State extends object>(
+  initialState: State
+): StoreDefinition<State> {
+  return new StoreDefinition<State>(initialState)
 }
 
-export type Plugin<Actions extends object> =
-  (store: StoreDefinition<Actions>) => StoreDefinition<Actions>
+export type Plugin<State extends object> =
+  (store: StoreDefinition<State>) => StoreDefinition<State>
 
 export * from './plugins/logger'
 export * from './plugins/reduxDevtools'

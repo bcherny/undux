@@ -7,16 +7,16 @@ import { equals, getDisplayName } from './utils'
 export type Diff<T extends string, U extends string> = ({ [P in T]: P } & { [P in U]: never } & { [x: string]: never })[T]
 export type Omit<T, K extends keyof T> = { [P in Diff<keyof T, K>]: T[P] }
 
-export function connect<Actions extends object>(store: StoreDefinition<Actions>) {
+export function connect<StoreState extends object>(store: StoreDefinition<StoreState>) {
   return function <
     Props,
-    PropsWithStore extends { store: Store<Actions> } & Props = { store: Store<Actions> } & Props
+    PropsWithStore extends { store: Store<StoreState> } & Props = { store: Store<StoreState> } & Props
     >(
       Component: React.ComponentType<PropsWithStore>
     ): React.ComponentClass<Omit<PropsWithStore, 'store'>> {
 
     type State = {
-      store: StoreSnapshot<Actions>
+      store: StoreSnapshot<StoreState>
       subscription: Subscription
     }
 

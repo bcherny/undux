@@ -1,6 +1,6 @@
 import { StoreDefinition } from '..'
 
-export function withReduxDevtools<Actions extends object>(store: StoreDefinition<Actions>): StoreDefinition<Actions> {
+export function withReduxDevtools<State extends object>(store: StoreDefinition<State>): StoreDefinition<State> {
 
   let devtools = window.__REDUX_DEVTOOLS_EXTENSION__
 
@@ -12,12 +12,12 @@ export function withReduxDevtools<Actions extends object>(store: StoreDefinition
   let devTools = devtools.connect()
   let wasTriggeredByDevtools = false
 
-  let jumpToState = (newState: Actions) => {
+  let jumpToState = (newState: State) => {
     let oldState = store.getState()
     for (let key in newState) {
       if (key in oldState) {
         wasTriggeredByDevtools = true
-        store.set(key as keyof Actions)(newState[key as keyof Actions])
+        store.set(key as keyof State)(newState[key as keyof State])
         wasTriggeredByDevtools = false
       }
     }

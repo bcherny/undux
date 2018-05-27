@@ -2,48 +2,48 @@
 
 import * as React from 'react'
 import type { Observable } from 'rxjs'
-export type Undux<Actions: Object> = $ObjMap<Actions, Lift<Actions>>
+export type Undux<State: Object> = $ObjMap<State, Lift<State>>
 
-type Lift<Actions: Object> = <V>(value: V) => Lifted<Actions, V>
+type Lift<State: Object> = <V>(value: V) => Lifted<State, V>
 
-type Lifted<Actions, T> = {
-  key: $Keys<Actions>,
+type Lifted<State, T> = {
+  key: $Keys<State>,
   previousValue: T,
   value: T
 }
 
-export interface Store<Actions: Object> {
-  get<K: $Keys<Actions>>(key: K): $ElementType<Actions, K>;
-  set<K: $Keys<Actions>>(key: K): (value: $ElementType<Actions, K>) => void;
-  on<K: $Keys<Actions>>(key: K): Observable<$ElementType<Actions, K>>;
-  onAll(): Observable<$Values<Undux<Actions>>>;
-  getState(): $ReadOnly<Actions>;
+export interface Store<State: Object> {
+  get<K: $Keys<State>>(key: K): $ElementType<State, K>;
+  set<K: $Keys<State>>(key: K): (value: $ElementType<State, K>) => void;
+  on<K: $Keys<State>>(key: K): Observable<$ElementType<State, K>>;
+  onAll(): Observable<$Values<Undux<State>>>;
+  getState(): $ReadOnly<State>;
 }
 
-declare export class StoreSnapshot<Actions: Object> implements Store<Actions> {
-  get<K: $Keys<Actions>>(key: K): $ElementType<Actions, K>;
-  set<K: $Keys<Actions>>(key: K): (value: $ElementType<Actions, K>) => void;
-  on<K: $Keys<Actions>>(key: K): Observable<$ElementType<Actions, K>>;
-  onAll(): Observable<$Values<Undux<Actions>>>;
-  getState(): $ReadOnly<Actions>;
+declare export class StoreSnapshot<State: Object> implements Store<State> {
+  get<K: $Keys<State>>(key: K): $ElementType<State, K>;
+  set<K: $Keys<State>>(key: K): (value: $ElementType<State, K>) => void;
+  on<K: $Keys<State>>(key: K): Observable<$ElementType<State, K>>;
+  onAll(): Observable<$Values<Undux<State>>>;
+  getState(): $ReadOnly<State>;
 }
 
-declare export class StoreDefinition<Actions: Object> implements Store<Actions> {
-  get<K: $Keys<Actions>>(key: K): $ElementType<Actions, K>;
-  set<K: $Keys<Actions>>(key: K): (value: $ElementType<Actions, K>) => void;
-  on<K: $Keys<Actions>>(key: K): Observable<$ElementType<Actions, K>>;
-  onAll(): Observable<$Values<Undux<Actions>>>;
-  getState(): $ReadOnly<Actions>;
+declare export class StoreDefinition<State: Object> implements Store<State> {
+  get<K: $Keys<State>>(key: K): $ElementType<State, K>;
+  set<K: $Keys<State>>(key: K): (value: $ElementType<State, K>) => void;
+  on<K: $Keys<State>>(key: K): Observable<$ElementType<State, K>>;
+  onAll(): Observable<$Values<Undux<State>>>;
+  getState(): $ReadOnly<State>;
 }
 
-declare export function createStore<Actions: Object>(initialState: Actions): StoreDefinition<Actions>
-export type Plugin<Actions: Object> = (store: StoreDefinition<Actions>) => StoreDefinition<Actions>
+declare export function createStore<State: Object>(initialState: State): StoreDefinition<State>
+export type Plugin<State: Object> = (store: StoreDefinition<State>) => StoreDefinition<State>
 declare export var withLogger: Plugin<Object>
 declare export var withReduxDevtools: Plugin<Object>
 
-declare export function connect<Actions: Object>(
-  store: StoreDefinition<Actions>
-): <Props: {store: Store<Actions>}>(
+declare export function connect<State: Object>(
+  store: StoreDefinition<State>
+): <Props: {store: Store<State>}>(
   Component: React.ComponentType<Props>
 ) =>
-  Class<React.Component<$Diff<Props, {store: Store<Actions>}>>>
+  Class<React.Component<$Diff<Props, {store: Store<State>}>>>
