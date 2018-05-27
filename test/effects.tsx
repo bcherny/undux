@@ -49,7 +49,7 @@ test('[effects] SafePlugin', t => {
           t.is(_.key, 'b')
           t.is(_.value, 4)
           t.is(_.previousValue, 3)
-  }
+      }
       i++
     })
     return store

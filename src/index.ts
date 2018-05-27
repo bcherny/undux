@@ -89,6 +89,12 @@ export function createStore<Actions extends object>(
   return new StoreDefinition<Actions>(initialState)
 }
 
+export function createSafeStore<Actions extends object>(
+  initialState: Actions
+): Omit<StoreDefinition<Actions>, 'set'> {
+  return new StoreDefinition<Actions>(initialState)
+}
+
 export type Plugin<Actions extends object> =
   (store: StoreDefinition<Actions>) => StoreDefinition<Actions>
 
