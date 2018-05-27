@@ -1,7 +1,7 @@
 import * as RxJS from 'rxjs'
 import { Emitter } from 'typed-rx-emitter'
 import { withReduxDevtools } from './plugins/reduxDevtools'
-import { mapValues } from './utils'
+import { mapValues, Omit } from './utils'
 
 export type Undux<Actions extends object> = {
   [K in keyof Actions]: {
@@ -91,6 +91,10 @@ export function createStore<Actions extends object>(
 
 export type Plugin<Actions extends object> =
   (store: StoreDefinition<Actions>) => StoreDefinition<Actions>
+
+export type SafePlugin<Actions extends object> =
+  (store: Omit<StoreDefinition<Actions>, 'set'>) =>
+    Omit<StoreDefinition<Actions>, 'set'>
 
 export * from './plugins/logger'
 export * from './plugins/reduxDevtools'
