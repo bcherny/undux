@@ -1,3 +1,4 @@
+import './actions'
 import './immutable'
 import './stateful'
 import './stateless'

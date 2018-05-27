@@ -82,14 +82,34 @@ export class StoreDefinition<State extends object> implements Store<State> {
   }
 }
 
+export class StoreDefinitionWithActions<
+  State extends object,
+  Actions extends object
+> extends StoreDefinition<State> {
+  private actions = new Emitter<Actions>()
+  act<K extends keyof Actions>(action: K) {
+    return (value: Actions[K]) =>
+      this.actions.emit(action, value)
+  }
+  react<K extends keyof Actions>(key: K): RxJS.Observable<Actions[K]> {
+    return this.actions.on(key)
+  }
+}
+
 export function createStore<State extends object>(
   initialState: State
 ): StoreDefinition<State> {
   return new StoreDefinition<State>(initialState)
 }
 
-export type Plugin<State extends object> =
-  (store: StoreDefinition<State>) => StoreDefinition<State>
+export function createStoreWithActions<State extends object, Actions extends object>(
+  initialState: State
+): StoreDefinitionWithActions<State, Actions> {
+  return new StoreDefinitionWithActions(initialState)
+}
+
+export type Plugin<State extends object, S extends StoreDefinition<State> = StoreDefinition<State>> =
+  (store: S) => S
 
 export * from './plugins/withLogger'
 export * from './plugins/withReduxDevtools'
