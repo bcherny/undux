@@ -1,6 +1,6 @@
 import { test } from 'ava'
 import * as Immutable from 'immutable'
-import { isImmutable } from '../src/utils'
+import { isImmutable, mapValues } from '../src/utils'
 
 test('isImmutable', t => {
   t.is(isImmutable(Immutable.List()), true)
@@ -25,4 +25,11 @@ test('isImmutable', t => {
   t.is(isImmutable(undefined), false)
   t.is(isImmutable('a'), false)
   t.is(isImmutable(42), false)
+})
+
+test('mapValues', t => {
+  t.deepEqual(mapValues({}, _ => _ * 2), {})
+  t.deepEqual(mapValues({ a: 1 }, _ => _ * 2), { a: 2 })
+  t.deepEqual(mapValues({ a: 1, b: 2 }, _ => _ * 2), { a: 2, b: 4 })
+  t.deepEqual(mapValues({ a: 1, b: 2 }, (_, k) => k), { a: 'a', b: 'b' })
 })

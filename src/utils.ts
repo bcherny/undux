@@ -26,3 +26,19 @@ export function isImmutable(a: any): a is Immutable {
 export function getDisplayName<T>(Component: ComponentType<T>): string {
   return Component.displayName || Component.name || 'Component'
 }
+
+export function mapValues<O extends object, K extends keyof O, T>(
+  o: O,
+  f: (value: O[K], key: K) => T
+): {[K in keyof O]: T} {
+  let result: {[K in keyof O]: T} = {} as any
+  keys(o).forEach(k =>
+    result[k] = f(o[k] as any, k as any) // TODO: Improve this
+  )
+  return result
+}
+
+// Strict Object.keys
+function keys<O extends object>(o: O): (keyof O)[] {
+  return Object.keys(o) as any
+}

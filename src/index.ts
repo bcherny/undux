@@ -1,6 +1,7 @@
 import * as RxJS from 'rxjs'
 import { Emitter } from 'typed-rx-emitter'
 import { withReduxDevtools } from './plugins/reduxDevtools'
+import { mapValues } from './utils'
 
 export type Undux<Actions extends object> = {
   [K in keyof Actions]: {
@@ -49,8 +50,23 @@ export class StoreDefinition<Actions extends object> implements Store<Actions> {
   private store: StoreSnapshot<Actions>
   private alls: Emitter<Undux<Actions>> = new Emitter
   private emitter: Emitter<Actions> = new Emitter
+  private setters: {
+    readonly [K in keyof Actions]: (value: Actions[K]) => void
+  }
   constructor(state: Actions) {
+
+    // Set initial state
     this.store = new StoreSnapshot(state, this)
+
+    // Cache setters
+    this.setters = mapValues(state, (v, key) =>
+      (value: typeof v) => {
+        let previousValue = this.store.get(key)
+        this.store = this.store['assign'](key, value)
+        this.emitter.emit(key, value)
+        this.alls.emit(key, { key, previousValue, value })
+      }
+    )
   }
   on<K extends keyof Actions>(key: K): RxJS.Observable<Actions[K]> {
     return this.emitter.on(key)
@@ -62,12 +78,7 @@ export class StoreDefinition<Actions extends object> implements Store<Actions> {
     return this.store.get(key)
   }
   set<K extends keyof Actions>(key: K) {
-    return (value: Actions[K]) => {
-      let previousValue = this.store.get(key)
-      this.store = this.store['assign'](key, value)
-      this.emitter.emit(key, value)
-      this.alls.emit(key, { key, previousValue, value })
-    }
+    return this.setters[key]
   }
   getState() {
     return this.store.getState()

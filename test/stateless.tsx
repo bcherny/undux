@@ -228,3 +228,10 @@ test('[stateless] it should update correctly when using nested stores', t => {
     t.is(_.innerHTML, '<div>3-4</div>')
   })
 })
+
+test('[stateless] it should memoize setters', t =>
+  withElement(MyComponentWithLens, _ => {
+    t.is(store.set('isTrue'), store.set('isTrue'))
+    t.is(store.set('users'), store.set('users'))
+  })
+)
