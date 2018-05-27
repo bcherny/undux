@@ -37,12 +37,7 @@ export class StoreSnapshot<Actions extends object> implements Store<Actions> {
     return this.store.onAll()
   }
   getState() {
-    return Object.freeze(Object.assign({}, this.state))
-  }
-
-  private assign<Actions extends object, K extends keyof Actions>(
-    key: K, value: Actions[K]) {
-    return new StoreSnapshot(Object.assign({}, this.state, { [key]: value }), this.store)
+    return Object.freeze(this.state)
   }
 }
 
@@ -62,7 +57,10 @@ export class StoreDefinition<Actions extends object> implements Store<Actions> {
     this.setters = mapValues(state, (v, key) =>
       (value: typeof v) => {
         let previousValue = this.store.get(key)
-        this.store = this.store['assign'](key, value)
+        this.store = new StoreSnapshot(
+          Object.assign({}, this.store.getState(), { [key]: value }),
+          this
+        )
         this.emitter.emit(key, value)
         this.alls.emit(key, { key, previousValue, value })
       }
