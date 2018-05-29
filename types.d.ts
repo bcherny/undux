@@ -64,7 +64,7 @@ type Message = StartMessage | InitMessage | JumpToActionMessage
 
 type Devtools = {
   connect(): Devtools
-  send(key: string | null, storeState: object): void
+  send(key: string | number | symbol | null, storeState: object): void
   subscribe(f: (message: Message) => void): void
 }
 
