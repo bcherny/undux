@@ -1,7 +1,7 @@
 import { test } from 'ava'
 import * as React from 'react'
 import { Simulate } from 'react-dom/test-utils'
-import { connect, createStore, Store } from '../src'
+import { connect, connectAs, createStore, Store, StoreSnapshot } from '../src'
 import { withElement } from './testUtils'
 
 type Actions = {
@@ -253,3 +253,131 @@ test('[stateful] it should memoize setters', t =>
     t.is(store.set('users'), store.set('users'))
   })
 )
+
+test('[stateful] it should render with multiple stores', t => {
+
+  type A = { a: number}
+  type B = { b: string }
+
+  let storeA = createStore<A>({ a: 1 })
+  let storeB = createStore<B>({ b: 'c' })
+
+  type Props = {
+    a: StoreSnapshot<A>,
+    b: StoreSnapshot<B>
+  }
+
+  class Component extends React.Component<Props> {
+    render(){
+      return <>
+        a={this.props.a.get('a') * 4},
+        b={this.props.b.get('b').concat('d')}
+      </>
+    }
+  }
+
+  let ConnectedComponent = connectAs({
+    a: storeA,
+    b: storeB
+  })(Component)
+
+  withElement(ConnectedComponent, _ =>
+    t.is(_.innerHTML, 'a=4, b=cd')
+  )
+
+})
+
+test('[stateful] it should update with multiple stores', t => {
+
+  type A = { a: number }
+  type B = { b: string }
+  type C = { c: { d: boolean } }
+
+  let storeA = createStore<A>({ a: 1 })
+  let storeB = createStore<B>({ b: 'c' })
+  let storeC = createStore<C>({ c: { d: true } })
+
+  type Props = {
+    a: StoreSnapshot<A>,
+    b: StoreSnapshot<B>,
+    c: StoreSnapshot<C>
+  }
+
+  let Component = connectAs({
+    a: storeA,
+    b: storeB,
+    c: storeC
+  })(class extends React.Component<Props> {
+    render() {
+      return <>
+        a={this.props.a.get('a') * 4},
+        b={this.props.b.get('b').concat('d')},
+        c={this.props.c.get('c').d.toString()}
+        <button id='updateA' onClick={() => this.props.a.set('a')(this.props.a.get('a') + 10)} />
+        <button id='updateB' onClick={() => this.props.b.set('b')(this.props.b.get('b').toUpperCase())} />
+        <button id='updateC' onClick={() => this.props.c.set('c')({ d: !this.props.c.get('c').d })} />
+      </>
+    }
+  })
+
+  let buttons = '<button id="updateA"></button><button id="updateB"></button><button id="updateC"></button>'
+
+  withElement(Component, _ => {
+    t.is(_.innerHTML, 'a=4, b=cd, c=true' + buttons)
+    Simulate.click(_.querySelector('#updateA')!)
+    t.is(_.innerHTML, 'a=44, b=cd, c=true' + buttons)
+    Simulate.click(_.querySelector('#updateA')!)
+    t.is(_.innerHTML, 'a=84, b=cd, c=true' + buttons)
+    Simulate.click(_.querySelector('#updateB')!)
+    t.is(_.innerHTML, 'a=84, b=Cd, c=true' + buttons)
+    storeB.set('b')('x')
+    t.is(_.innerHTML, 'a=84, b=xd, c=true' + buttons)
+    storeA.set('a')(50)
+    t.is(_.innerHTML, 'a=200, b=xd, c=true' + buttons)
+    Simulate.click(_.querySelector('#updateC')!)
+    t.is(_.innerHTML, 'a=200, b=xd, c=false' + buttons)
+  })
+
+})
+
+test('[stateful] it should update when any of the stores updated', t => {
+
+  type A = { a: number}
+  type B = { b: string }
+
+  let storeA = createStore<A>({ a: 1 })
+  let storeB = createStore<B>({ b: 'c' })
+
+  type Props = {
+    a: StoreSnapshot<A>,
+    b: StoreSnapshot<B>
+  }
+
+  let renderCount = 0
+
+  let Component = connectAs({
+    a: storeA,
+    b: storeB
+  })(class extends React.Component<Props> {
+    render() {
+      renderCount++
+      return <>
+        a={this.props.a.get('a') * 4},
+        b={this.props.b.get('b').concat('d')}
+        <button id='updateA' onClick={() => this.props.a.set('a')(this.props.a.get('a') + 10)} />
+        <button id='updateB' onClick={() => this.props.b.set('b')(this.props.b.get('b').toUpperCase())} />
+      </>
+    }
+  })
+
+  withElement(Component, _ => {
+    t.is(renderCount, 1)
+    Simulate.click(_.querySelector('#updateA')!)
+    Simulate.click(_.querySelector('#updateA')!)
+    Simulate.click(_.querySelector('#updateB')!)
+    storeB.set('b')('x')
+    storeA.set('a')(50)
+    t.is(renderCount, 6)
+  })
+
+})

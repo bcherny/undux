@@ -55,3 +55,13 @@ declare export function connect<State: Object>(
   Component: React.ComponentType<Props>
 ) =>
   Class<React.Component<$Diff<Props, {store: S}>>>
+
+type GetStoreSnap = <T, S: StoreSnapshot<T>>(storeDef: StoreDefinition<T>) => S
+
+declare export function connectAs<
+  Stores: {[alias: string]: StoreDefinition<Object>}
+>(
+  stores: Stores
+): <Props: $ObjMap<Stores, GetStoreSnap>>(
+  Component: React$ComponentType<Props>
+) => React$Component<$Diff<Props, Stores>>
