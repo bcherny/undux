@@ -39,6 +39,15 @@ export function mapValues<O extends object, K extends keyof O, T>(
 }
 
 // Strict Object.keys
-function keys<O extends object>(o: O): (keyof O)[] {
+export function keys<O extends object>(o: O): (keyof O)[] {
   return Object.keys(o) as any
+}
+
+export function some<O extends object>(o: O, f: <K extends keyof O>(v: O[K], k: K) => boolean): boolean {
+  for (let k in o) {
+    if (f(o[k], k)) {
+      return true
+    }
+  }
+  return false
 }

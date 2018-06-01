@@ -39,6 +39,7 @@ declare export class StoreDefinition<State: Object> implements Store<State> {
   onAll(): Observable<$Values<Undux<State>>>;
   getCurrentSnapshot(): StoreSnapshot<State>;
   getState(): $ReadOnly<State>;
+  store: StoreSnapshot<State>;
 }
 
 declare export function createStore<State: Object>(
@@ -55,3 +56,13 @@ declare export function connect<State: Object>(
   Component: React.ComponentType<Props>
 ) =>
   Class<React.Component<$Diff<Props, {store: S}>>>
+
+type GetStoreSnap = <T>(storeDef: StoreDefinition<T>) => StoreSnapshot<T>
+
+declare export function connectAs<
+  Stores: {[alias: string]: StoreDefinition<any>}
+>(
+  stores: Stores
+): <Props: $ObjMap<Stores, GetStoreSnap>>(
+  Component: React.ComponentType<Props>
+) => React.Component<$Diff<Props, $ObjMap<Stores, GetStoreSnap>>>

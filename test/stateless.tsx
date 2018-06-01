@@ -1,7 +1,7 @@
 import { test } from 'ava'
 import * as React from 'react'
 import { renderIntoDocument, Simulate } from 'react-dom/test-utils'
-import { connect, createStore, Store } from '../src'
+import { connect, connectAs, createStore, Store } from '../src'
 import { withElement } from './testUtils'
 
 type Actions = {
@@ -235,3 +235,93 @@ test('[stateless] it should memoize setters', t =>
     t.is(store.set('users'), store.set('users'))
   })
 )
+
+test('[stateless] it should render with multiple stores', t => {
+
+  let storeA = createStore({ a: 1 })
+  let storeB = createStore({ b: 'c' })
+
+  let Component = connectAs({
+    a: storeA,
+    b: storeB
+  })(({ a, b }) =>
+    <>
+      a={a.get('a') * 4},
+      b={b.get('b').concat('d')}
+    </>
+  )
+
+  withElement(Component, _ =>
+    t.is(_.innerHTML, 'a=4, b=cd')
+  )
+
+})
+
+test('[stateless] it should update with multiple stores', t => {
+
+  let storeA = createStore({ a: 1 })
+  let storeB = createStore({ b: 'c' })
+
+  let Component = connectAs({
+    a: storeA,
+    b: storeB
+  })(({ a, b }) =>
+    <>
+      a={a.get('a') * 4},
+      b={b.get('b').concat('d')}
+      <button id='updateA' onClick={() => a.set('a')(a.get('a') + 10)} />
+      <button id='updateB' onClick={() => b.set('b')(b.get('b').toUpperCase())} />
+    </>
+  )
+
+  let buttons = '<button id="updateA"></button><button id="updateB"></button>'
+
+  withElement(Component, _ => {
+    t.is(_.innerHTML, 'a=4, b=cd' + buttons)
+    Simulate.click(_.querySelector('#updateA')!)
+    t.is(_.innerHTML, 'a=44, b=cd' + buttons)
+    Simulate.click(_.querySelector('#updateA')!)
+    t.is(_.innerHTML, 'a=84, b=cd' + buttons)
+    Simulate.click(_.querySelector('#updateB')!)
+    t.is(_.innerHTML, 'a=84, b=Cd' + buttons)
+    storeB.set('b')('x')
+    t.is(_.innerHTML, 'a=84, b=xd' + buttons)
+    storeA.set('a')(50)
+    t.is(_.innerHTML, 'a=200, b=xd' + buttons)
+  })
+
+})
+
+test('[stateless] it should update when any of the stores updated', t => {
+
+  let storeA = createStore({ a: 1 })
+  let storeB = createStore({ b: 'c' })
+
+  let renderCount = 0
+
+  let Component = connectAs({
+    a: storeA,
+    b: storeB
+  })(({ a, b }) => {
+    renderCount++
+    return <>
+      a={a.get('a') * 4},
+      b={b.get('b').concat('d')}
+      <button id='updateA' onClick={() => a.set('a')(a.get('a') + 10)} />
+      <button id='updateB' onClick={() => b.set('b')(b.get('b').toUpperCase())} />
+    </>
+  })
+
+  let buttons = '<button id="updateA"></button><button id="updateB"></button>'
+
+  withElement(Component, _ => {
+    t.is(renderCount, 1)
+    Simulate.click(_.querySelector('#updateA')!)
+    Simulate.click(_.querySelector('#updateA')!)
+    Simulate.click(_.querySelector('#updateB')!)
+    storeB.set('b')('x')
+    storeA.set('a')(50)
+    t.is(renderCount, 6)
+  })
+
+})
