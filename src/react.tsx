@@ -4,37 +4,36 @@ import { Subscription } from 'rxjs'
 import { Store, StoreDefinition, StoreSnapshot } from './'
 import { equals, getDisplayName } from './utils'
 
-export type Diff<T extends string, U extends string> = ({ [P in T]: P } & { [P in U]: never } & { [x: string]: never })[T]
-export type Omit<T, K extends keyof T> = { [P in Diff<keyof T, K>]: T[P] }
+export type Diff<T, U> = Pick<T, Exclude<keyof T, keyof U>>
 
 export function connect<StoreState extends object>(store: StoreDefinition<StoreState>) {
   return function <
     Props,
     PropsWithStore extends { store: Store<StoreState> } & Props = { store: Store<StoreState> } & Props
-    >(
-      Component: React.ComponentType<PropsWithStore>
-    ): React.ComponentClass<Omit<PropsWithStore, 'store'>> {
+  >(
+    Component: React.ComponentType<PropsWithStore>
+  ): React.ComponentClass<Diff<PropsWithStore, { store: Store<StoreState> }>> {
 
     type State = {
       store: StoreSnapshot<StoreState>
       subscription: Subscription
     }
 
-    return class extends React.Component<Omit<PropsWithStore, 'store'>, State> {
+    return class extends React.Component<Diff<PropsWithStore, { store: Store<StoreState> }>, State> {
       static displayName = `withStore(${getDisplayName(Component)})`
       state = {
-        store: store['store'],
+        store: store.getCurrentSnapshot(),
         subscription: store.onAll().subscribe(({ key, previousValue, value }) => {
           if (equals(previousValue, value)) {
             return false
           }
-          this.setState({ store: store['store'] })
+          this.setState({ store: store.getCurrentSnapshot() })
         })
       }
       componentWillUnmount() {
         this.state.subscription.unsubscribe()
       }
-      shouldComponentUpdate(props: Omit<PropsWithStore, 'store'>, state: State) {
+      shouldComponentUpdate(props: Readonly<Diff<PropsWithStore, { store: Store<StoreState> }>>, state: State) {
         return state.store !== this.state.store
           || Object.keys(props).some(_ => (props as any)[_] !== (this.props as any)[_])
       }

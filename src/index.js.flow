@@ -12,6 +12,10 @@ type Lifted<State, T> = {
   value: T
 }
 
+export type Options = {
+  isDevMode: boolean
+}
+
 export interface Store<State: Object> {
   get<K: $Keys<State>>(key: K): $ElementType<State, K>;
   set<K: $Keys<State>>(key: K): (value: $ElementType<State, K>) => void;
@@ -33,17 +37,21 @@ declare export class StoreDefinition<State: Object> implements Store<State> {
   set<K: $Keys<State>>(key: K): (value: $ElementType<State, K>) => void;
   on<K: $Keys<State>>(key: K): Observable<$ElementType<State, K>>;
   onAll(): Observable<$Values<Undux<State>>>;
+  getCurrentSnapshot(): StoreSnapshot<State>;
   getState(): $ReadOnly<State>;
 }
 
-declare export function createStore<State: Object>(initialState: State): StoreDefinition<State>
+declare export function createStore<State: Object>(
+  initialState: State,
+  options?: Options
+): StoreDefinition<State>
 export type Plugin<State: Object> = (store: StoreDefinition<State>) => StoreDefinition<State>
 declare export var withLogger: Plugin<Object>
 declare export var withReduxDevtools: Plugin<Object>
 
 declare export function connect<State: Object>(
   store: StoreDefinition<State>
-): <Props: {store: Store<State>}>(
+): <S: Store<State>, Props: {store: S}>(
   Component: React.ComponentType<Props>
 ) =>
-  Class<React.Component<$Diff<Props, {store: Store<State>}>>>
+  Class<React.Component<$Diff<Props, {store: S}>>>

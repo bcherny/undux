@@ -30,6 +30,10 @@ let withEffects: Plugin<State> = store => {
 }
 
 let store = withEffects(withReduxDevtools(withLogger(createStore(initialState))))
+let debugStore = createStore(initialState, { isDevMode: true })
+
+let state = store.getState().users.concat(4)
+let snapshot = store.getCurrentSnapshot().get('users').concat(4)
 
 type Props = {|
   foo: number,
