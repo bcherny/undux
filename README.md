@@ -40,7 +40,7 @@ npm install undux@^3 --save
 
 ## Use
 
-[Open this code in playground](https://stackblitz.com/edit/js-gwo2c3).
+[Open this code in playground](https://stackblitz.com/edit/js-gwo2c3?file=MyStore.js).
 
 ### 1. Create a store
 
