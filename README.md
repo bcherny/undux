@@ -40,6 +40,8 @@ npm install undux@^3 --save
 
 ## Use
 
+[Open this code in playground](https://stackblitz.com/edit/js-gwo2c3).
+
 ### 1. Create a store
 
 ```jsx
@@ -47,8 +49,8 @@ import { connect, createStore } from 'undux'
 
 // Create a store with an initial value.
 let store = createStore({
-  today: new Date,
-  users: []
+  buttonText: 'Click Me',
+  clickCount: 0
 })
 
 export let withStore = connect(store)
@@ -67,8 +69,10 @@ let MyComponent = withStore(
     render() {
       let store = this.props.store
       return <div>
-        Hello! Today is {store.get('today')}
-        <button onClick={() => store.set('today')(new Date)}>Update Date</button>
+        <p>You've  clicked the button {store.get('clickCount')} times.</p>
+        <button
+         onClick={() => store.set('clickCount')(store.get('clickCount') + 1)}
+        >{store.get('buttonText')}</button>
       </div>
     }
   }
