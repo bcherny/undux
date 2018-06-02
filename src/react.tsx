@@ -51,13 +51,13 @@ export function connectAs<
 ) {
   return function<Props>(
     Component: React.ComponentType<{
-      [K in keyof Stores]: Stores[K]['store']
+      [K in keyof Stores]: ReturnType<Stores[K]['getCurrentSnapshot']>
     } & Props>
   ): React.ComponentClass<Props> {
 
     type State = {
       stores: {
-        [K in keyof Stores]: Stores[K]['store']
+        [K in keyof Stores]: ReturnType<Stores[K]['getCurrentSnapshot']>
       }
       subscriptions: Subscription[]
     }
@@ -65,14 +65,20 @@ export function connectAs<
     return class extends React.Component<Props, State> {
       static displayName = `withStore(${getDisplayName(Component)})`
       state = {
-        stores: mapValues(stores, _ => _.store),
+        stores: mapValues(stores, _ =>
+          _.getCurrentSnapshot() as ReturnType<(typeof _)['getCurrentSnapshot']>
+        ),
         subscriptions: keys(stores).map(k =>
-          stores[k].onAll().subscribe(({ key, previousValue, value }) => {
+          stores[k].onAll().subscribe(({ previousValue, value }) => {
             if (equals(previousValue, value)) {
-              return false
+              return
             }
             this.setState({
-              stores: Object.assign({}, this.state.stores, {[k]: stores[k]['store']})
+              stores: Object.assign(
+                {},
+                this.state.stores as ReturnType<Stores[keyof Stores]['getCurrentSnapshot']>,
+                { [k]: stores[k].getCurrentSnapshot() }
+              )
             })
           })
         )

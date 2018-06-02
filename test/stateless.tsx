@@ -312,8 +312,6 @@ test('[stateless] it should update when any of the stores updated', t => {
     </>
   })
 
-  let buttons = '<button id="updateA"></button><button id="updateB"></button>'
-
   withElement(Component, _ => {
     t.is(renderCount, 1)
     Simulate.click(_.querySelector('#updateA')!)

@@ -1,6 +1,6 @@
 // @flow strict-local
 import { connect, connectAs, createStore, withLogger, withReduxDevtools } from '../dist/src'
-import type { Plugin, Store } from '../dist/src'
+import type { Plugin, Store, StoreSnapshot } from '../dist/src'
 import * as React from 'react'
 import { debounceTime, filter } from 'rxjs/operators'
 
@@ -136,8 +136,8 @@ let storeA = createStore(initA)
 let storeB = createStore(initB)
 
 type CombinedComponentProps = {|
-  a: Store<CombinedA>,
-  b: Store<CombinedB>
+  a: StoreSnapshot<CombinedA>,
+  b: StoreSnapshot<CombinedB>
 |}
 
 let CombinedComponent = ({a, b}: CombinedComponentProps) =>
