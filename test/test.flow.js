@@ -1,5 +1,5 @@
-// @flow
-import { connect, createStore, withLogger, withReduxDevtools } from '../dist/src'
+// @flow strict-local
+import { connect, connectAs, createStore, withLogger, withReduxDevtools } from '../dist/src'
 import type { Plugin, Store } from '../dist/src'
 import * as React from 'react'
 import { debounceTime, filter } from 'rxjs/operators'
@@ -123,3 +123,44 @@ store.onAll().subscribe(_ => {
   _.previousValue === false
   _.value === true
 })
+
+/////////////////// connectAs ///////////////////
+
+type CombinedA = {| a: number |}
+type CombinedB = {| b: string |}
+
+let initA: CombinedA = { a: 1 }
+let initB: CombinedB = { b: 'c' }
+
+let storeA = createStore(initA)
+let storeB = createStore(initB)
+
+type CombinedComponentProps = {|
+  a: Store<CombinedA>,
+  b: Store<CombinedB>
+|}
+
+let CombinedComponent = ({a, b}: CombinedComponentProps) =>
+  <div>
+    {a.get('a') * 4}
+    {b.get('b').concat('d')}
+  </div>
+
+let ConnectedCombinedComponent = connectAs({
+  a: storeA,
+  b: storeB
+})(CombinedComponent)
+
+class CombinedComponent2 extends React.Component<CombinedComponentProps> {
+  render() {
+    return <div>
+      {this.props.a.get('a') * 4}
+      {this.props.b.get('b').concat('d')}
+    </div>
+  }
+}
+
+let ConnectedCombinedComponent2 = connectAs({
+  a: storeA,
+  b: storeB
+})(CombinedComponent2)

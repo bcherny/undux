@@ -27,6 +27,11 @@ export function getDisplayName<T>(Component: ComponentType<T>): string {
   return Component.displayName || Component.name || 'Component'
 }
 
+// Strict Object.keys
+export function keys<O extends object>(o: O): (keyof O)[] {
+  return Object.keys(o) as any
+}
+
 export function mapValues<O extends object, K extends keyof O, T>(
   o: O,
   f: (value: O[K], key: K) => T
@@ -38,7 +43,6 @@ export function mapValues<O extends object, K extends keyof O, T>(
   return result
 }
 
-// Strict Object.keys
-function keys<O extends object>(o: O): (keyof O)[] {
-  return Object.keys(o) as any
+export function some<O extends object>(o: O, f: <K extends keyof O>(v: O[K], k: K) => boolean): boolean {
+  return keys(o).some(k => f(o[k], k))
 }

@@ -1,6 +1,6 @@
 import { test } from 'ava'
 import * as Immutable from 'immutable'
-import { isImmutable, mapValues } from '../src/utils'
+import { isImmutable, keys, mapValues, some } from '../src/utils'
 
 test('isImmutable', t => {
   t.is(isImmutable(Immutable.List()), true)
@@ -27,9 +27,28 @@ test('isImmutable', t => {
   t.is(isImmutable(42), false)
 })
 
+test('keys', t => {
+  t.deepEqual(keys({}), [])
+  t.deepEqual(keys({ a: 1, b: 2 }), ['a', 'b'])
+  t.deepEqual(keys(Object.create({ a: 1, b: 2 }, { c: { enumerable: true, value: 3 }, d: { enumerable: true, value: 4 } })), ['c', 'd'])
+})
+
 test('mapValues', t => {
   t.deepEqual(mapValues({}, _ => _ * 2), {})
   t.deepEqual(mapValues({ a: 1 }, _ => _ * 2), { a: 2 })
   t.deepEqual(mapValues({ a: 1, b: 2 }, _ => _ * 2), { a: 2, b: 4 })
   t.deepEqual(mapValues({ a: 1, b: 2 }, (_, k) => k), { a: 'a', b: 'b' })
+  t.deepEqual(mapValues(
+    Object.create({ a: 1, b: 2 }, { c: { enumerable: true, value: 3 }, d: { enumerable: true, value: 4 } }),
+    (_, k) => k
+  ), { c: 'c', d: 'd' })
+})
+
+test('some', t => {
+  t.is(some({}, () => true), false)
+  t.is(some({ a: 1 }, v => v < 2), true)
+  t.is(some({ a: 1 }, v => v > 1), false)
+  t.is(some({ a: 1, b: 2 }, (_, k) => k === 'b'), true)
+  t.is(some(Object.create({ a: 1, b: 2 }, { c: { enumerable: true, value: 3 }, d: { enumerable: true, value: 4 } }), (_, k) => k === 'b'), false)
+  t.is(some(Object.create({ a: 1, b: 2 }, { c: { enumerable: true, value: 3 }, d: { enumerable: true, value: 4 } }), (_, k) => k === 'd'), true)
 })
