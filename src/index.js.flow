@@ -1,4 +1,4 @@
-// @flow
+// @flow strict-local
 
 import * as React from 'react'
 import type { Observable } from 'rxjs'
@@ -59,9 +59,9 @@ declare export function connect<State: Object>(
 type GetStoreSnap = <T, S: StoreSnapshot<T>>(storeDef: StoreDefinition<T>) => S
 
 declare export function connectAs<
-  Stores: {[alias: string]: StoreDefinition<Object>}
+  Stores: {[alias: string]: Store<any>}
 >(
   stores: Stores
-): <Props: $ObjMap<Stores, GetStoreSnap>>(
-  Component: React$ComponentType<Props>
-) => React$Component<$Diff<Props, Stores>>
+): <Props: Object>(
+  Component: React.ComponentType<{|...Stores, ...Props|}>
+) => Class<React.Component<$Diff<Props, Stores>>>

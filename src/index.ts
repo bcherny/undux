@@ -104,6 +104,9 @@ export class StoreDefinition<State extends object> implements Store<State> {
   getCurrentSnapshot() {
     return this.storeSnapshot
   }
+  toStore(): Store<State> {
+    return this.storeSnapshot
+  }
   getState() {
     return this.storeSnapshot.getState()
   }

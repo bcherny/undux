@@ -49,11 +49,11 @@ export function connectAs<
 >(
   stores: Stores
 ) {
-  return function<Props>(
+  return function<Props extends object>(
     Component: React.ComponentType<{
-      [K in keyof Stores]: ReturnType<Stores[K]['getCurrentSnapshot']>
+      [K in keyof Stores]: ReturnType<Stores[K]['toStore']>
     } & Props>
-  ): React.ComponentClass<Props> {
+  ): React.ComponentClass<Diff<Props, Stores>> {
 
     type State = {
       stores: {
@@ -62,7 +62,7 @@ export function connectAs<
       subscriptions: Subscription[]
     }
 
-    return class extends React.Component<Props, State> {
+    return class extends React.Component<Diff<Props, Stores>, State> {
       static displayName = `withStore(${getDisplayName(Component)})`
       state = {
         stores: mapValues(stores, _ =>
@@ -82,7 +82,7 @@ export function connectAs<
       componentWillUnmount() {
         this.state.subscriptions.forEach(_ => _.unsubscribe())
       }
-      shouldComponentUpdate(props: Props, state: State) {
+      shouldComponentUpdate(props: Diff<Props, Stores>, state: State) {
         return some(state.stores, (s, k) => s !== this.state.stores[k])
           || Object.keys(props).some(_ => (props as any)[_] !== (this.props as any)[_])
       }

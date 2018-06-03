@@ -323,3 +323,86 @@ test('[stateless] it should update when any of the stores updated', t => {
   })
 
 })
+
+//
+// Compilation tests
+// All of the following should compile:
+//
+
+type CombinedA = { a: number }
+type CombinedB = { b: string }
+
+let initA: CombinedA = { a: 1 }
+let initB: CombinedB = { b: 'c' }
+
+let storeA = createStore(initA)
+let storeB = createStore(initB)
+
+type CombinedComponentProps = {
+  a: Store<CombinedA>,
+  b: Store<CombinedB>
+}
+
+type ConnectedCombinedAugmentedProps = CombinedComponentProps & {
+  x: number
+}
+
+//// Functional component
+
+let CombinedComponent = ({a, b}: CombinedComponentProps) =>
+  <div>
+    {a.get('a') * 4}
+    {b.get('b').concat('d')}
+  </div>
+
+let ConnectedCombinedComponent = connectAs({
+  a: storeA,
+  b: storeB
+})(CombinedComponent)
+
+let ca = <ConnectedCombinedComponent />
+
+//// Functional component (additional props)
+
+let CombinedComponent1 = ({a, b, x}: ConnectedCombinedAugmentedProps) =>
+  <div>
+    {a.get('a') * 4}
+    {b.get('b').concat('d')}
+    {x * 3}
+  </div>
+
+let ConnectedCombinedComponent1 = connectAs({
+  a: storeA,
+  b: storeB
+})(CombinedComponent1)
+
+let ca1 = <ConnectedCombinedComponent1 x={3} />
+
+//// Functional component (inline)
+
+let ConnectedCombinedComponent2 = connectAs({
+  a: storeA,
+  b: storeB
+})(({a, b}: CombinedComponentProps) =>
+  <div>
+    {a.get('a') * 4}
+    {b.get('b').concat('d')}
+  </div>
+)
+
+let ca2 = <ConnectedCombinedComponent2 />
+
+//// Functional component (inline, additional props)
+
+let ConnectedCombinedComponent3 = connectAs({
+  a: storeA,
+  b: storeB
+})(({a, b, x}: ConnectedCombinedAugmentedProps) =>
+  <div>
+    {a.get('a') * 4}
+    {b.get('b').concat('d')}
+    {x * 3}
+  </div>
+)
+
+let ca3 = <ConnectedCombinedComponent3 x={3} />

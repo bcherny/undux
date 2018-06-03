@@ -381,3 +381,96 @@ test('[stateful] it should update when any of the stores updated', t => {
   })
 
 })
+
+//
+// Compilation tests
+// All of the following should compile:
+//
+
+type CombinedA = { a: number }
+type CombinedB = { b: string }
+
+let initA: CombinedA = { a: 1 }
+let initB: CombinedB = { b: 'c' }
+
+let storeA = createStore(initA)
+let storeB = createStore(initB)
+
+type CombinedComponentProps = {
+  a: Store<CombinedA>,
+  b: Store<CombinedB>
+}
+
+type ConnectedCombinedAugmentedProps = CombinedComponentProps & {
+  x: number
+}
+
+//// Class component
+
+class CombinedComponent10 extends React.Component<CombinedComponentProps> {
+  render() {
+    return <div>
+      {this.props.a.get('a') * 4}
+      {this.props.b.get('b').concat('d')}
+    </div>
+  }
+}
+
+let ConnectedCombinedComponent10 = connectAs({
+  a: storeA,
+  b: storeB
+})(CombinedComponent10)
+
+let ca10 = <ConnectedCombinedComponent10 />
+
+//// Class component (additional props)
+
+class CombinedComponent11 extends React.Component<ConnectedCombinedAugmentedProps> {
+  render() {
+    return <div>
+      {this.props.a.get('a') * 4}
+      {this.props.b.get('b').concat('d')}
+      {this.props.x * 3}
+    </div>
+  }
+}
+
+let ConnectedCombinedComponent11 = connectAs({
+  a: storeA,
+  b: storeB
+})(CombinedComponent11)
+
+let ca11 = <ConnectedCombinedComponent11 x={3} />
+
+//// Class component (inline)
+
+let ConnectedCombinedComponent12 = connectAs({
+  a: storeA,
+  b: storeB
+})(class extends React.Component<CombinedComponentProps> {
+  render() {
+    return <div>
+      {this.props.a.get('a') * 4}
+      {this.props.b.get('b').concat('d')}
+    </div>
+  }
+})
+
+let ca12 = <ConnectedCombinedComponent12 />
+
+//// Class component (inline, additional props)
+
+let ConnectedCombinedComponent13 = connectAs({
+  a: storeA,
+  b: storeB
+})(class extends React.Component<ConnectedCombinedAugmentedProps> {
+  render() {
+    return <div>
+      {this.props.a.get('a') * 13}
+      {this.props.b.get('b').concat('d')}
+      {this.props.x * 3}
+    </div>
+  }
+})
+
+let ca13 = <ConnectedCombinedComponent13 x={4} />
