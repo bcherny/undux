@@ -63,5 +63,5 @@ declare export function connectAs<
 >(
   stores: Stores
 ): <Props: Object>(
-  Component: React.ComponentType<{|...Stores, ...Props|}>
+  Component: React.ComponentType<Props>
 ) => Class<React.Component<$Diff<Props, Stores>>>

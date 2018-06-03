@@ -140,7 +140,7 @@ type CombinedComponentProps = {|
   b: Store<CombinedB>
 |}
 
-type ConnectedCombinedAugmentedProps = {|
+type CombinedAugmentedComponentProps = {|
   ...CombinedComponentProps,
   x: number
 |}
@@ -162,7 +162,7 @@ let ca = <ConnectedCombinedComponent />
 
 //// Functional component (additional props)
 
-let CombinedComponent1 = ({a, b, x}: ConnectedCombinedAugmentedProps) =>
+let CombinedComponent1 = ({a, b, x}: CombinedAugmentedComponentProps) =>
   <div>
     {a.get('a') * 4}
     {b.get('b').concat('d')}
@@ -174,7 +174,7 @@ let ConnectedCombinedComponent1 = connectAs({
   b: storeB
 })(CombinedComponent1)
 
-let ca1 = <ConnectedCombinedComponent1 />
+let ca1 = <ConnectedCombinedComponent1 x={1} />
 
 //// Functional component (inline)
 
@@ -192,15 +192,10 @@ let ca2 = <ConnectedCombinedComponent2 />
 
 //// Functional component (inline, additional props)
 
-type ConnectedCombinedComponent3Props = {|
-  ...CombinedComponentProps,
-  x: number
-|}
-
 let ConnectedCombinedComponent3 = connectAs({
   a: storeA,
   b: storeB
-})(({a, b, x}: ConnectedCombinedComponent3Props) =>
+})(({a, b, x}: CombinedAugmentedComponentProps) =>
   <div>
     {a.get('a') * 4}
     {b.get('b').concat('d')}
@@ -208,7 +203,7 @@ let ConnectedCombinedComponent3 = connectAs({
   </div>
 )
 
-let ca3 = <ConnectedCombinedComponent3 />
+let ca3 = <ConnectedCombinedComponent3 x={4} />
 
 //// Class component
 
@@ -230,7 +225,7 @@ let ca10 = <ConnectedCombinedComponent10 />
 
 //// Class component (additional props)
 
-class CombinedComponent11 extends React.Component<ConnectedCombinedAugmentedProps> {
+class CombinedComponent11 extends React.Component<CombinedAugmentedComponentProps> {
   render() {
     return <div>
       {this.props.a.get('a') * 4}
@@ -245,7 +240,7 @@ let ConnectedCombinedComponent11 = connectAs({
   b: storeB
 })(CombinedComponent11)
 
-let ca11 = <ConnectedCombinedComponent11 />
+let ca11 = <ConnectedCombinedComponent11 x={10} />
 
 //// Class component (inline)
 
@@ -268,7 +263,7 @@ let ca12 = <ConnectedCombinedComponent12 />
 let ConnectedCombinedComponent13 = connectAs({
   a: storeA,
   b: storeB
-})(class extends React.Component<ConnectedCombinedAugmentedProps> {
+})(class extends React.Component<CombinedAugmentedComponentProps> {
   render() {
     return <div>
       {this.props.a.get('a') * 13}
