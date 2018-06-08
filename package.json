@@ -18,7 +18,7 @@
     "build": "npm run clean && npm run lint && tsc -d && flow focus-check src/index.js.flow && cp src/index.js.flow dist/src/index.js.flow",
     "clean": "shx rm -rf dist",
     "format": "prettier --write src/**/* test/**/*",
-    "lint": "tslint -p tsconfig.json src/**/*",
+    "lint": "tslint -p tsconfig.json src/*.ts src/*.tsx src/plugins/*.ts",
     "prepublishOnly": "npm test",
     "pretest": "npm run build",
     "tdd": "concurrently -k \"tsc -w\" \"ava -w\"",
