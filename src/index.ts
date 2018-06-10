@@ -1,6 +1,12 @@
 import * as RxJS from 'rxjs'
 import { Emitter } from 'typed-rx-emitter'
+import { withReduxDevtools } from './plugins/withReduxDevtools'
 import { mapValues } from './utils'
+
+/**
+ * Used internally for FB projects running in NodeJS env.
+ */
+declare let __DEV__: boolean | undefined
 
 const CYCLE_ERROR_MESSAGE = '[undux] Error: Cyclical dependency detected. '
   + 'This may cause a stack overflow unless you fix it. \n'
@@ -51,6 +57,10 @@ export type Options = {
 
 let DEFAULT_OPTIONS: Readonly<Options> = {
   isDevMode: false
+}
+
+let DEFAULT_OPTIONS_DEV: Readonly<Options> = {
+  isDevMode: true
 }
 
 export class StoreDefinition<State extends object> implements Store<State> {
@@ -116,6 +126,12 @@ export function createStore<State extends object>(
   initialState: State,
   options: Options = DEFAULT_OPTIONS
 ): StoreDefinition<State> {
+  if (__DEV__) {
+    let store = new StoreDefinition<State>(initialState, options || DEFAULT_OPTIONS_DEV)
+    return window.__REDUX_DEVTOOLS_EXTENSION__
+      ? withReduxDevtools(store)
+      : store
+  }
   return new StoreDefinition<State>(initialState, options)
 }
 
