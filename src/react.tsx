@@ -6,40 +6,76 @@ import { equals, getDisplayName, keys, mapValues, some } from './utils'
 
 export type Diff<T, U> = Pick<T, Exclude<keyof T, keyof U>>
 
-export function connect<StoreState extends object>(store: StoreDefinition<StoreState>) {
-  return function <
-    Props,
+type F<StoreState extends object> = (<
+  Props,
+  PropsWithStore extends { store: Store<StoreState> } & Props = { store: Store<StoreState> } & Props
+>(
+  Component: React.ComponentType<PropsWithStore>
+) => React.ComponentClass<Diff<PropsWithStore, { store: Store<StoreState> }>>)
+
+type Connect<StoreState extends object> = F<StoreState> & {
+  Root: F<StoreState>
+}
+
+export function connect<StoreState extends object>(store: StoreDefinition<StoreState>): Connect<StoreState> {
+  let f = <
+    Props extends object,
     PropsWithStore extends { store: Store<StoreState> } & Props = { store: Store<StoreState> } & Props
   >(
     Component: React.ComponentType<PropsWithStore>
-  ): React.ComponentClass<Diff<PropsWithStore, { store: Store<StoreState> }>> {
+  ): React.ComponentClass<Diff<PropsWithStore, { store: Store<StoreState> }>> => {
+    return createConnect<StoreState, Props, PropsWithStore>(store, Component, () => {})
+  }
 
-    type State = {
-      store: StoreSnapshot<StoreState>
-      subscription: Subscription
+  let Root = <
+    Props extends object,
+    PropsWithStore extends { store: Store<StoreState> } & Props = { store: Store<StoreState> } & Props
+  >(
+    Component: React.ComponentType<PropsWithStore>
+  ): React.ComponentClass<Diff<PropsWithStore, { store: Store<StoreState> }>> => {
+    return createConnect<StoreState, Props, PropsWithStore>(store, Component, () => {
+      // TODO: clean up
+    })
+  }
+
+  return Object.assign(f, { Root })
+}
+
+type State<StoreState extends object> = {
+  store: StoreSnapshot<StoreState>
+  subscription: Subscription
+}
+
+function createConnect<
+  StoreState extends object,
+  Props extends object,
+  PropsWithStore extends { store: Store<StoreState> } & Props = { store: Store<StoreState> } & Props
+>(
+  store: StoreDefinition<StoreState>,
+  Component: React.ComponentType<PropsWithStore>,
+  onUnmount: () => void
+) {
+  return class extends React.Component<Diff<PropsWithStore, { store: Store<StoreState> }>, State<StoreState>> {
+    static displayName = `withStore(${getDisplayName(Component)})`
+    state = {
+      store: store.getCurrentSnapshot(),
+      subscription: store.onAll().subscribe(({ previousValue, value }) => {
+        if (equals(previousValue, value)) {
+          return false
+        }
+        this.setState({ store: store.getCurrentSnapshot() })
+      })
     }
-
-    return class extends React.Component<Diff<PropsWithStore, { store: Store<StoreState> }>, State> {
-      static displayName = `withStore(${getDisplayName(Component)})`
-      state = {
-        store: store.getCurrentSnapshot(),
-        subscription: store.onAll().subscribe(({ previousValue, value }) => {
-          if (equals(previousValue, value)) {
-            return false
-          }
-          this.setState({ store: store.getCurrentSnapshot() })
-        })
-      }
-      componentWillUnmount() {
-        this.state.subscription.unsubscribe()
-      }
-      shouldComponentUpdate(props: Readonly<Diff<PropsWithStore, { store: Store<StoreState> }>>, state: State) {
-        return state.store !== this.state.store
-          || Object.keys(props).some(_ => (props as any)[_] !== (this.props as any)[_])
-      }
-      render() {
-        return <Component {...this.props} store={this.state.store} />
-      }
+    componentWillUnmount() {
+      this.state.subscription.unsubscribe()
+      onUnmount()
+    }
+    shouldComponentUpdate(props: Readonly<Diff<PropsWithStore, { store: Store<StoreState> }>>, state: State<StoreState>) {
+      return state.store !== this.state.store
+        || Object.keys(props).some(_ => (props as any)[_] !== (this.props as any)[_])
+    }
+    render() {
+      return <Component {...this.props} store={this.state.store} />
     }
   }
 }
