@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { ComponentClass } from 'react'
 import { Subscription } from 'rxjs'
-import { Store, StoreDefinition, StoreSnapshot } from './'
+import { createStore, Store, StoreDefinition, StoreSnapshot } from './'
 import { equals, getDisplayName, keys, mapValues, some } from './utils'
 
 export type Diff<T, U> = Pick<T, Exclude<keyof T, keyof U>>
@@ -18,7 +18,19 @@ type Connect<StoreState extends object> = {
   Provider: F<StoreState>
 }
 
-export function connect<StoreState extends object>(store: StoreDefinition<StoreState>): Connect<StoreState> {
+function identity<A>(a: A): A {
+  return a
+}
+
+export function connect<
+  StoreState extends object
+>(
+  storeState: StoreState,
+  f: (store: StoreDefinition<StoreState>) => StoreDefinition<StoreState> = identity
+): Connect<StoreState> {
+
+  let store = f(createStore(storeState))
+
   let Consumer = <
     Props extends object,
     PropsWithStore extends { store: Store<StoreState> } & Props = { store: Store<StoreState> } & Props
