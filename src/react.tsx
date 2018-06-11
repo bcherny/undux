@@ -13,32 +13,34 @@ type F<StoreState extends object> = (<
   Component: React.ComponentType<PropsWithStore>
 ) => React.ComponentClass<Diff<PropsWithStore, { store: Store<StoreState> }>>)
 
-type Connect<StoreState extends object> = F<StoreState> & {
-  Root: F<StoreState>
+type Connect<StoreState extends object> = {
+  Consumer: F<StoreState>
+  Provider: F<StoreState>
 }
 
 export function connect<StoreState extends object>(store: StoreDefinition<StoreState>): Connect<StoreState> {
-  let f = <
+  let Consumer = <
     Props extends object,
     PropsWithStore extends { store: Store<StoreState> } & Props = { store: Store<StoreState> } & Props
   >(
     Component: React.ComponentType<PropsWithStore>
   ): React.ComponentClass<Diff<PropsWithStore, { store: Store<StoreState> }>> => {
-    return createConnect<StoreState, Props, PropsWithStore>(store, Component, () => {})
+    return createConnect<StoreState, Props, PropsWithStore>(store, Component, false)
   }
 
-  let Root = <
+  let Provider = <
     Props extends object,
     PropsWithStore extends { store: Store<StoreState> } & Props = { store: Store<StoreState> } & Props
   >(
     Component: React.ComponentType<PropsWithStore>
   ): React.ComponentClass<Diff<PropsWithStore, { store: Store<StoreState> }>> => {
-    return createConnect<StoreState, Props, PropsWithStore>(store, Component, () => {
-      // TODO: clean up
-    })
+    return createConnect<StoreState, Props, PropsWithStore>(store, Component, true)
   }
 
-  return Object.assign(f, { Root })
+  return {
+    Consumer,
+    Provider
+  }
 }
 
 type State<StoreState extends object> = {
@@ -53,22 +55,35 @@ function createConnect<
 >(
   store: StoreDefinition<StoreState>,
   Component: React.ComponentType<PropsWithStore>,
-  onUnmount: () => void
+  isRoot: boolean
 ) {
   return class extends React.Component<Diff<PropsWithStore, { store: Store<StoreState> }>, State<StoreState>> {
     static displayName = `withStore(${getDisplayName(Component)})`
-    state = {
-      store: store.getCurrentSnapshot(),
-      subscription: store.onAll().subscribe(({ previousValue, value }) => {
-        if (equals(previousValue, value)) {
-          return false
-        }
-        this.setState({ store: store.getCurrentSnapshot() })
-      })
+    constructor(props: any) {
+      super(props)
+      let snap = store.getCurrentSnapshot()
+      if (!snap) {
+        throw 'cant even'
+      }
+      this.state = {
+        store: snap,
+        subscription: store.onAll().subscribe(({ previousValue, value }) => {
+          if (equals(previousValue, value)) {
+            return false
+          }
+          let snap = store.getCurrentSnapshot()
+          if (!snap) {
+            throw 'cant even'
+          }
+          this.setState({ store: snap })
+        })
+      }
     }
     componentWillUnmount() {
       this.state.subscription.unsubscribe()
-      onUnmount()
+      if (isRoot) {
+        store.gc()
+      }
     }
     shouldComponentUpdate(props: Readonly<Diff<PropsWithStore, { store: Store<StoreState> }>>, state: State<StoreState>) {
       return state.store !== this.state.store
