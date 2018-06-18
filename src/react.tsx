@@ -43,29 +43,31 @@ export function connect<StoreState extends object>(store: StoreDefinition<StoreS
 
     return class extends React.Component<Diff<PropsWithStore, { store: Store<StoreState> }>, State> {
       static displayName = `withStore(${getDisplayName(Component)})`
-      const subscribedFields: Set<keyof StoreState> = new Set()
+      const subscriptions: Map<keyof StoreState, Subscription> = new Map()
 
       const _onGet = (field: keyof StoreState) => {
-        this.subscribedFields.add(field)
+        if (this.subscriptions.has(field)) {
+          return
+        }
+        this.subscriptions.set(
+          field,
+          store.on(field).subscribe(
+            (value) => {
+              if (equals(value, this.state.store.get(field))) {
+                return
+              }
+              this.setState({
+                store: new StoreSnapshotWrapper(store.getCurrentSnapshot(), this._onGet)
+              })
+            }
+          )
+        )
       }
-      const subscription: Subscription = store.onAll()
-        .subscribe(
-          ({key, previousValue, value}) => {
-            if (!this.subscribedFields.has(key)) {
-              return
-            }
-            if (equals(previousValue, value)) {
-              return
-            }
-            this.setState({
-              store: new StoreSnapshotWrapper(store.getCurrentSnapshot(), this._onGet)
-            })
-          })
       state = {
         store: new StoreSnapshotWrapper(store.getCurrentSnapshot(), this._onGet)
       }
       componentWillUnmount() {
-        this.subscription.unsubscribe()
+        this.subscriptions.forEach(s => s.unsubscribe())
       }
       shouldComponentUpdate(props: Readonly<Diff<PropsWithStore, { store: Store<StoreState> }>>, state: State) {
         return state.store !== this.state.store
