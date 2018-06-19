@@ -221,10 +221,8 @@ test('#getState should not be writable', t => {
 
 test('[stateless] it should update correctly when using nested stores', t => {
 
-  let storeA = createStore({ a: 1 })
-  let storeB = createStore({ b: 2 })
-  let withStoreA = connect(storeA)
-  let withStoreB = connect(storeB)
+  let {Provider: ProviderA} = connect({ a: 1 })
+  let {Provider: ProviderB} = connect({ b: 2 })
 
   type StateA = {
     a: number
@@ -241,10 +239,10 @@ test('[stateless] it should update correctly when using nested stores', t => {
     store: Store<StateB>
   }
 
-  let A = withStoreA(({ store }: PropsA) =>
+  let A = ProviderA(({ store }: PropsA) =>
     <B storeA={store} />
   )
-  let B = withStoreB(({ storeA, store: storeB }: PropsB) =>
+  let B = ProviderB(({ storeA, store: storeB }: PropsB) =>
     <div>{storeA.get('a')}-{storeB.get('b')}</div>
   )
   let App = () =>
@@ -259,22 +257,39 @@ test('[stateless] it should update correctly when using nested stores', t => {
   })
 })
 
-test('[stateless] it should memoize setters', t =>
-  withElement(MyComponent, _ => {
-    t.is(store.set('isTrue'), store.set('isTrue'))
-    t.is(store.set('users'), store.set('users'))
+test('[stateless] it should memoize setters', t => {
+  t.plan(2)
+  let {Provider} = connect({ a: 1, b: 2 })
+  Provider(({ store }) => {
+    t.is(store.set('a'), store.set('a'))
+    t.is(store.set('b'), store.set('b'))
+    return <div />
   })
-)
+})
 
 test('[stateless] it should render with multiple stores', t => {
 
   let storeA = createStore({ a: 1 })
   let storeB = createStore({ b: 'c' })
 
-  let Component = connectAs({
-    a: storeA,
-    b: storeB
-  })(({ a, b }) =>
+  let initialA = {
+    a: 1
+  }
+  let initialB = {
+    b: 'x'
+  }
+
+  let {Provider} = connectAs(
+    {
+      a: initialA,
+      b: initialB
+    },
+    ({a, b}) => {
+      return {a, b}
+    }
+  )
+
+  let Component = Provider(({ a, b }) =>
     <>
       a={a.get('a') * 4},
       b={b.get('b').concat('d')}

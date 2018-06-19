@@ -18,9 +18,8 @@ type Connect<StoreState extends object> = {
   Provider: F<StoreState>
 }
 
-function identity<A>(a: A): A {
-  return a
-}
+type Identity = <A>(a: A) => A
+let identity: Identity = a => a
 
 export function connect<
   StoreState extends object
@@ -75,6 +74,7 @@ function createConnect<
       super(props)
       let snap = store.getCurrentSnapshot()
       if (!snap) {
+        // This means we tried to mount an HOC after its store was already GC'd
         throw 'cant even'
       }
       this.state = {
@@ -85,6 +85,7 @@ function createConnect<
           }
           let snap = store.getCurrentSnapshot()
           if (!snap) {
+            // This means the store was GC'd before this component was unmounted
             throw 'cant even'
           }
           this.setState({ store: snap })
@@ -107,51 +108,160 @@ function createConnect<
   }
 }
 
-export function connectAs<
-  Stores extends {[alias: string]: StoreDefinition<any>}
+function createConnects<
+  Props extends object,
+  StoreStates extends {[alias: string]: object},
+  Stores extends {
+    [K in keyof StoreStates]: StoreDefinition<StoreStates[K]>
+  } = {
+    [K in keyof StoreStates]: StoreDefinition<StoreStates[K]>
+  },
+  StoreSnapshots extends {
+    [K in keyof StoreStates]: StoreSnapshot<StoreStates[K]>
+  } = {
+    [K in keyof StoreStates]: StoreSnapshot<StoreStates[K]>
+  }
 >(
-  stores: Stores
+  stores: Stores,
+  Component: React.ComponentType<{
+    [K in keyof Stores]: StoreSnapshot<Stores[K]>
+  } & Props>,
+  isRoot: boolean
 ) {
-  return function<Props extends object>(
-    Component: React.ComponentType<{
-      [K in keyof Stores]: ReturnType<Stores[K]['toStore']>
-    } & Props>
-  ): React.ComponentClass<Diff<Props, Stores>> {
-
-    type State = {
-      stores: {
-        [K in keyof Stores]: ReturnType<Stores[K]['getCurrentSnapshot']>
-      }
-      subscriptions: Subscription[]
+  type State = {
+    stores: {
+      [K in keyof Stores]: ReturnType<Stores[K]['getCurrentSnapshot']>
     }
+    subscriptions: Subscription[]
+  }
+  return class extends React.Component<Diff<Props, Stores>, State> {
+    static displayName = `withStore(${getDisplayName(Component)})`
 
-    return class extends React.Component<Diff<Props, Stores>, State> {
-      static displayName = `withStore(${getDisplayName(Component)})`
-      state = {
-        stores: mapValues(stores, _ =>
-          _.getCurrentSnapshot() as ReturnType<(typeof _)['getCurrentSnapshot']>
-        ),
-        subscriptions: keys(stores).map(k =>
-          stores[k].onAll().subscribe(({ previousValue, value }) => {
-            if (equals(previousValue, value)) {
-              return false
-            }
-            this.setState({
-              stores: Object.assign({}, this.state.stores as any, {[k]: stores[k].getCurrentSnapshot()})
-            })
+    state: State = {
+      stores: mapValues(stores, _ =>
+        _.getCurrentSnapshot() as ReturnType<(typeof _)['getCurrentSnapshot']>
+      ),
+      subscriptions: keys(stores).map(k =>
+        stores[k].onAll().subscribe(({ previousValue, value }) => {
+          if (equals(previousValue, value)) {
+            return false
+          }
+          this.setState({
+            stores: Object.assign({}, this.state.stores as any, {[k]: stores[k].getCurrentSnapshot()})
           })
-        )
-      }
-      componentWillUnmount() {
-        this.state.subscriptions.forEach(_ => _.unsubscribe())
-      }
-      shouldComponentUpdate(props: Diff<Props, Stores>, state: State) {
-        return some(state.stores, (s, k) => s !== this.state.stores[k])
-          || Object.keys(props).some(_ => (props as any)[_] !== (this.props as any)[_])
-      }
-      render() {
-        return <Component {...this.props} {...this.state.stores} />
-      }
+        })
+      )
+    }
+    componentWillUnmount() {
+      this.state.subscriptions.forEach(_ => _.unsubscribe())
+    }
+    shouldComponentUpdate(props: Diff<Props, Stores>, state: State) {
+      return some(state.stores, (s, k) => s !== this.state.stores[k])
+        || Object.keys(props).some(_ => (props as any)[_] !== (this.props as any)[_])
+    }
+    render() {
+      return <Component {...this.props} {...this.state.stores} />
     }
   }
 }
+
+type FAs<A extends object> = <
+  Props extends object,
+  Stores extends {[alias: string]: object}
+>(
+  Component: React.ComponentType<{
+    [K in keyof Stores]: StoreSnapshot<Stores[K]>
+  } & Props>
+) => React.ComponentClass<Diff<Props, Stores>>
+
+type ConnectAs<Stores extends {[alias: string]: object}> = {
+  Consumer: FAs<Stores>
+  Provider: FAs<Stores>
+}
+
+export function connectAs<
+  StoreStates extends {[alias: string]: object}
+>(
+  storeStates: StoreStates,
+  f?: (s: {[K in keyof StoreStates]: StoreDefinition<StoreStates[K]>}) => {[K in keyof StoreStates]: StoreDefinition<StoreStates[K]>}
+): ConnectAs<StoreStates> {
+
+  let stores = mapValues(storeStates, _ => createStore(_))
+  if (f) {
+    stores = f(stores)
+  }
+
+  let Consumer = <
+    Props extends object
+  >(
+    Component: React.ComponentType<{
+      [K in keyof StoreStates]: StoreSnapshot<StoreStates[K]>
+    } & Props>
+  ): React.ComponentClass<Diff<Props, StoreStates>> => {
+    return createConnects<Props, StoreStates>(stores, Component, false)
+  }
+
+  let Provider = <
+    Props extends object
+  >(
+    Component: React.ComponentType<{
+      [K in keyof StoreStates]: StoreSnapshot<StoreStates[K]>
+    } & Props>
+  ): React.ComponentClass<Diff<Props, StoreStates>> => {
+    return createConnects<Props, StoreStates>(stores, Component, true)
+  }
+
+  return {
+    Consumer,
+    Provider
+  }
+}
+
+// export function connectAs<
+//   Stores extends {[alias: string]: StoreDefinition<any>}
+// >(
+//   stores: Stores
+// ) {
+//   return function<Props extends object>(
+//     Component: React.ComponentType<{
+//       [K in keyof Stores]: ReturnType<Stores[K]['toStore']>
+//     } & Props>
+//   ): React.ComponentClass<Diff<Props, Stores>> {
+
+//     type State = {
+//       stores: {
+//         [K in keyof Stores]: ReturnType<Stores[K]['getCurrentSnapshot']>
+//       }
+//       subscriptions: Subscription[]
+//     }
+
+//     return class extends React.Component<Diff<Props, Stores>, State> {
+//       static displayName = `withStore(${getDisplayName(Component)})`
+//       state = {
+//         stores: mapValues(stores, _ =>
+//           _.getCurrentSnapshot() as ReturnType<(typeof _)['getCurrentSnapshot']>
+//         ),
+//         subscriptions: keys(stores).map(k =>
+//           stores[k].onAll().subscribe(({ previousValue, value }) => {
+//             if (equals(previousValue, value)) {
+//               return false
+//             }
+//             this.setState({
+//               stores: Object.assign({}, this.state.stores as any, {[k]: stores[k].getCurrentSnapshot()})
+//             })
+//           })
+//         )
+//       }
+//       componentWillUnmount() {
+//         this.state.subscriptions.forEach(_ => _.unsubscribe())
+//       }
+//       shouldComponentUpdate(props: Diff<Props, Stores>, state: State) {
+//         return some(state.stores, (s, k) => s !== this.state.stores[k])
+//           || Object.keys(props).some(_ => (props as any)[_] !== (this.props as any)[_])
+//       }
+//       render() {
+//         return <Component {...this.props} {...this.state.stores} />
+//       }
+//     }
+//   }
+// }

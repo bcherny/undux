@@ -95,6 +95,7 @@ export class StoreDefinition<State extends object> implements Store<State> {
     this.setters = mapValues(state, (v, key) =>
       (value: typeof v) => {
         if (!this.storeSnapshot) {
+          // Someone called set() on a snapshot after the root component unmounted
           throw 'cant even'
         }
         let previousValue = this.storeSnapshot.get(key)
@@ -117,6 +118,7 @@ export class StoreDefinition<State extends object> implements Store<State> {
     if (this.storeSnapshot) {
       return this.storeSnapshot.get(key)
     }
+    // Someone called get() on a snapshot after the root component unmounted
     throw 'cant even'
   }
   set<K extends keyof State>(key: K) {
@@ -128,14 +130,17 @@ export class StoreDefinition<State extends object> implements Store<State> {
   toStore(): Store<State> | null {
     return this.storeSnapshot
   }
-  getState() {
-    if (this.storeSnapshot) {
-      return this.storeSnapshot.getState()
-    }
-    throw 'cant even'
-  }
+  // getState() {
+  //   if (this.storeSnapshot) {
+  //     return this.storeSnapshot.getState()
+  //   }
+  //   // This is probably the most likely failure mode: someone called
+  //   // getState() after the store unmounted.
+  //   throw 'cant even'
+  // }
   gc() {
     if (!this.storeSnapshot) {
+      // This means the root node unmounted more than once
       throw 'cant even'
     }
     this.storeSnapshot.gc()   // break ref from snapshot -> definition
