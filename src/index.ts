@@ -24,24 +24,39 @@ export interface Store<State extends object> {
 }
 
 export class StoreSnapshot<State extends object> implements Store<State> {
+  private storeDefinition: StoreDefinition<State> | null
   constructor(
     private state: State,
-    private storeDefinition: StoreDefinition<State>
-  ) { }
+    storeDefinition: StoreDefinition<State>
+  ) {
+    this.storeDefinition = storeDefinition
+  }
   get<K extends keyof State>(key: K) {
     return this.state[key]
   }
   set<K extends keyof State>(key: K) {
+    if (!this.storeDefinition) {
+      throw 'cant even'
+    }
     return this.storeDefinition.set(key)
   }
   on<K extends keyof State>(key: K) {
+    if (!this.storeDefinition) {
+      throw 'cant even'
+    }
     return this.storeDefinition.on(key)
   }
   onAll() {
+    if (!this.storeDefinition) {
+      throw 'cant even'
+    }
     return this.storeDefinition.onAll()
   }
   getState() {
     return Object.freeze(this.state)
+  }
+  gc() {
+    this.storeDefinition = null
   }
 }
 
@@ -54,7 +69,7 @@ let DEFAULT_OPTIONS: Readonly<Options> = {
 }
 
 export class StoreDefinition<State extends object> implements Store<State> {
-  private storeSnapshot: StoreSnapshot<State>
+  private storeSnapshot: StoreSnapshot<State> | null
   private alls: Emitter<Undux<State>>
   private emitter: Emitter<State>
   private setters: {
@@ -79,6 +94,10 @@ export class StoreDefinition<State extends object> implements Store<State> {
     // Cache setters
     this.setters = mapValues(state, (v, key) =>
       (value: typeof v) => {
+        if (!this.storeSnapshot) {
+          // Someone called set() on a snapshot after the root component unmounted
+          throw 'cant even'
+        }
         let previousValue = this.storeSnapshot.get(key)
         this.storeSnapshot = new StoreSnapshot(
           Object.assign({}, this.storeSnapshot.getState(), { [key]: value }),
@@ -96,7 +115,11 @@ export class StoreDefinition<State extends object> implements Store<State> {
     return this.alls.all()
   }
   get<K extends keyof State>(key: K) {
-    return this.storeSnapshot.get(key)
+    if (this.storeSnapshot) {
+      return this.storeSnapshot.get(key)
+    }
+    // Someone called get() on a snapshot after the root component unmounted
+    throw 'cant even'
   }
   set<K extends keyof State>(key: K) {
     return this.setters[key]
@@ -104,11 +127,24 @@ export class StoreDefinition<State extends object> implements Store<State> {
   getCurrentSnapshot() {
     return this.storeSnapshot
   }
-  toStore(): Store<State> {
+  toStore(): Store<State> | null {
     return this.storeSnapshot
   }
-  getState() {
-    return this.storeSnapshot.getState()
+  // getState() {
+  //   if (this.storeSnapshot) {
+  //     return this.storeSnapshot.getState()
+  //   }
+  //   // This is probably the most likely failure mode: someone called
+  //   // getState() after the store unmounted.
+  //   throw 'cant even'
+  // }
+  gc() {
+    if (!this.storeSnapshot) {
+      // This means the root node unmounted more than once
+      throw 'cant even'
+    }
+    this.storeSnapshot.gc()   // break ref from snapshot -> definition
+    this.storeSnapshot = null // break ref from definition -> snapshot
   }
 }
 
