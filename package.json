@@ -28,22 +28,22 @@
     "typed-rx-emitter": "^1.1.2"
   },
   "devDependencies": {
-    "@types/jsdom": "^11.0.5",
-    "@types/react": "^16.3.17",
+    "@types/jsdom": "^11.0.6",
+    "@types/react": "^16.4.1",
     "@types/react-dom": "^16.0.6",
     "ava": "^0.25.0",
-    "concurrently": "^3.5.1",
+    "concurrently": "^3.6.0",
     "flow-bin": "^0.74.0",
     "immutable": "^3.8.2",
     "jsdom": "^11.11.0",
     "prettier": "^1.13.5",
-    "react": "^16.4.0",
-    "react-dom": "^16.4.0",
-    "rxjs": "^6.2.0",
+    "react": "^16.4.1",
+    "react-dom": "^16.4.1",
+    "rxjs": "^6.2.1",
     "shx": "^0.3.0",
     "tslint": "^5.10.0",
     "tslint-react": "^3.6.0",
-    "typescript": "^2.9.1"
+    "typescript": "^2.9.2"
   },
   "peerDependencies": {
     "react": ">=16.0.0",
