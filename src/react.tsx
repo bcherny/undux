@@ -9,10 +9,11 @@ export type Diff<T, U> = Pick<T, Exclude<keyof T, keyof U>>
 class StoreSnapshotWrapper<StoreState extends object> implements Store<StoreState> {
   constructor(
     private snapshot: StoreSnapshot<StoreState>,
-    private callbackOnGetsubscriptions: (key: keyof StoreState) => void
+    private callbackOnGet: (key: keyof StoreState) => void,
+    private callbackOnGetAll: () => void
   ) { }
   get<K extends keyof StoreState>(key: K) {
-    this.callbackOnGetsubscriptions(key)
+    this.callbackOnGet(key)
     return this.snapshot.get(key)
   }
   set<K extends keyof StoreState>(key: K) {
@@ -25,6 +26,7 @@ class StoreSnapshotWrapper<StoreState extends object> implements Store<StoreStat
     return this.snapshot.onAll()
   }
   getState() {
+    this.callbackOnGetAll()
     return this.snapshot.getState()
   }
 }
@@ -37,37 +39,61 @@ export function connect<StoreState extends object>(store: StoreDefinition<StoreS
     Component: React.ComponentType<PropsWithStore>
   ): React.ComponentClass<Diff<PropsWithStore, { store: Store<StoreState> }>> {
 
+    type SubscriptionKeys = keyof StoreState | '<all>'
+
     type State = {
-      store: StoreSnapshotWrapper<StoreState>
+      store: StoreSnapshotWrapper<StoreState>,
+      subscriptions: Map<SubscriptionKeys, Subscription>
     }
 
     return class extends React.Component<Diff<PropsWithStore, { store: Store<StoreState> }>, State> {
       static displayName = `withStore(${getDisplayName(Component)})`
-      const subscriptions: Map<keyof StoreState, Subscription> = new Map()
 
-      const _onGet = (field: keyof StoreState) => {
-        if (this.subscriptions.has(field)) {
+      private onGet = (field: keyof StoreState) => {
+        if (this.state.subscriptions.has(field) || this.state.subscriptions.has('<all>')) {
           return
         }
-        this.subscriptions.set(
+        const newSubscriptions = new Map(this.state.subscriptions)
+        newSubscriptions.set(
           field,
-          store.on(field).subscribe(
-            (value) => {
-              if (equals(value, this.state.store.get(field))) {
-                return
-              }
-              this.setState({
-                store: new StoreSnapshotWrapper(store.getCurrentSnapshot(), this._onGet)
-              })
+          store.on(field).subscribe(value => {
+            if (equals(value, this.state.store.get(field))) {
+              return
             }
-          )
+            this.setState({
+              store: new StoreSnapshotWrapper(store.getCurrentSnapshot(), this.onGet, this.onGetAll)
+            })
+          })
         )
+        this.setState({ subscriptions: newSubscriptions })
       }
+
+      private onGetAll = () => {
+        if (this.state.subscriptions.has('<all>')) {
+          return
+        }
+        const newSubscriptions = new Map()
+        newSubscriptions.set(
+          '<all>',
+          store.onAll().subscribe(({ previousValue, value }) => {
+            if (equals(previousValue, value)) {
+              return
+            }
+            this.setState({
+              store: new StoreSnapshotWrapper(store.getCurrentSnapshot(), this.onGet, this.onGetAll)
+            })
+          })
+        )
+        this.state.subscriptions.forEach(_ => _.unsubscribe())
+        this.setState({ subscriptions: newSubscriptions })
+      }
+
       state = {
-        store: new StoreSnapshotWrapper(store.getCurrentSnapshot(), this._onGet)
+        store: new StoreSnapshotWrapper(store.getCurrentSnapshot(), this.onGet, this.onGetAll),
+        subscriptions: new Map()
       }
       componentWillUnmount() {
-        this.subscriptions.forEach(s => s.unsubscribe())
+        this.state.subscriptions.forEach(_ => _.unsubscribe())
       }
       shouldComponentUpdate(props: Readonly<Diff<PropsWithStore, { store: Store<StoreState> }>>, state: State) {
         return state.store !== this.state.store
