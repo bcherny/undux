@@ -1,7 +1,7 @@
 import { test } from 'ava'
 import * as React from 'react'
 import { renderIntoDocument, Simulate } from 'react-dom/test-utils'
-import { connect, connectAs, createStore, Store } from '../src'
+import { connect, connectAs, createStore, createStoreStrict, Store } from '../src'
 import { withElement } from './testUtils'
 
 type State = {
@@ -373,6 +373,80 @@ test('[stateless] it should update when any field changes (getState)', t => {
     t.is(_.innerHTML, '0<button id="a"></button><button id="b"></button><span></span>')
     t.is(renderCount, 5)
   })
+})
+
+test('[stateless] it should support multiple instances of a store', t => {
+  let {Container, withStore} = createStoreStrict({ a: 1 })
+  let C = withStore(({ store }) =>
+    <button onClick={() => store.set('a')(store.get('a') + 1)}>
+      {store.get('a')}
+    </button>
+  )
+  let A = () => <Container><C /></Container>
+  let B = () => <Container><C /></Container>
+
+  withElement(A, a =>
+    withElement(B, b => {
+      t.is(a.querySelector('button')!.innerHTML, '1')
+      t.is(b.querySelector('button')!.innerHTML, '1')
+      Simulate.click(a.querySelector('button')!)
+      t.is(a.querySelector('button')!.innerHTML, '2')
+      t.is(b.querySelector('button')!.innerHTML, '1')
+      Simulate.click(b.querySelector('button')!)
+      t.is(a.querySelector('button')!.innerHTML, '2')
+      t.is(b.querySelector('button')!.innerHTML, '2')
+    })
+  )
+})
+
+test('[stateless] it should support custom initialState', t => {
+  let {Container, withStore} = createStoreStrict({ a: 1 })
+  let C = withStore(({ store }) =>
+    <button onClick={() => store.set('a')(store.get('a') + 1)}>
+      {store.get('a')}
+    </button>
+  )
+  let A = () => <Container initialState={{a: 101}}><C /></Container>
+  let B = () => <Container><C /></Container>
+
+  withElement(A, a =>
+    withElement(B, b => {
+      t.is(a.querySelector('button')!.innerHTML, '101')
+      t.is(b.querySelector('button')!.innerHTML, '1')
+      Simulate.click(a.querySelector('button')!)
+      t.is(a.querySelector('button')!.innerHTML, '102')
+      t.is(b.querySelector('button')!.innerHTML, '1')
+      Simulate.click(b.querySelector('button')!)
+      t.is(a.querySelector('button')!.innerHTML, '102')
+      t.is(b.querySelector('button')!.innerHTML, '2')
+    })
+  )
+})
+
+test('[stateless] it should support effects', t => {
+  t.plan(1)
+  let {Container, withStore} = createStoreStrict({ a: 1 })(store => {
+    store.on('a').subscribe(a => {
+      t.is(a, 2)
+    })
+    return store
+  })
+  let C = withStore(({ store }) =>
+    <button onClick={() => store.set('a')(store.get('a') + 1)}>
+      {store.get('a')}
+    </button>
+  )
+  let A = () => <Container><C /></Container>
+
+  withElement(A, _ =>
+    Simulate.click(_.querySelector('button')!)
+  )
+})
+
+test('[stateless] it should eagerly throw at runtime when using a consumer without a provider', t => {
+  let {withStore} = createStoreStrict({ a: 1 })
+  let A = withStore(({ store }) => <div />)
+  t.throws(() => withElement(A, _ => {}), /Component is not nested/)
 })
 
 //
