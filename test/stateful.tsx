@@ -4,33 +4,22 @@ import { Simulate } from 'react-dom/test-utils'
 import { connect, connectAs, createStore, Store, StoreSnapshot } from '../src'
 import { withElement } from './testUtils'
 
-type Actions = {
+type State = {
   isTrue: boolean
   users: string[]
 }
 
-let store = createStore<Actions>({
+let store = createStore<State>({
   isTrue: true,
   users: []
 })
 
-type Props = {
-  store: Store<Actions>
+type StoreProps = {
+  store: Store<State>
 }
 
 let MyComponent = connect(store)(
-  class MyComponent extends React.Component<Props> {
-    render() {
-      return <div>
-        {this.props.store.get('isTrue') ? 'True' : 'False'}
-        <button onClick={() => this.props.store.set('isTrue')(false)}>Update</button>
-      </div>
-    }
-  }
-)
-
-let MyComponentWithLens = connect(store)(
-  class MyComponentWithLens extends React.Component<Props> {
+  class MyComponent extends React.Component<StoreProps> {
     render() {
       return <div>
         {this.props.store.get('isTrue') ? 'True' : 'False'}
@@ -41,22 +30,14 @@ let MyComponentWithLens = connect(store)(
 )
 
 test('[stateful] it should render a component', t =>
-  withElement(MyComponentWithLens, _ =>
+  withElement(MyComponent, _ =>
     t.regex(_.innerHTML, /True/)
   )
 )
 
 test('[stateful] it should update the component', t =>
-  withElement(MyComponentWithLens, _ => {
-    t.regex(_.innerHTML, /True/)
-    Simulate.click(_.querySelector('button')!)
-    t.regex(_.innerHTML, /False/)
-  })
-)
-
-test('[stateful] it should not update the component if it has no lens', t =>
   withElement(MyComponent, _ => {
-    t.regex(_.innerHTML, /False/)
+    t.regex(_.innerHTML, /True/)
     Simulate.click(_.querySelector('button')!)
     t.regex(_.innerHTML, /False/)
   })
@@ -64,7 +45,7 @@ test('[stateful] it should not update the component if it has no lens', t =>
 
 // nb: test order matters because store is shared!
 test('[stateful] it should support lenses', t =>
-  withElement(MyComponentWithLens, _ => {
+  withElement(MyComponent, _ => {
     t.regex(_.innerHTML, /False/)
     Simulate.click(_.querySelector('button')!)
     t.regex(_.innerHTML, /True/)
@@ -72,7 +53,7 @@ test('[stateful] it should support lenses', t =>
 )
 
 test('[stateful] it should support effects', t =>
-  withElement(MyComponentWithLens, _ => {
+  withElement(MyComponent, _ => {
     t.plan(1)
     store.on('isTrue').subscribe(_ => t.is(_, false))
     Simulate.click(_.querySelector('button')!)
@@ -80,7 +61,7 @@ test('[stateful] it should support effects', t =>
 )
 
 test('[stateful] it should call .on().subscribe() with the current value', t =>
-  withElement(MyComponentWithLens, _ => {
+  withElement(MyComponent, _ => {
     t.plan(1)
     store.on('isTrue').subscribe(_ =>
       t.is(_, true)
@@ -90,7 +71,7 @@ test('[stateful] it should call .on().subscribe() with the current value', t =>
 )
 
 test('[statelful] it should call .onAll().subscribe() with the key, current value, and previous value', t =>
-  withElement(MyComponentWithLens, _ => {
+  withElement(MyComponent, _ => {
     t.plan(3)
     store.onAll().subscribe(_ => {
       t.is(_.key, 'isTrue')
@@ -105,7 +86,7 @@ test('[stateful] it should only re-render if something actually changed', t => {
 
   let renderCount = 0
   let A = connect(store)(
-    class extends React.Component<Props> {
+    class extends React.Component<StoreProps> {
       render() {
         renderCount++
         return <div>
@@ -130,7 +111,7 @@ test('[stateful] it should set a displayName', t =>
 
 test('[stateful] it should typecheck with additional props', t => {
 
-  type Props2 = Props & {
+  type Props2 = StoreProps & {
     foo: number
     bar: string
   }
@@ -156,13 +137,13 @@ test('[stateful] it should support lifecycle methods', t => {
   let renderCount = 0
   let updateCount = 0
   let willReceivePropsCount = 0
-  let store = createStore<Actions>({
+  let store = createStore<State>({
     isTrue: true,
     users: []
   })
   let A = connect(store)(
-    class extends React.Component<Props> {
-      shouldComponentUpdate({ store }: Props) {
+    class extends React.Component<StoreProps> {
+      shouldComponentUpdate({ store }: StoreProps) {
         return store.get('users').length > 3
       }
       componentDidUpdate() {
@@ -248,7 +229,7 @@ test('[stateful] it should update correctly when using nested stores', t => {
 })
 
 test('[stateful] it should memoize setters', t =>
-  withElement(MyComponentWithLens, _ => {
+  withElement(MyComponent, _ => {
     t.is(store.set('isTrue'), store.set('isTrue'))
     t.is(store.set('users'), store.set('users'))
   })

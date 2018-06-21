@@ -4,49 +4,38 @@ import { renderIntoDocument, Simulate } from 'react-dom/test-utils'
 import { connect, connectAs, createStore, Store } from '../src'
 import { withElement } from './testUtils'
 
-type Actions = {
+type State = {
   isTrue: boolean
   users: string[]
 }
 
-let store = createStore<Actions>({
+let store = createStore<State>({
   isTrue: true,
   users: []
 })
 
-let MyComponentRaw: React.StatelessComponent<{ store: Store<Actions> }> = ({ store }) =>
-  <div>
-    {store.get('isTrue') ? 'True' : 'False'}
-    <button onClick={() => store.set('isTrue')(false)}>Update</button>
-  </div>
-MyComponentRaw.displayName = 'MyComponent'
+type StoreProps = {
+  store: Store<State>
+}
 
-let MyComponent = connect(store)(MyComponentRaw)
-
-let MyComponentWithLens = connect(store)(({ store }) =>
+let MyDumbComponent: React.StatelessComponent<StoreProps> = ({ store }) =>
   <div>
     {store.get('isTrue') ? 'True' : 'False'}
     <button onClick={() => store.set('isTrue')(!store.get('isTrue'))}>Update</button>
   </div>
-)
+MyDumbComponent.displayName = 'MyComponent'
+
+let MyComponent = connect(store)(MyDumbComponent)
 
 test('[stateless] it should render a component', t =>
-  withElement(MyComponentWithLens, _ =>
+  withElement(MyComponent, _ =>
     t.regex(_.innerHTML, /True/)
   )
 )
 
 test('[stateless] it should update the component', t =>
-  withElement(MyComponentWithLens, _ => {
-    t.regex(_.innerHTML, /True/)
-    Simulate.click(_.querySelector('button')!)
-    t.regex(_.innerHTML, /False/)
-  })
-)
-
-test('[stateless] it should not update the component if it has no lens', t =>
   withElement(MyComponent, _ => {
-    t.regex(_.innerHTML, /False/)
+    t.regex(_.innerHTML, /True/)
     Simulate.click(_.querySelector('button')!)
     t.regex(_.innerHTML, /False/)
   })
@@ -54,7 +43,7 @@ test('[stateless] it should not update the component if it has no lens', t =>
 
 // nb: test order matters because store is shared!
 test('[stateless] it should support lenses', t =>
-  withElement(MyComponentWithLens, _ => {
+  withElement(MyComponent, _ => {
     t.regex(_.innerHTML, /False/)
     Simulate.click(_.querySelector('button')!)
     t.regex(_.innerHTML, /True/)
@@ -62,7 +51,7 @@ test('[stateless] it should support lenses', t =>
 )
 
 test('[stateless] it should support effects', t =>
-  withElement(MyComponentWithLens, _ => {
+  withElement(MyComponent, _ => {
     t.plan(1)
     store.on('isTrue').subscribe(_ => t.is(_, false))
     Simulate.click(_.querySelector('button')!)
@@ -70,7 +59,7 @@ test('[stateless] it should support effects', t =>
 )
 
 test('[stateless] it should call .on().subscribe() with the current value', t =>
-  withElement(MyComponentWithLens, _ => {
+  withElement(MyComponent, _ => {
     t.plan(1)
     store.on('isTrue').subscribe(_ =>
       t.is(_, true)
@@ -80,7 +69,7 @@ test('[stateless] it should call .on().subscribe() with the current value', t =>
 )
 
 test('[stateless] it should call .onAll().subscribe() with the key, current value, and previous value', t =>
-  withElement(MyComponentWithLens, _ => {
+  withElement(MyComponent, _ => {
     t.plan(3)
     store.onAll().subscribe(_ => {
       t.is(_.key, 'isTrue')
@@ -137,7 +126,7 @@ test('[stateless] it should set a displayName', t =>
 )
 
 test('[stateless] it should set a default displayName', t =>
-  t.is(MyComponentWithLens.displayName, 'withStore(Component)')
+  t.is(connect(store)(() => <div />).displayName, 'withStore(Component)')
 )
 
 test('[stateless] it should typecheck with additional props', t => {
@@ -230,7 +219,7 @@ test('[stateless] it should update correctly when using nested stores', t => {
 })
 
 test('[stateless] it should memoize setters', t =>
-  withElement(MyComponentWithLens, _ => {
+  withElement(MyComponent, _ => {
     t.is(store.set('isTrue'), store.set('isTrue'))
     t.is(store.set('users'), store.set('users'))
   })
