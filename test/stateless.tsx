@@ -102,7 +102,7 @@ test('[stateless] it should only re-render if something actually changed', t => 
 // There is room for perf optimization down the line.
 // TODO: Add some benchmarks to see how bad this really is. Intuitively, it could
 // cause app perf to degrade at least linearly as the app scales.
-test('[stateless] it should re-render even if an unused model property changed', t => {
+test('[stateless] it should not re-render when an unused model property changed', t => {
 
   let renderCount = 0
   let store = createStore({
@@ -117,7 +117,7 @@ test('[stateless] it should re-render even if an unused model property changed',
   withElement(A, _ => {
     store.set('b')('y')
     store.set('b')('z')
-    t.is(renderCount, 3)
+    t.is(renderCount, 1)
   })
 })
 
