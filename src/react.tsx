@@ -1,35 +1,13 @@
 import * as React from 'react'
 import { ComponentClass } from 'react'
 import { Subscription } from 'rxjs'
-import { Store, StoreDefinition, StoreSnapshot } from './'
+import { ALL } from '../node_modules/typed-rx-emitter'
+import { Store, StoreDefinition, StoreSnapshot, StoreSnapshotWithSubscription } from './'
 import { equals, getDisplayName, keys, mapValues, some } from './utils'
 
 export type Diff<T, U> = Pick<T, Exclude<keyof T, keyof U>>
 
-class StoreSnapshotWrapper<StoreState extends object> implements Store<StoreState> {
-  constructor(
-    private snapshot: StoreSnapshot<StoreState>,
-    private callbackOnGet: (key: keyof StoreState) => void,
-    private callbackOnGetAll: () => void
-  ) { }
-  get<K extends keyof StoreState>(key: K) {
-    this.callbackOnGet(key)
-    return this.snapshot.get(key)
-  }
-  set<K extends keyof StoreState>(key: K) {
-    return this.snapshot.set(key)
-  }
-  on<K extends keyof StoreState>(key: K) {
-    return this.snapshot.on(key)
-  }
-  onAll() {
-    return this.snapshot.onAll()
-  }
-  getState() {
-    this.callbackOnGetAll()
-    return this.snapshot.getState()
-  }
-}
+const ALL: ALL = '__ALL__'
 
 export function connect<StoreState extends object>(store: StoreDefinition<StoreState>) {
   return function <
@@ -39,61 +17,62 @@ export function connect<StoreState extends object>(store: StoreDefinition<StoreS
     Component: React.ComponentType<PropsWithStore>
   ): React.ComponentClass<Diff<PropsWithStore, { store: Store<StoreState> }>> {
 
-    type SubscriptionKeys = keyof StoreState | '<all>'
+    type Key = keyof StoreState | ALL
 
     type State = {
-      store: StoreSnapshotWrapper<StoreState>,
-      subscriptions: Map<SubscriptionKeys, Subscription>
+      store: StoreSnapshotWithSubscription<StoreState>
+      subscriptions: Partial<Record<Key, Subscription>>
     }
 
     return class extends React.Component<Diff<PropsWithStore, { store: Store<StoreState> }>, State> {
       static displayName = `withStore(${getDisplayName(Component)})`
-
-      private onGet = (field: keyof StoreState) => {
-        if (this.state.subscriptions.has(field) || this.state.subscriptions.has('<all>')) {
+      state: State = {
+        store: new StoreSnapshotWithSubscription(
+          store.getCurrentSnapshot(),
+          this.onGet.bind(this),
+          this.onGetAll.bind(this)
+        ),
+        subscriptions: {}
+      }
+      onChange<K extends keyof StoreState>(key: K, value: StoreState[K]) {
+        if (equals(value, this.state.store.get(key))) {
           return
         }
-        const newSubscriptions = new Map(this.state.subscriptions)
-        newSubscriptions.set(
-          field,
-          store.on(field).subscribe(value => {
-            if (equals(value, this.state.store.get(field))) {
-              return
-            }
-            this.setState({
-              store: new StoreSnapshotWrapper(store.getCurrentSnapshot(), this.onGet, this.onGetAll)
-            })
-          })
-        )
-        this.setState({ subscriptions: newSubscriptions })
+        this.setState({
+          store: new StoreSnapshotWithSubscription(
+            store.getCurrentSnapshot(), // TODO: Can we replace Snapshot with SnapshotWithSub?
+            this.onGet.bind(this),
+            this.onGetAll.bind(this)
+          )
+        })
       }
-
-      private onGetAll = () => {
-        if (this.state.subscriptions.has('<all>')) {
+      onGet(key: keyof StoreState) {
+        if (key in this.state.subscriptions || ALL in this.state.subscriptions) {
           return
         }
-        const newSubscriptions = new Map()
-        newSubscriptions.set(
-          '<all>',
-          store.onAll().subscribe(({ previousValue, value }) => {
-            if (equals(previousValue, value)) {
-              return
-            }
-            this.setState({
-              store: new StoreSnapshotWrapper(store.getCurrentSnapshot(), this.onGet, this.onGetAll)
-            })
-          })
-        )
-        this.state.subscriptions.forEach(_ => _.unsubscribe())
-        this.setState({ subscriptions: newSubscriptions })
+        // Hacky direct write to state, for performance
+        this.state.subscriptions[key] = store.on(key).subscribe(this.onChange.bind(this, key))
       }
+      onGetAll() {
+        if (ALL in this.state.subscriptions) {
+          return
+        }
 
-      state = {
-        store: new StoreSnapshotWrapper(store.getCurrentSnapshot(), this.onGet, this.onGetAll),
-        subscriptions: new Map()
+        // Clear per-key subscriptions
+        this.clearSubscriptions()
+
+        // Hacky direct write to state, for performance
+        this.state.subscriptions = {
+          [ALL]: store.onAll().subscribe(({ key, value }) =>
+            this.onChange(key, value)
+          )
+        } as any // TODO
+      }
+      clearSubscriptions() {
+        mapValues(this.state.subscriptions, _ => _!.unsubscribe())
       }
       componentWillUnmount() {
-        this.state.subscriptions.forEach(_ => _.unsubscribe())
+        this.clearSubscriptions()
       }
       shouldComponentUpdate(props: Readonly<Diff<PropsWithStore, { store: Store<StoreState> }>>, state: State) {
         return state.store !== this.state.store
