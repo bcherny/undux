@@ -8,35 +8,35 @@
 
 - Add `connectAs` utility for connecting a component to multiple stores [8e2b5f0](https://github.com/bcherny/undux/commit/8e2b5f02429f25bb9b5685fc33c357ab30aa53fd)
 
-## 4.5.0
+### 4.5.0
 
 - Perform dynamic analysis to warn about cycles in effects at runtime [961a187](https://github.com/bcherny/undux/commit/961a1876314e3368e7c6967ba5f7c89927c394e7)
 - Performance: Memoize setter to prevent erroneous re-renders [9c968e6](https://github.com/bcherny/undux/commit/9c968e6c154b2d387d87cb27f5dae0a887f57aed)
 - Remove `store.before` and `store.beforeAll` APIs (this should have been a major bump to be safe) [276efad](https://github.com/bcherny/undux/commit/276efad0b6a11dde392c44134f78d83324c2ad46)
 
-## 4.4.0
+### 4.4.0
 
 - Add Redux Devtools integration [6052dcb](https://github.com/bcherny/undux/commit/6052dcb3e9bd8b13a860cffd6bf82731a7e2de26)
 
-## 4.3.0
+### 4.3.0
 
 - Add support for RxJS6, and maintain backwards-compatability with RxJS5 [03b6990](https://github.com/bcherny/undux/commit/03b69906ada3d26a6976cada9c2a2b33ccd8305b)
 
-## 4.2.0
+### 4.2.0
 
 - Add `store.getState` API to get an immutable version of the whole state of the store [330ae2c](https://github.com/bcherny/undux/commit/330ae2c1e24367bd951b2d82436cb4dd84263364)
 
-# 4.0.0
+## 4.0.0
 
 - Remove property whitelist, and re-render on all store updates to let React's reconciler do the heavy lifting [bc90f3c](https://github.com/bcherny/undux/commit/bc90f3c8b378813ed01bbcaf2f24ea3ea92da2ba)
 - Performance: Introduce `StoreSnapshot` to add support for `shouldComponentUpdate` and other lifecycle methods, and to avoid `forceUpdate` [d85fee1](https://github.com/bcherny/undux/commit/d85fee148fa3f2324fed1527faf8dd0b4cd6b172)
 - Migrate from RxJS4 to RxJS5; move RxJS from `dependencies` to `peerDependencies` [85ee792](https://github.com/bcherny/undux/commit/85ee79275095b908833714ebcf44f24e6fdfa76a)
 
-## 3.2.0
+### 3.2.0
 
 - Add built-in support for ImmutableJS [79954f9](https://github.com/bcherny/undux/commit/79954f9a29fb353de9dcf3ad51eedafce821bb3d)
 
-## 3.1.0
+### 3.1.0
 
 - Add support for Flow [94f8fbf](https://github.com/bcherny/undux/commit/94f8fbf0ad65e0871185325b0495de2ebc7e44fe)
 
