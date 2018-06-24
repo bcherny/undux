@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { ComponentClass } from 'react'
 import { Subscription } from 'rxjs'
-import { ALL } from '../node_modules/typed-rx-emitter'
+import { ALL } from 'typed-rx-emitter'
 import { Store, StoreDefinition, StoreSnapshot, StoreSnapshotWithSubscription } from './'
 import { equals, getDisplayName, keys, mapValues, some } from './utils'
 
