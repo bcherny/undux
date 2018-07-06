@@ -17,3 +17,4 @@
 ! ./node_modules/.bin/flow focus-check test/bad-cases/stateful.badkey.get2.flow.js
 ! ./node_modules/.bin/flow focus-check test/bad-cases/stateful.badkey.set.flow.js
 ! ./node_modules/.bin/flow focus-check test/bad-cases/stateful.badkey.set2.flow.js
+! ./node_modules/.bin/flow focus-check test/bad-cases/badstore.flow.js

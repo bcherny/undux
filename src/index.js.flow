@@ -12,13 +12,15 @@ type Lifted<State, T> = {
   value: T
 }
 
+type Exactly<T> = T;
+
 export type Options = {
   isDevMode: boolean
 }
 
 export interface Store<State: Object> {
   get<K: $Keys<State>>(key: K): $ElementType<State, K>;
-  set<K: $Keys<State>>(key: K): (value: $ElementType<State, K>) => void;
+  set<K: $Keys<State>, V: $ElementType<State, K>>(key: K): (value: V) => void;
   on<K: $Keys<State>>(key: K): Observable<$ElementType<State, K>>;
   onAll(): Observable<$Values<Undux<State>>>;
   getState(): $ReadOnly<State>;
@@ -26,7 +28,7 @@ export interface Store<State: Object> {
 
 declare export class StoreSnapshot<State: Object> implements Store<State> {
   get<K: $Keys<State>>(key: K): $ElementType<State, K>;
-  set<K: $Keys<State>>(key: K): (value: $ElementType<State, K>) => void;
+  set<K: $Keys<State>, V: $ElementType<State, K>>(key: K): (value: V) => void;
   on<K: $Keys<State>>(key: K): Observable<$ElementType<State, K>>;
   onAll(): Observable<$Values<Undux<State>>>;
   getState(): $ReadOnly<State>;
@@ -34,7 +36,7 @@ declare export class StoreSnapshot<State: Object> implements Store<State> {
 
 declare export class StoreDefinition<State: Object> implements Store<State> {
   get<K: $Keys<State>>(key: K): $ElementType<State, K>;
-  set<K: $Keys<State>>(key: K): (value: $ElementType<State, K>) => void;
+  set<K: $Keys<State>, V: $ElementType<State, K>>(key: K): (value: V) => void;
   on<K: $Keys<State>>(key: K): Observable<$ElementType<State, K>>;
   onAll(): Observable<$Values<Undux<State>>>;
   getCurrentSnapshot(): StoreSnapshot<State>;
@@ -44,7 +46,7 @@ declare export class StoreDefinition<State: Object> implements Store<State> {
 declare export function createStore<State: Object>(
   initialState: State,
   options?: Options
-): StoreDefinition<State>
+): StoreDefinition<Exactly<State>>
 export type Plugin<State: Object> = (store: StoreDefinition<State>) => StoreDefinition<State>
 declare export function withLogger<State: Object>(store: StoreDefinition<State>): StoreDefinition<State>
 declare export function withReduxDevtools<State: Object>(store: StoreDefinition<State>): StoreDefinition<State>
