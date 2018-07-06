@@ -46,8 +46,8 @@ declare export function createStore<State: Object>(
   options?: Options
 ): StoreDefinition<State>
 export type Plugin<State: Object> = (store: StoreDefinition<State>) => StoreDefinition<State>
-declare export var withLogger: Plugin<Object>
-declare export var withReduxDevtools: Plugin<Object>
+declare export function withLogger<State: Object>(store: StoreDefinition<State>): StoreDefinition<State>
+declare export function withReduxDevtools<State: Object>(store: StoreDefinition<State>): StoreDefinition<State>
 
 declare export function connect<State: Object>(
   store: StoreDefinition<State>
