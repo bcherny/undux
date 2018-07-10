@@ -29,7 +29,7 @@ export function connect<StoreState extends object>(store: StoreDefinition<StoreS
       state: State = {
         store: new StoreSnapshotWithSubscription(
           store.getCurrentSnapshot(),
-          this.onGet.bind(this),
+          this.onGetSet.bind(this),
           this.onGetAll.bind(this)
         ),
         subscriptions: {}
@@ -41,12 +41,12 @@ export function connect<StoreState extends object>(store: StoreDefinition<StoreS
         this.setState({
           store: new StoreSnapshotWithSubscription(
             store.getCurrentSnapshot(), // TODO: Can we replace Snapshot with SnapshotWithSub?
-            this.onGet.bind(this),
+            this.onGetSet.bind(this),
             this.onGetAll.bind(this)
           )
         })
       }
-      onGet(key: keyof StoreState) {
+      onGetSet(key: keyof StoreState) {
         if (key in this.state.subscriptions || ALL in this.state.subscriptions) {
           return
         }

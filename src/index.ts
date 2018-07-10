@@ -62,14 +62,15 @@ export class StoreSnapshot<State extends object> implements Store<State> {
 export class StoreSnapshotWithSubscription<State extends object> implements Store<State> {
   constructor(
     private snapshot: StoreSnapshot<State>,
-    private onGet: (key: keyof State) => void,
+    private onGetSet: (key: keyof State) => void,
     private onGetAll: () => void
   ) { }
   get<K extends keyof State>(key: K) {
-    this.onGet(key)
+    this.onGetSet(key)
     return this.snapshot.get(key)
   }
   set<K extends keyof State>(key: K) {
+    this.onGetSet(key)
     return this.snapshot.set(key)
   }
   on<K extends keyof State>(key: K) {
