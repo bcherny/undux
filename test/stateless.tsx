@@ -1,7 +1,8 @@
 import { test } from 'ava'
 import * as React from 'react'
 import { renderIntoDocument, Simulate } from 'react-dom/test-utils'
-import { connect, connectAs, createStore, createStoreStrict, Store } from '../src'
+import { connect, connectAs, connectToTree, createStore, Store, StoreSnapshot } from '../src'
+import { Diff, Effect } from '../src/react/connectToTree'
 import { withElement } from './testUtils'
 
 type State = {
@@ -376,7 +377,7 @@ test('[stateless] it should update when any field changes (getState)', t => {
 })
 
 test('[stateless] it should support multiple instances of a store', t => {
-  let {Container, withStore} = createStoreStrict({ a: 1 })
+  let {Container, withStore} = connectToTree({ a: 1 })
   let C = withStore(({ store }) =>
     <button onClick={() => store.set('a')(store.get('a') + 1)}>
       {store.get('a')}
@@ -400,7 +401,7 @@ test('[stateless] it should support multiple instances of a store', t => {
 })
 
 test('[stateless] it should support custom initialState', t => {
-  let {Container, withStore} = createStoreStrict({ a: 1 })
+  let {Container, withStore} = connectToTree({ a: 1 })
   let C = withStore(({ store }) =>
     <button onClick={() => store.set('a')(store.get('a') + 1)}>
       {store.get('a')}
@@ -425,18 +426,27 @@ test('[stateless] it should support custom initialState', t => {
 
 test('[stateless] it should support effects', t => {
   t.plan(1)
-  let {Container, withStore} = createStoreStrict({ a: 1 })(store => {
+
+  type State = {
+    a: number
+  }
+
+  let { Container, withStore } = connectToTree({ a: 1 })
+
+  let withEffects: Effect<State> = store => {
     store.on('a').subscribe(a => {
       t.is(a, 2)
     })
-    return store
-  })
+  }
+
   let C = withStore(({ store }) =>
     <button onClick={() => store.set('a')(store.get('a') + 1)}>
       {store.get('a')}
     </button>
   )
-  let A = () => <Container><C /></Container>
+  let A = () => <Container effects={[withEffects]}>
+    <C />
+  </Container>
 
   withElement(A, _ =>
     Simulate.click(_.querySelector('button')!)
@@ -444,7 +454,7 @@ test('[stateless] it should support effects', t => {
 })
 
 test('[stateless] it should eagerly throw at runtime when using a consumer without a provider', t => {
-  let {withStore} = createStoreStrict({ a: 1 })
+  let {withStore} = connectToTree({ a: 1 })
   let A = withStore(({ store }) => <div />)
   t.throws(() => withElement(A, _ => {}), /Component is not nested/)
 })
