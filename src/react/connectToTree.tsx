@@ -1,5 +1,6 @@
 import * as React from 'react'
 import { ComponentClass } from 'react'
+import { findDOMNode } from 'react-dom'
 import { Subscription } from 'rxjs'
 import { ALL } from 'typed-rx-emitter'
 import { createStore, Store, StoreDefinition, StoreSnapshot, StoreSnapshotWithSubscription } from '../'
@@ -15,6 +16,7 @@ export function connectToTree<State extends object>(
   initialState: State
 ) {
   let Context = React.createContext({ __MISSING_PROVIDER__: true } as any)
+  let mountPoints: Element[] = []
 
   type ContainerProps = {
     effects?: Effect<State>[]
@@ -28,11 +30,11 @@ export function connectToTree<State extends object>(
   }
 
   let Container = class extends React.Component<ContainerProps, ContainerState> {
-    constructor(p: ContainerProps) {
-      super(p)
+    constructor(props: ContainerProps) {
+      super(props)
 
-      let effects = p.effects || []
-      let state = p.initialState || initialState
+      let effects = props.effects || []
+      let state = props.initialState || initialState
 
       let store = createStore(state)
       effects.forEach(e => e(store))
@@ -45,8 +47,22 @@ export function connectToTree<State extends object>(
         )
       }
     }
+    componentDidMount() {
+      let mountPoint = getDOMNode(this)
+      if (!mountPoint) {
+        return
+      }
+      if (mountPoints.some(_ => isParentNode(_, mountPoint as Element))) { // TODO
+        throw Error('Avoid nesting multiple <Container>s!')
+      }
+      mountPoints.push(mountPoint)
+    }
     componentWillUnmount() {
       this.state.subscription.unsubscribe()
+      let mountPoint = getDOMNode(this)
+      if (mountPoint) {
+        mountPoints.splice(mountPoints.indexOf(mountPoint), 1)
+      }
     }
     render() {
       return <Context.Provider value={this.state.storeSnapshot}>
@@ -81,13 +97,39 @@ export function connectToTree<State extends object>(
   }
 
   return {
+    Consumer,
     Container,
     withStore
   }
+}
+
+function getDOMNode(component: React.ReactInstance) {
+  let node = findDOMNode(component)
+  if (!isElement(node)) {
+    return null
+  }
+  return node
+}
+
+function isElement(node: Element | Text | null): node is Element {
+  return node !== null && node.nodeType === 1
 }
 
 function isInitialized<State extends object>(
   store: StoreSnapshot<State> | {__MISSING_PROVIDER__: true}
 ) {
   return !('__MISSING_PROVIDER__' in store)
+}
+
+function isParentNode(maybeParent: Element, maybeChild: Element): boolean {
+  if (maybeParent === maybeChild) {
+    return false
+  }
+  if (!maybeChild.parentElement) {
+    return false
+  }
+  if (maybeChild.parentElement === maybeParent) {
+    return true
+  }
+  return isParentNode(maybeParent, maybeChild.parentElement)
 }
