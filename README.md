@@ -40,20 +40,16 @@ npm install undux@^3 --save
 
 ## Use
 
-[Open this code in playground](https://stackblitz.com/edit/js-gwo2c3?file=MyStore.js).
-
 ### 1. Create a store
 
 ```jsx
-import { connect, createStore } from 'undux'
+import { connectToTree } from 'undux'
 
 // Create a store with an initial value.
-let store = createStore({
-  buttonText: 'Click Me',
-  clickCount: 0
+export default connectToTree({
+  one: 0,
+  two: 0
 })
-
-export let withStore = connect(store)
 ```
 
 *Be sure to define a key for each value in your model, even if the value is initially `undefined`.*
@@ -61,25 +57,53 @@ export let withStore = connect(store)
 ### 2. Connect your React components
 
 ```jsx
-import { withStore } from './store'
+import Store from './MyStore'
 
-// Update the component when the store updates.
-let MyComponent = withStore(
-  class extends React.Component {
-    render() {
-      let store = this.props.store
-      return <div>
-        <p>You've  clicked the button {store.get('clickCount')} times.</p>
-        <button
-         onClick={() => store.set('clickCount')(store.get('clickCount') + 1)}
-        >{store.get('buttonText')}</button>
-      </div>
-    }
+// Re-render the component when the store updates.
+class MyComponent extends React.Component {
+  render() {
+    let store = this.props.store
+    return <div>
+      <NumberInput onChange={store.set('one')} value={store.get('one')} />
+      <NumberInput onChange={store.set('two')} value={store.get('two')} />
+      Sum: {store.get('one') + store.get('two')}
+    </div>
   }
-)
+}
+
+class NumberInput extends React.Component {
+  render() {
+    return <input
+      onChange={e => this.props.onChange(parseInt(e.target.value, 10))}
+      type="number"
+      value={this.props.value}
+    />
+  }
+}
+
+export default Store.withStore(MyComponent)
+```
+
+### 3. Put your app in an Undux Container
+
+```jsx
+import MyComponent from './MyComponent'
+import Store from './MyStore'
+
+class MyApp extends React.Component {
+  render() {
+    <Store.Container>
+      <MyComponent />
+    </Store.Container>
+  }
+}
+
+export default MyApp
 ```
 
 **That's all there is to it.**
+
+[Open this code in playground](https://stackblitz.com/edit/undux-readme-demo-js).
 
 ## Features
 
@@ -117,13 +141,7 @@ store
 
 ### Partial application all the way through
 
-Partially apply the `connect` function to yield a convenient `withStore` function:
-
-```tsx
-let withStore = connect(store)
-```
-
-Or, partially apply the `set` function to yield a convenient setter:
+Partially apply the `set` function to yield a convenient setter:
 
 ```tsx
 let setUsers = store.set('users')
@@ -159,14 +177,14 @@ The logger will produce logs that look like this:
 
 <img src="logger.png" width="895" />
 
-### Plugins
+### Effects
 
-Undux is easy to modify with plugins (also called "higher order stores", or "middleware"). Just define a function that takes a store as an argument and returns a store, adding listeners along the way. For generic plugins that work across different stores, use the `.onAll` method to listen on all changes on a store:
+Undux is easy to modify with effects. Just define a function that takes a store as an argument, adding listeners along the way. For generic plugins that work across different stores, use the `.onAll` method to listen on all changes on a store:
 
 ```ts
-import { createStore, Plugin } from 'undux'
+import { Effect } from 'undux'
 
-let withLocalStorage: Plugin = store => {
+let withLocalStorage: Effect = store => {
 
   // Listen on all changes to the store.
   store.onAll().subscribe(({ key, value, previousValue }) =>
@@ -178,17 +196,17 @@ let withLocalStorage: Plugin = store => {
 
 ## Recipes
 
-### Creating a store
+### Creating a store (TypeScript)
 
 ```ts
-import { connect, createStore, Store } from 'undux'
+import { connectToTree, Store } from 'undux'
 
 type MyStore = {
   foo: number,
   bar: string[]
 }
 
-let store = createStore<MyStore>({
+export default connectToTree<MyStore>({
   foo: 12,
   bar: []
 })
@@ -196,8 +214,6 @@ let store = createStore<MyStore>({
 export type StoreProps = {
   store: Store<MyStore>
 }
-
-export let withStore = connect(store)
 ```
 
 ### Stateless component with props
@@ -205,7 +221,7 @@ export let withStore = connect(store)
 Have your own props? No problem.
 
 ```ts
-import { withStore } from './store'
+import { withStore } from './MyStore'
 
 type Props = {
   foo: number
@@ -225,21 +241,23 @@ let MyComponent = withStore<Props>(({ foo, store }) =>
 
 Undux is as easy to use with stateful components as with stateless ones.
 
-```ts
-import { StoreProps, withStore } from './store'
+```tsx
+import { StoreProps, withStore } from './MyStore'
 
 type Props = StoreProps & {
   foo: number
 }
 
-let MyComponent = withStore(class extends React.Component<Props>{
+class MyComponent extends React.Component<Props> {
   render() {
     return <div>
       Today is {this.props.store.get('today')}
       Foo is {this.props.foo}
     </div>
   }
-})
+}
+
+export default withStore(MyComponent)
 
 <MyComponent foo={3} />
 ```
