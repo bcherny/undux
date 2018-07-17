@@ -59,8 +59,6 @@ export function connect<StoreState extends object>(store: StoreDefinition<StoreS
         }
 
         // Clear per-key subscriptions
-        // TODO: Find a way to test this. React batches render() calls,
-        // so it's hard to test that this actually prevents extra re-renders.
         this.clearSubscriptions()
 
         // Hacky direct write to state, for performance
