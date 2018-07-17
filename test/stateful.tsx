@@ -524,32 +524,6 @@ test('[stateful] it should update only when subscribed fields change (get in con
   })
 })
 
-test('[stateful] it should update only when subscribed fields change (set in constructor)', t => {
-  let store = createStore({
-    a: 0
-  })
-  let renderCount = 0
-  type Props = {
-    store: typeof store
-  }
-  let A = connect(store)(class extends React.Component<Props> {
-    constructor(p: Props) {
-      super(p)
-      this.props.store.set('a')(1)
-    }
-    render() {
-      renderCount++
-      return <>
-        {this.props.store.get('a')}
-      </>
-    }
-  })
-  withElement(A, _ => {
-    t.is(_.innerHTML, '1')
-    t.is(renderCount, 2)
-  })
-})
-
 test('[stateful] it should update when any field changes (getState)', t => {
   let store = createStore({
     a: 0,
