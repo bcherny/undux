@@ -1,5 +1,9 @@
 # Changelog
 
+### 4.8.0
+
+- Revert 4.7.0 performance update
+
 ### 4.7.0
 
 - Performance: only subscribe to changes on those fields that a component uses [2ac3dc8](https://github.com/bcherny/undux/commit/2ac3dc8ed1b12d20ed97e5f4def7cecdca4f01ed)
