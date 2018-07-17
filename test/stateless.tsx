@@ -313,68 +313,6 @@ test('[stateless] it should update when any of the stores updated', t => {
 
 })
 
-test('[stateless] it should update only when subscribed fields change (get)', t => {
-  let store = createStore({
-    a: 0,
-    b: 'foo'
-  })
-  let renderCount = 0
-  let A = connect(store)(({ store }) => {
-    renderCount++
-    return <>
-      {store.get('a')}
-      <button id='a' onClick={() => store.set('a')(store.get('a') + 1)} />
-      <button id='b' onClick={() => store.set('a')(store.get('a') - 1)} />
-      {store.get('a') > 0
-        ? <div>{store.get('b')}</div>
-        : <span />
-      }
-    </>
-  })
-  withElement(A, _ => {
-    store.set('b')('bar') // No render
-    t.is(_.innerHTML, '0<button id="a"></button><button id="b"></button><span></span>')
-    Simulate.click(_.querySelector('#a')!) // Render
-    t.is(_.innerHTML, '1<button id="a"></button><button id="b"></button><div>bar</div>')
-    Simulate.click(_.querySelector('#b')!) // Render
-    t.is(_.innerHTML, '0<button id="a"></button><button id="b"></button><span></span>')
-    store.set('b')('baz') // Render
-    t.is(_.innerHTML, '0<button id="a"></button><button id="b"></button><span></span>')
-    t.is(renderCount, 4)
-  })
-})
-
-test('[stateless] it should update when any field changes (getState)', t => {
-  let store = createStore({
-    a: 0,
-    b: 'foo'
-  })
-  let renderCount = 0
-  let A = connect(store)(({ store }) => {
-    renderCount++
-    return <>
-      {store.getState().a}
-      <button id='a' onClick={() => store.set('a')(store.get('a') + 1)} />
-      <button id='b' onClick={() => store.set('a')(store.get('a') - 1)} />
-      {store.get('a') > 0
-        ? <div>{store.get('b')}</div>
-        : <span />
-      }
-    </>
-  })
-  withElement(A, _ => {
-    store.set('b')('bar') // Render (this is the deoptimization when you use .getState)
-    t.is(_.innerHTML, '0<button id="a"></button><button id="b"></button><span></span>')
-    Simulate.click(_.querySelector('#a')!) // Render
-    t.is(_.innerHTML, '1<button id="a"></button><button id="b"></button><div>bar</div>')
-    Simulate.click(_.querySelector('#b')!) // Render
-    t.is(_.innerHTML, '0<button id="a"></button><button id="b"></button><span></span>')
-    store.set('b')('baz') // Render
-    t.is(_.innerHTML, '0<button id="a"></button><button id="b"></button><span></span>')
-    t.is(renderCount, 5)
-  })
-})
-
 //
 // Compilation tests
 // All of the following should compile:
