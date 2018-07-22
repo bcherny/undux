@@ -1,5 +1,6 @@
 import './cyclical-dependencies'
 import './immutable'
+import './react/combineAs'
 import './react/connectToTree'
 import './stateful'
 import './stateless'

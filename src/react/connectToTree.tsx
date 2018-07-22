@@ -5,10 +5,11 @@ import { getDisplayName } from '../utils'
 
 export type Diff<T, U> = Pick<T, Exclude<keyof T, keyof U>>
 
-export type Effect<State extends object> = (store: StoreDefinition<State>) => StoreDefinition<State>
+export type Effect<State extends object> = (store: StoreDefinition<State>) => void
 
 export type Connect<State extends object> = {
   Container: React.ComponentType<ContainerProps<State>>
+  initialState: State,
   withStore: <
     Props extends {store: Store<State>},
     PropsWithoutStore extends Diff<Props, {store: Store<State>}>
@@ -40,7 +41,7 @@ export function connectToTree<State extends object>(
       let state = props.initialState || initialState
       let store = createStore(state)
       if (props.effects) {
-        store = props.effects(store)
+        props.effects(store)
       }
 
       this.state = {
@@ -96,6 +97,7 @@ export function connectToTree<State extends object>(
 
   return {
     Container,
+    initialState,
     withStore
   }
 }

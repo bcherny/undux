@@ -120,7 +120,6 @@ test('it should support effects', t => {
     store.on('a').subscribe(a => {
       t.is(a, 2)
     })
-    return store
   }
 
   let C = withStore(({store}) =>
