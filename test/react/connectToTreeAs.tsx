@@ -1,8 +1,8 @@
 import { test } from 'ava'
 import * as React from 'react'
 import { Simulate } from 'react-dom/test-utils'
-import { CombinedEffect } from '../../src/react/combineAs'
-import { connectToTreeAs } from '../../src/react/connectToTreeAs'
+import { connectToTreeAs } from '../../src/react'
+import { EffectAs } from '../../src/react/connectToTreeAs'
 import { withElement } from '../testUtils'
 
 test('it should support combining stores', t => {
@@ -108,7 +108,7 @@ test('it should support effects for multiple stores', t => {
     </>
   )
 
-  let effects: CombinedEffect<{ A: StateA, B: StateB }> = ({ A, B }) => {
+  let effects: EffectAs<{ A: StateA, B: StateB }> = ({ A, B }) => {
     A.on('a').subscribe(a => t.is(a, 2))
     B.on('b').subscribe(b => t.is(b, 2))
   }

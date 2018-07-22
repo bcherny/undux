@@ -9,7 +9,6 @@ export type Effect<State extends object> = (store: StoreDefinition<State>) => vo
 
 export type Connect<State extends object> = {
   Container: React.ComponentType<ContainerProps<State>>
-  initialState: State,
   withStore: <
     Props extends {store: Store<State>},
     PropsWithoutStore extends Diff<Props, {store: Store<State>}>
@@ -97,7 +96,6 @@ export function connectToTree<State extends object>(
 
   return {
     Container,
-    initialState,
     withStore
   }
 }
