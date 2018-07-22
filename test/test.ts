@@ -1,7 +1,6 @@
 import './cyclical-dependencies'
 import './immutable'
 import './react/connectToTree'
-import './react/connectToTreeAs'
 import './stateful'
 import './stateless'
 import './utils'

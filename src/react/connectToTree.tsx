@@ -62,7 +62,7 @@ export function connectToTree<State extends object>(
         return
       }
       if (mountPoints.some(_ => isParentNode(_, mountPoint as Element))) { // TODO
-        throw Error('Avoid nesting multiple <Container>s!')
+        throw Error('Avoid nesting multiple <Container>s of the same type.')
       }
       mountPoints.push(mountPoint)
     }
@@ -74,9 +74,11 @@ export function connectToTree<State extends object>(
       }
       // Let the state get GC'd.
       // TODO: Find a more elegant way to do this.
-      (this.state.storeSnapshot as any).state = null;
-      (this.state.storeSnapshot as any).storeDefinition = null;
-      (this.state.storeDefinition as any).storeSnapshot = null
+      if (!mountPoints.length) {
+        (this.state.storeSnapshot as any).state = null;
+        (this.state.storeSnapshot as any).storeDefinition = null;
+        (this.state.storeDefinition as any).storeSnapshot = null
+      }
     }
     render() {
       return <Context.Provider value={this.state.storeSnapshot}>
@@ -92,7 +94,7 @@ export function connectToTree<State extends object>(
     <Context.Consumer>
       {store => {
         if (!isInitialized(store)) {
-          throw Error(`Component "${props.displayName}" is not nested in a <Container>!`)
+          throw Error(`Component "${props.displayName}" is not nested in a <Container>. To fix this error, be sure to render the component in a <Container>...</Container> tag.`)
         }
         return props.children(store)
       }}

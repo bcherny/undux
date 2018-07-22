@@ -139,7 +139,7 @@ test('it should support effects', t => {
 test('it should eagerly throw at runtime when using a consumer without a container', t => {
   let {withStore} = connectToTree({ a: 1 })
   let A = withStore(({ store }) => <div />)
-  t.throws(() => withElement(A, _ => {}), /Component is not nested/)
+  t.throws(() => withElement(A, _ => {}), /is not nested/)
 })
 
 test.skip('it should eagerly throw at runtime when nesting the same container twice', t => {
