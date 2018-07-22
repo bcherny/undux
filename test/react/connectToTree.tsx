@@ -120,6 +120,7 @@ test('it should support effects', t => {
     store.on('a').subscribe(a => {
       t.is(a, 2)
     })
+    return store
   }
 
   let C = withStore(({store}) =>
@@ -127,7 +128,7 @@ test('it should support effects', t => {
       {store.get('a')}
     </button>
   )
-  let A = () => <Container effects={[withEffects]}>
+  let A = () => <Container effects={withEffects}>
     <C />
   </Container>
 
@@ -138,17 +139,6 @@ test('it should support effects', t => {
 
 test('it should eagerly throw at runtime when using a consumer without a container', t => {
   let {withStore} = connectToTree({ a: 1 })
-  let A = withStore(({ store }) => <div />)
+  let A = withStore(() => <div />)
   t.throws(() => withElement(A, _ => {}), /is not nested/)
-})
-
-test.skip('it should eagerly throw at runtime when nesting the same container twice', t => {
-  let {Container, withStore} = connectToTree({ a: 1 })
-  let A = withStore(({ store }) => <div />)
-  let B = () => <Container>
-    <Container>
-      <A />
-    </Container>
-  </Container>
-  t.throws(() => withElement(B, _ => {}), /Avoid nesting/)
 })
