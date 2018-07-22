@@ -1,12 +1,9 @@
 import * as React from 'react'
 import { Subscription } from 'rxjs'
-import { ALL } from 'typed-rx-emitter'
 import { createStore, Store, StoreDefinition, StoreSnapshot } from '..'
 import { getDisplayName } from '../utils'
 
 export type Diff<T, U> = Pick<T, Exclude<keyof T, keyof U>>
-
-const ALL: ALL = '__ALL__'
 
 export type Effect<State extends object> = (store: StoreDefinition<State>) => StoreDefinition<State>
 
@@ -88,10 +85,12 @@ export function connectToTree<State extends object>(
   >(
     Component: React.ComponentType<Props>
   ): React.ComponentType<PropsWithoutStore> {
-    let f = (props: PropsWithoutStore) => <Consumer displayName={getDisplayName(Component)}>
-      {store => <Component store={store} {...props} />}
-    </Consumer>
-    (f as any).displayName = 'withStore(' + getDisplayName(Component) + ')'
+    let displayName = getDisplayName(Component)
+    let f: React.StatelessComponent<PropsWithoutStore> = props =>
+      <Consumer displayName={displayName}>
+        {store => <Component store={store} {...props} />}
+      </Consumer>
+    f.displayName = `withStore(${displayName})`
     return f
   }
 
