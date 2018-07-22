@@ -1,13 +1,17 @@
 import { test } from 'ava'
 import * as React from 'react'
 import { Simulate } from 'react-dom/test-utils'
+import { connectToTree } from '../../src'
+import { combineAs } from '../../src/react/combineAs'
 import { connectToTreeAs, Effects } from '../../src/react/connectToTreeAs'
 import { withElement } from '../testUtils'
 
 test('it should render (Consumer)', t => {
-  let { Container, Consumer } = connectToTreeAs({
-    firstStore: { a: 1 },
-    secondStore: { b: 1 }
+  let a = connectToTree({ a: 1 })
+  let b = connectToTree({ b: 1 })
+  let { Container, Consumer } = combineAs({
+    firstStore: a,
+    secondStore: b
   })
   let B = () =>
     <Consumer>

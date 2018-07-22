@@ -1,10 +1,9 @@
 import * as React from 'react'
-import { ComponentClass } from 'react'
 import { findDOMNode } from 'react-dom'
 import { Subscription } from 'rxjs'
 import { ALL } from 'typed-rx-emitter'
-import { createStore, Store, StoreDefinition, StoreSnapshot, StoreSnapshotWithSubscription } from '../'
-import { equals, getDisplayName, keys, mapValues, some } from '../utils'
+import { createStore, Store, StoreDefinition, StoreSnapshot } from '..'
+import { getDisplayName } from '../utils'
 
 export type Diff<T, U> = Pick<T, Exclude<keyof T, keyof U>>
 
@@ -12,25 +11,35 @@ const ALL: ALL = '__ALL__'
 
 export type Effect<State extends object> = (store: Store<State>) => void
 
+export type Connect<State extends object> = {
+  Container: React.ComponentType<ContainerProps<State>>
+  withStore: <
+    Props extends {store: Store<State>},
+    PropsWithoutStore extends Diff<Props, {store: Store<State>}>
+  >(
+    Component: React.ComponentType<Props>
+  ) => React.ComponentType<PropsWithoutStore>
+}
+
+export type ContainerProps<State extends object> = {
+  effects?: Effect<State>[]
+  initialState?: State
+}
+
 export function connectToTree<State extends object>(
   initialState: State
-) {
+): Connect<State> {
   let Context = React.createContext({ __MISSING_PROVIDER__: true } as any)
   let mountPoints: Element[] = []
 
-  type ContainerProps = {
-    effects?: Effect<State>[]
-    initialState?: State
-  }
-
   type ContainerState = {
-    storeDefinition: StoreDefinition<State>
-    storeSnapshot: StoreSnapshot<State>
+    storeDefinition: StoreDefinition<State> | null
+    storeSnapshot: StoreSnapshot<State> | null
     subscription: Subscription
   }
 
-  let Container = class extends React.Component<ContainerProps, ContainerState> {
-    constructor(props: ContainerProps) {
+  class Container extends React.Component<ContainerProps<State>, ContainerState> {
+    constructor(props: ContainerProps<State>) {
       super(props)
 
       let effects = props.effects || []
@@ -63,6 +72,11 @@ export function connectToTree<State extends object>(
       if (mountPoint) {
         mountPoints.splice(mountPoints.indexOf(mountPoint), 1)
       }
+      // Let the state get GC'd.
+      // TODO: Find a more elegant way to do this.
+      (this.state.storeSnapshot as any).state = null;
+      (this.state.storeSnapshot as any).storeDefinition = null;
+      (this.state.storeDefinition as any).storeSnapshot = null
     }
     render() {
       return <Context.Provider value={this.state.storeSnapshot}>
@@ -73,23 +87,24 @@ export function connectToTree<State extends object>(
 
   let Consumer = (props: {
     children: (store: StoreSnapshot<State>) => JSX.Element
+    displayName: string
   }) =>
     <Context.Consumer>
       {store => {
         if (!isInitialized(store)) {
-          throw Error('Component is not nested in a <Container>!')
+          throw Error(`Component "${props.displayName}" is not nested in a <Container>!`)
         }
         return props.children(store)
       }}
     </Context.Consumer>
 
   function withStore<
-    Props extends {store: StoreSnapshot<State>},
-    PropsWithoutStore extends Diff<Props, {store: StoreSnapshot<State>}>
+    Props extends {store: Store<State>},
+    PropsWithoutStore extends Diff<Props, {store: Store<State>}>
   >(
     Component: React.ComponentType<Props>
   ): React.ComponentType<PropsWithoutStore> {
-    let f = (props: PropsWithoutStore) => <Consumer>
+    let f = (props: PropsWithoutStore) => <Consumer displayName={getDisplayName(Component)}>
       {store => <Component store={store} {...props} />}
     </Consumer>
     (f as any).displayName = 'withStore(' + getDisplayName(Component) + ')'
@@ -97,7 +112,6 @@ export function connectToTree<State extends object>(
   }
 
   return {
-    Consumer,
     Container,
     withStore
   }

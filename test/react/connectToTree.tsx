@@ -5,24 +5,7 @@ import { connectToTree } from '../../src/react/connectToTree'
 import { Effect } from '../../src/react/connectToTree'
 import { withElement } from '../testUtils'
 
-test('it should render (Consumer)', t => {
-  let {Container, Consumer} = connectToTree({ a: 1 })
-  let B = () =>
-    <Consumer>
-      {store => <button onClick={() => store.set('a')(store.get('a') + 1)}>
-        {store.get('a')}
-      </button>}
-    </Consumer>
-  let A = () => <Container><B /></Container>
-
-  withElement(A, a => {
-    t.is(a.querySelector('button')!.innerHTML, '1')
-    Simulate.click(a.querySelector('button')!)
-    t.is(a.querySelector('button')!.innerHTML, '2')
-  })
-})
-
-test('it should render (withStore)', t => {
+test('it should render', t => {
   let {Container, withStore} = connectToTree({ a: 1 })
   let B = withStore(({ store }) =>
     <button onClick={() => store.set('a')(store.get('a') + 1)}>
@@ -131,7 +114,7 @@ test('it should support effects', t => {
     a: number
   }
 
-  let { Consumer, Container, withStore } = connectToTree({ a: 1 })
+  let { Container, withStore } = connectToTree({ a: 1 })
 
   let withEffects: Effect<State> = store => {
     store.on('a').subscribe(a => {
