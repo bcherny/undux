@@ -3,7 +3,7 @@ import { ComponentClass } from 'react'
 import { findDOMNode } from 'react-dom'
 import { Subscription } from 'rxjs'
 import { ALL } from 'typed-rx-emitter'
-import { createStore, Store, StoreDefinition, StoreSnapshot, StoreSnapshotWithSubscription } from '../'
+import { createStore, Store, StoreDefinition, StoreSnapshot } from '../'
 import { equals, getDisplayName, keys, mapValues, some } from '../utils'
 
 export type Diff<T, U> = Pick<T, Exclude<keyof T, keyof U>>

@@ -9,8 +9,8 @@ test('it should render (Consumer)', t => {
   let {Container, Consumer} = connectToTree({ a: 1 })
   let B = () =>
     <Consumer>
-      {store => <button onClick={() => store.set('a')(store.get('a') + 1)}>
-        {store.get('a')}
+      {store => <button onClick={() => store.a = store.a + 1}>
+        {store.a}
       </button>}
     </Consumer>
   let A = () => <Container><B /></Container>
@@ -25,8 +25,8 @@ test('it should render (Consumer)', t => {
 test('it should render (withStore)', t => {
   let {Container, withStore} = connectToTree({ a: 1 })
   let B = withStore(({ store }) =>
-    <button onClick={() => store.set('a')(store.get('a') + 1)}>
-      {store.get('a')}
+    <button onClick={() => store.a = store.a + 1}>
+      {store.a}
     </button>
   )
   let A = () => <Container><B /></Container>
@@ -38,11 +38,50 @@ test('it should render (withStore)', t => {
   })
 })
 
+test('it should update with multiple updates (withStore)', t => {
+  let {Container, withStore} = connectToTree({ a: 1 })
+  let B = withStore(({ store }) =>
+    <button onClick={() => store.a = store.a + 1}>
+      {store.a}
+    </button>
+  )
+  let A = () => <Container><B /></Container>
+
+  withElement(A, a => {
+    t.is(a.querySelector('button')!.innerHTML, '1')
+    Simulate.click(a.querySelector('button')!)
+    t.is(a.querySelector('button')!.innerHTML, '2')
+    Simulate.click(a.querySelector('button')!)
+    t.is(a.querySelector('button')!.innerHTML, '3')
+    Simulate.click(a.querySelector('button')!)
+    t.is(a.querySelector('button')!.innerHTML, '4')
+    Simulate.click(a.querySelector('button')!)
+    t.is(a.querySelector('button')!.innerHTML, '5')
+  })
+})
+
+test.failing('it should update when destructuring props', t => {
+  let {Container, withStore} = connectToTree({ a: 1 })
+  let B = withStore(({ store: {a} }) =>
+    <button onClick={() => a = a + 1}>
+      {a}
+    </button>
+  )
+  let A = () => <Container><B /></Container>
+
+  withElement(A, a => {
+    t.is(a.querySelector('button')!.innerHTML, '1')
+    Simulate.click(a.querySelector('button')!)
+    t.is(a.querySelector('button')!.innerHTML, '2')
+    Simulate.click(a.querySelector('button')!)
+  })
+})
+
 test('it should support multiple instances of a store', t => {
   let {Container, withStore} = connectToTree({ a: 1 })
   let C = withStore(({ store }) =>
-    <button onClick={() => store.set('a')(store.get('a') + 1)}>
-      {store.get('a')}
+    <button onClick={() => store.a = store.a + 1}>
+      {store.a}
     </button>
   )
   let A = () => <Container><C /></Container>
@@ -66,13 +105,13 @@ test('it should support interleaved stores', t => {
   let A = connectToTree({ a: 1 })
   let B = connectToTree({ b: 1 })
   let C = A.withStore(({ store }) =>
-    <button onClick={() => store.set('a')(store.get('a') + 1)}>
-      {store.get('a')}
+    <button onClick={() => store.a = store.a + 1}>
+      {store.a}
     </button>
   )
   let D = B.withStore(({ store }) =>
-    <button onClick={() => store.set('b')(store.get('b') + 1)}>
-      {store.get('b')}
+    <button onClick={() => store.b = store.b + 1}>
+      {store.b}
     </button>
   )
   let X = () => <A.Container>
@@ -103,8 +142,8 @@ test('it should support interleaved stores', t => {
 test('it should support custom initialState', t => {
   let {Container, withStore} = connectToTree({ a: 1 })
   let C = withStore(({ store }) =>
-    <button onClick={() => store.set('a')(store.get('a') + 1)}>
-      {store.get('a')}
+    <button onClick={() => store.a = store.a + 1}>
+      {store.a}
     </button>
   )
   let A = () => <Container initialState={{a: 101}}><C /></Container>
@@ -140,8 +179,8 @@ test('it should support effects', t => {
   }
 
   let C = withStore(({store}) =>
-    <button onClick={() => store.set('a')(store.get('a') + 1)}>
-      {store.get('a')}
+    <button onClick={() => store.a = store.a + 1}>
+      {store.a}
     </button>
   )
   let A = () => <Container effects={[withEffects]}>

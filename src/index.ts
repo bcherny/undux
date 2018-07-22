@@ -1,6 +1,6 @@
 import * as RxJS from 'rxjs'
 import { Emitter } from 'typed-rx-emitter'
-import { mapValues } from './utils'
+import { keys, mapValues } from './utils'
 
 const CYCLE_ERROR_MESSAGE = '[undux] Error: Cyclical dependency detected. '
   + 'This may cause a stack overflow unless you fix it. \n'
@@ -27,64 +27,6 @@ export interface Store<State extends object> {
   getState(): Readonly<State>
 }
 
-/**
- * Immutable snapshot of the current store state. One StoreSnapshot per
- * StoreDefinition is usually alive at a time.
- */
-export class StoreSnapshot<State extends object> implements Store<State> {
-  constructor(
-    private state: State,
-    private storeDefinition: StoreDefinition<State>
-  ) { }
-  get<K extends keyof State>(key: K) {
-    return this.state[key]
-  }
-  set<K extends keyof State>(key: K) {
-    return this.storeDefinition.set(key)
-  }
-  on<K extends keyof State>(key: K) {
-    return this.storeDefinition.on(key)
-  }
-  onAll() {
-    return this.storeDefinition.onAll()
-  }
-  getState() {
-    return Object.freeze(this.state)
-  }
-}
-
-/**
- * Immutable edge from StoreSnapshot to a component that consumes it
- * via withStore(). We use it to keep track of which fields a consumer
- * reads from, so that we can improve performance by only subscribing
- * to those fields.
- */
-export class StoreSnapshotWithSubscription<State extends object> implements Store<State> {
-  constructor(
-    private snapshot: StoreSnapshot<State>,
-    private onGetSet: (key: keyof State) => void,
-    private onGetAll: () => void
-  ) { }
-  get<K extends keyof State>(key: K) {
-    this.onGetSet(key)
-    return this.snapshot.get(key)
-  }
-  set<K extends keyof State>(key: K) {
-    this.onGetSet(key)
-    return this.snapshot.set(key)
-  }
-  on<K extends keyof State>(key: K) {
-    return this.snapshot.on(key)
-  }
-  onAll() {
-    return this.snapshot.onAll()
-  }
-  getState() {
-    this.onGetAll()
-    return this.snapshot.getState()
-  }
-}
-
 export type Options = {
   isDevMode: boolean
 }
@@ -92,6 +34,27 @@ export type Options = {
 let DEFAULT_OPTIONS: Readonly<Options> = {
   isDevMode: false
 }
+
+function createSnapshot<State extends object>(
+  state: State,
+  storeDefinition: StoreDefinition<State>
+): State {
+  return Object.defineProperties({}, mapValues(state, (v, k) => ({
+    configurable: false,
+    enumerable: true,
+    get() {
+      // TODO: Add get trigger
+      return v
+    },
+    set(value: typeof v) {
+      // TODO: Add set trigger
+      storeDefinition.set(k)(value)
+      return value
+    }
+  })))
+}
+
+export type StoreSnapshot<State extends object> = State
 
 /**
  * We create a single instance of this per Container.
@@ -117,14 +80,15 @@ export class StoreDefinition<State extends object> implements Store<State> {
     this.emitter = new Emitter(emitterOptions)
 
     // Set initial state
-    this.storeSnapshot = new StoreSnapshot(state, this)
+    this.storeSnapshot = createSnapshot(state, this)
 
     // Cache setters
     this.setters = mapValues(state, (v, key) =>
       (value: typeof v) => {
-        let previousValue = this.storeSnapshot.get(key)
-        this.storeSnapshot = new StoreSnapshot(
-          Object.assign({}, this.storeSnapshot.getState(), { [key]: value }),
+        console.log('set', key, value)
+        let previousValue = this.storeSnapshot[key]
+        this.storeSnapshot = createSnapshot(
+          Object.assign({}, this.storeSnapshot, { [key]: value }),
           this
         )
         this.emitter.emit(key, value)
@@ -139,7 +103,7 @@ export class StoreDefinition<State extends object> implements Store<State> {
     return this.alls.all()
   }
   get<K extends keyof State>(key: K) {
-    return this.storeSnapshot.get(key)
+    return this.storeSnapshot[key]
   }
   set<K extends keyof State>(key: K) {
     return this.setters[key]
@@ -147,11 +111,8 @@ export class StoreDefinition<State extends object> implements Store<State> {
   getCurrentSnapshot() {
     return this.storeSnapshot
   }
-  toStore(): Store<State> {
-    return this.storeSnapshot
-  }
   getState() {
-    return this.storeSnapshot.getState()
+    return this.storeSnapshot
   }
 }
 
