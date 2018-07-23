@@ -1,9 +1,8 @@
+.circleci
 .DS_Store
 .vscode
 node_modules
 perf
 test
-circle.yml
 *.png
 *.psd
-
