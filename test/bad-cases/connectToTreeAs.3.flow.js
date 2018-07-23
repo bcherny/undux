@@ -1,6 +1,6 @@
 // @flow
-import { connectToTreeAs, EffectAs } from '../../dist/src'
-import type { Store } from '../../dist/src'
+import { connectToTreeAs } from '../../dist/src'
+import type { EffectAs, Store } from '../../dist/src'
 import * as React from 'react'
 
 type StateX = {|
