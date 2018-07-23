@@ -58,7 +58,7 @@ export type Plugin<State: Object> = Effect<State>
 type ToStore = <State>(s: State) => Store<State>
 export type EffectAs<States: {
   [alias: string]: any
-}> = (stores: $ObjMap<States, ToStore>) => void
+}> = (stores: $ObjMap<States, ToStore>) => $ObjMap<States, ToStore>
 
 declare export function withLogger<State: Object>(store: StoreDefinition<State>): StoreDefinition<State>
 
