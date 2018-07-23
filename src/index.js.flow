@@ -12,43 +12,56 @@ type Lifted<State, T> = {
   value: T
 }
 
-type Exactly<T> = T;
+type Exactly<T> = T
 
 export type Options = {
   isDevMode: boolean
 }
 
 export interface Store<State: Object> {
-  get<K: $Keys<State>>(key: K): $ElementType<State, K>;
-  set<K: $Keys<State>, V: $ElementType<State, K>>(key: K): (value: V) => void;
-  on<K: $Keys<State>>(key: K): Observable<$ElementType<State, K>>;
-  onAll(): Observable<$Values<Undux<State>>>;
-  getState(): $ReadOnly<State>;
+  get<K: $Keys<State>>(key: K): $ElementType<State, K>,
+  set<K: $Keys<State>, V: $ElementType<State, K>>(key: K): (value: V) => void,
+  on<K: $Keys<State>>(key: K): Observable<$ElementType<State, K>>,
+  onAll(): Observable<$Values<Undux<State>>>,
+  getState(): $ReadOnly<State>
 }
 
 declare export class StoreSnapshot<State: Object> implements Store<State> {
-  get<K: $Keys<State>>(key: K): $ElementType<State, K>;
-  set<K: $Keys<State>, V: $ElementType<State, K>>(key: K): (value: V) => void;
-  on<K: $Keys<State>>(key: K): Observable<$ElementType<State, K>>;
-  onAll(): Observable<$Values<Undux<State>>>;
-  getState(): $ReadOnly<State>;
+  get<K: $Keys<State>>(key: K): $ElementType<State, K>,
+  set<K: $Keys<State>, V: $ElementType<State, K>>(key: K): (value: V) => void,
+  on<K: $Keys<State>>(key: K): Observable<$ElementType<State, K>>,
+  onAll(): Observable<$Values<Undux<State>>>,
+  getState(): $ReadOnly<State>
 }
 
 declare export class StoreDefinition<State: Object> implements Store<State> {
-  get<K: $Keys<State>>(key: K): $ElementType<State, K>;
-  set<K: $Keys<State>, V: $ElementType<State, K>>(key: K): (value: V) => void;
-  on<K: $Keys<State>>(key: K): Observable<$ElementType<State, K>>;
-  onAll(): Observable<$Values<Undux<State>>>;
-  getCurrentSnapshot(): StoreSnapshot<State>;
-  getState(): $ReadOnly<State>;
+  get<K: $Keys<State>>(key: K): $ElementType<State, K>,
+  set<K: $Keys<State>, V: $ElementType<State, K>>(key: K): (value: V) => void,
+  on<K: $Keys<State>>(key: K): Observable<$ElementType<State, K>>,
+  onAll(): Observable<$Values<Undux<State>>>,
+  getCurrentSnapshot(): StoreSnapshot<State>,
+  getState(): $ReadOnly<State>
 }
 
 declare export function createStore<State: Object>(
   initialState: State,
   options?: Options
 ): StoreDefinition<Exactly<State>>
-export type Plugin<State: Object> = (store: StoreDefinition<State>) => StoreDefinition<State>
+
+export type Effect<State: Object> = (store: StoreDefinition<State>) => StoreDefinition<State>
+
+/**
+ * @deprecated Use `Effect` instead.
+ */
+export type Plugin<State: Object> = Effect<State>
+
+type ToStore = <State>(s: State) => Store<State>
+export type EffectAs<States: {
+  [alias: string]: any
+}> = (stores: $ObjMap<States, ToStore>) => void
+
 declare export function withLogger<State: Object>(store: StoreDefinition<State>): StoreDefinition<State>
+
 declare export function withReduxDevtools<State: Object>(store: StoreDefinition<State>): StoreDefinition<State>
 
 declare export function connect<State: Object>(
@@ -58,7 +71,7 @@ declare export function connect<State: Object>(
 ) =>
   Class<React.Component<$Diff<Props, {store: S}>>>
 
-type GetStoreSnap = <T, S: StoreSnapshot<T>>(storeDef: StoreDefinition<T>) => S
+// connectAs
 
 declare export function connectAs<
   Stores: {[alias: string]: Store<any>}
@@ -67,3 +80,47 @@ declare export function connectAs<
 ): <Props: Object>(
   Component: React.ComponentType<Props>
 ) => Class<React.Component<$Diff<Props, Stores>>>
+
+// connectToTree
+
+export type ContainerProps<State: Object> = {|
+  children: React.Node,
+  effects?: Effect<State>,
+  initialState?: State
+|}
+
+export type Connect<State: Object> = {|
+  Container: React.ComponentType<ContainerProps<State>>,
+  withStore: <S: Store<State>, Props: {store: S}>(
+    Component: React.ComponentType<Props>
+  ) => Class<React.Component<$Diff<Props, {store: S}>>>
+|}
+
+declare export function connectToTree<State: Object>(
+  initialState: State,
+  effects?: Effect<State>
+): Connect<State>
+
+// connectToTreeAs
+
+export type ContainerPropsAs<States: {
+  [alias: string]: any
+}> = {|
+  children: React.Node,
+  effects?: EffectAs<States>,
+  initialStates?: States
+|}
+
+export type ConnectAs<States: {
+  [alias: string]: any
+}> = {|
+  Container: React.ComponentType<ContainerPropsAs<States>>,
+  initialStates: States,
+  withStores: <Props: $ObjMap<States, ToStore>>(
+    Component: React.ComponentType<Props>
+  ) => React.ComponentType<$Diff<Props, $ObjMap<States, ToStore>>>
+|}
+
+declare export function connectToTreeAs<States: {
+  [alias: string]: any
+}>(initialStates: States, effects?: EffectAs<States>): ConnectAs<Exactly<States>>

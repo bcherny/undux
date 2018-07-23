@@ -1,5 +1,5 @@
 // @flow strict-local
-import { connect, connectAs, createStore, withLogger, withReduxDevtools } from '../dist/src'
+import { connect, connectAs, connectToTree, connectToTreeAs, createStore, withLogger, withReduxDevtools } from '../dist/src'
 import type { Plugin, Store } from '../dist/src'
 import * as React from 'react'
 import { debounceTime, filter } from 'rxjs/operators'
@@ -144,6 +144,63 @@ type CombinedAugmentedComponentProps = {|
   ...CombinedComponentProps,
   x: number
 |}
+
+/////////////////// connectToTree ///////////////////
+
+let StoreC = connectToTree({
+  a: 1,
+  b: 2
+})
+
+type StoreCProps = {|
+  store: Store<{| a: number, b: number |}>
+|}
+
+let StoreCElement = StoreC.withStore(class extends React.Component<StoreCProps> {
+  render() {
+    return <div>
+      {this.props.store.get('a') + 1}
+      <button onClick={() => this.props.store.set('b')(10)}>Update</button>
+    </div>
+  }
+})
+
+let StoreCContainer = () =>
+  <StoreC.Container>
+    <StoreCElement />
+  </StoreC.Container>
+
+/////////////////// connectToTreeAs ///////////////////
+
+let StoreD = connectToTreeAs({
+  D: {
+    a: 1,
+    b: 2
+  },
+  E: {
+    c: 'x'
+  }
+})
+
+type StoreDProps = {|
+  D: Store<{| a: number, b: number |}>,
+  E: Store<{| c: string |}>
+|}
+
+let StoreDElement = StoreD.withStores(class extends React.Component<StoreDProps> {
+  render() {
+    return <div>
+      {this.props.D.get('a') + 1}
+      {this.props.E.get('c') + 'y'}
+      <button onClick={() => this.props.D.set('b')(10)}>Update</button>
+    </div>
+  }
+})
+
+let StoreDContainer = () =>
+  <StoreD.Container>
+    <StoreDElement />
+  </StoreD.Container>
 
 //// Functional component
 
