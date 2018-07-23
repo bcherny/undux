@@ -1,20 +1,15 @@
 import * as React from 'react'
 import { Subscription } from 'rxjs'
-import { createStore, Store, StoreDefinition, StoreSnapshot } from '..'
-import { getDisplayName } from '../utils'
-
-export type Diff<T, U> = Pick<T, Exclude<keyof T, keyof U>>
-
-export type Effect<State extends object> = (store: StoreDefinition<State>) => void
+import { createStore, Effect, Store, StoreDefinition, StoreSnapshot } from '..'
+import { Diff, getDisplayName } from '../utils'
 
 export type Connect<State extends object> = {
   Container: React.ComponentType<ContainerProps<State>>
   withStore: <
-    Props extends {store: Store<State>},
-    PropsWithoutStore extends Diff<Props, {store: Store<State>}>
+    Props extends {store: Store<State>}
   >(
     Component: React.ComponentType<Props>
-  ) => React.ComponentType<PropsWithoutStore>
+  ) => React.ComponentType<Diff<Props, {store: Store<State>}>>
 }
 
 export type ContainerProps<State extends object> = {
@@ -23,7 +18,8 @@ export type ContainerProps<State extends object> = {
 }
 
 export function connectToTree<State extends object>(
-  initialState: State
+  initialState: State,
+  effects?: Effect<State>
 ): Connect<State> {
   let Context = React.createContext({ __MISSING_PROVIDER__: true } as any)
 
@@ -37,17 +33,21 @@ export function connectToTree<State extends object>(
     constructor(props: ContainerProps<State>) {
       super(props)
 
+      // Create store definition from initial state
       let state = props.initialState || initialState
-      let store = createStore(state)
-      if (props.effects) {
-        props.effects(store)
+      let storeDefinition = createStore(state)
+
+      // Apply effects?
+      let fx = props.effects || effects
+      if (fx) {
+        fx(storeDefinition)
       }
 
       this.state = {
-        storeDefinition: store,
-        storeSnapshot: store.getCurrentSnapshot(),
-        subscription: store.onAll().subscribe(() =>
-          this.setState({ storeSnapshot: store.getCurrentSnapshot() })
+        storeDefinition,
+        storeSnapshot: storeDefinition.getCurrentSnapshot(),
+        subscription: storeDefinition.onAll().subscribe(() =>
+          this.setState({ storeSnapshot: storeDefinition.getCurrentSnapshot() })
         )
       }
     }
@@ -81,7 +81,7 @@ export function connectToTree<State extends object>(
 
   function withStore<
     Props extends {store: Store<State>},
-    PropsWithoutStore extends Diff<Props, {store: Store<State>}>
+    PropsWithoutStore = Diff<Props, {store: Store<State>}>
   >(
     Component: React.ComponentType<Props>
   ): React.ComponentType<PropsWithoutStore> {

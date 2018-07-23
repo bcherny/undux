@@ -1,13 +1,7 @@
 import * as React from 'react'
 import { Subscription } from 'rxjs'
-import { createStore, Store, StoreDefinition, StoreSnapshot } from '..'
-import { getDisplayName, mapValues } from '../utils'
-
-export type Diff<T, U> = Pick<T, Exclude<keyof T, keyof U>>
-
-export type EffectAs<States extends {
-  [alias: string]: any
-}> = (stores: {[K in keyof States]: StoreDefinition<States[K]>}) => void
+import { createStore, EffectAs, Store, StoreDefinition, StoreSnapshot } from '..'
+import { Diff, getDisplayName, mapValues } from '../utils'
 
 export type ConnectAs<States extends {
   [alias: string]: any
@@ -15,11 +9,10 @@ export type ConnectAs<States extends {
   Container: React.ComponentType<ContainerPropsAs<States>>
   initialStates: States,
   withStores: <
-    Props extends {[K in keyof States]: Store<States[K]>},
-    PropsWithoutStore extends Diff<Props, {[K in keyof States]: Store<States[K]>}>
+    Props extends {[K in keyof States]: Store<States[K]>}
   >(
     Component: React.ComponentType<Props>
-  ) => React.ComponentType<PropsWithoutStore>
+  ) => React.ComponentType<Diff<Props, {[K in keyof States]: Store<States[K]>}>>
 }
 
 export type ContainerPropsAs<States extends {
@@ -32,7 +25,8 @@ export type ContainerPropsAs<States extends {
 export function connectToTreeAs<States extends {
   [alias: string]: any
 }>(
-  initialStates: States
+  initialStates: States,
+  effects?: EffectAs<States>
 ): ConnectAs<States> {
   let Context = React.createContext({ __MISSING_PROVIDER__: true } as any)
 
@@ -52,10 +46,14 @@ export function connectToTreeAs<States extends {
     constructor(props: ContainerPropsAs<States>) {
       super(props)
 
+      // Create store definition from initial state
       let states = props.initialStates || initialStates
       let stores = mapValues(states, _ => createStore(_))
-      if (props.effects) {
-        props.effects(stores)
+
+      // Apply effects?
+      let fx = props.effects || effects
+      if (fx) {
+        fx(stores)
       }
 
       this.state = {
@@ -105,7 +103,7 @@ export function connectToTreeAs<States extends {
 
   function withStores<
     Props extends {[K in keyof States]: Store<States[K]>},
-    PropsWithoutStore extends Diff<Props, {[K in keyof States]: Store<States[K]>}>
+    PropsWithoutStore = Diff<Props, {[K in keyof States]: Store<States[K]>}>
   >(
     Component: React.ComponentType<Props>
   ): React.ComponentType<PropsWithoutStore> {

@@ -1,8 +1,7 @@
 import { test } from 'ava'
 import * as React from 'react'
-import { renderIntoDocument, Simulate } from 'react-dom/test-utils'
-import { connect, connectAs, connectToTree, createStore, Store, StoreSnapshot } from '../src'
-import { Diff, Effect } from '../src/react/connectToTree'
+import { Simulate } from 'react-dom/test-utils'
+import { connect, connectAs, createStore, Store } from '../src'
 import { withElement } from './testUtils'
 
 type State = {

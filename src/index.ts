@@ -162,8 +162,17 @@ export function createStore<State extends object>(
   return new StoreDefinition<State>(initialState, options)
 }
 
-export type Plugin<State extends object> =
-  (store: StoreDefinition<State>) => StoreDefinition<State>
+export type Effect<State extends object> =
+  (store: Store<State>) => void
+
+export type EffectAs<States extends {
+  [alias: string]: any
+}> = (stores: {[K in keyof States]: Store<States[K]>}) => void
+
+/**
+ * @deprecated Use `Effect` instead.
+ */
+export type Plugin<State extends object> = Effect<State>
 
 export * from './plugins/withLogger'
 export * from './plugins/withReduxDevtools'

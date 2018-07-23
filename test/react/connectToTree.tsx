@@ -1,8 +1,8 @@
 import { test } from 'ava'
 import * as React from 'react'
 import { Simulate } from 'react-dom/test-utils'
+import { Effect } from '../../src'
 import { connectToTree } from '../../src/react/connectToTree'
-import { Effect } from '../../src/react/connectToTree'
 import { withElement } from '../testUtils'
 
 test('it should render', t => {
@@ -19,6 +19,33 @@ test('it should render', t => {
     Simulate.click(a.querySelector('button')!)
     t.is(a.querySelector('button')!.innerHTML, '2')
   })
+})
+
+test('it should support effects', t => {
+  t.plan(1)
+
+  type State = {
+    a: number
+  }
+
+  let withEffects: Effect<State> = store => {
+    store.on('a').subscribe(a => {
+      t.is(a, 2)
+    })
+  }
+
+  let { Container, withStore } = connectToTree({ a: 1 }, withEffects)
+
+  let C = withStore(({store}) =>
+    <button onClick={() => store.set('a')(store.get('a') + 1)}>
+      {store.get('a')}
+    </button>
+  )
+  let A = () => <Container><C /></Container>
+
+  withElement(A, _ =>
+    Simulate.click(_.querySelector('button')!)
+  )
 })
 
 test('it should support multiple instances of a store', t => {
@@ -107,7 +134,7 @@ test('it should support custom initialState', t => {
   )
 })
 
-test('it should support effects', t => {
+test('it should support custom effects', t => {
   t.plan(1)
 
   type State = {

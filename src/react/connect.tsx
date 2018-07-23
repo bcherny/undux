@@ -1,11 +1,8 @@
 import * as React from 'react'
-import { ComponentClass } from 'react'
 import { Subscription } from 'rxjs'
 import { ALL } from 'typed-rx-emitter'
-import { createStore, Store, StoreDefinition, StoreSnapshot, StoreSnapshotWithSubscription } from '../'
-import { equals, getDisplayName, keys, mapValues, some } from '../utils'
-
-export type Diff<T, U> = Pick<T, Exclude<keyof T, keyof U>>
+import { Store, StoreDefinition, StoreSnapshotWithSubscription } from '../'
+import { Diff, equals, getDisplayName, mapValues } from '../utils'
 
 const ALL: ALL = '__ALL__'
 

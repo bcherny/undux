@@ -1,6 +1,6 @@
-import { StoreDefinition } from '..'
+import { Store } from '..'
 
-export function withReduxDevtools<State extends object>(store: StoreDefinition<State>): StoreDefinition<State> {
+export function withReduxDevtools<State extends object>(store: Store<State>): Store<State> {
 
   let devtools = window.__REDUX_DEVTOOLS_EXTENSION__
 

@@ -1,13 +1,7 @@
 import * as React from 'react'
-import { ComponentClass } from 'react'
 import { Subscription } from 'rxjs'
-import { ALL } from 'typed-rx-emitter'
-import { createStore, Store, StoreDefinition, StoreSnapshot, StoreSnapshotWithSubscription } from '../'
-import { equals, getDisplayName, keys, mapValues, some } from '../utils'
-
-export type Diff<T, U> = Pick<T, Exclude<keyof T, keyof U>>
-
-const ALL: ALL = '__ALL__'
+import { StoreDefinition } from '../'
+import { Diff, equals, getDisplayName, keys, mapValues, some } from '../utils'
 
 export function connectAs<
   Stores extends {[alias: string]: StoreDefinition<any>}
