@@ -92,7 +92,7 @@ import Store from './MyStore'
 
 class MyApp extends React.Component {
   render() {
-    <Store.Container>
+    return <Store.Container>
       <MyComponent />
     </Store.Container>
   }
