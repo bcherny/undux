@@ -1,5 +1,7 @@
 import { ComponentType } from 'react'
 
+export type Diff<T, U> = Pick<T, Exclude<keyof T, keyof U>>
+
 /**
  * TODO: Avoid diffing by passing individual values into a React component
  * rather than the whole `store`, and letting React and `shouldComponentUpdate`

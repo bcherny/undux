@@ -1,0 +1,30 @@
+{
+  "name": "perf",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "build": "npm run clean && webpack && npm run copy",
+    "build:watch": "webpack -w",
+    "clean": "shx rm -rf dist",
+    "copy": "shx cp src/index.html dist/index.html",
+    "start": "webpack-dev-server",
+    "watch": "npm run build && concurrently -k 'npm run build:watch' 'npm run start'"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "awesome-typescript-loader": "^5.2.0",
+    "concurrently": "^3.6.0",
+    "shx": "^0.3.2",
+    "source-map-loader": "^0.2.3",
+    "tslint": "^5.11.0",
+    "tslint-react": "^3.6.0",
+    "typescript": "^2.9.2",
+    "webpack": "^4.16.1",
+    "webpack-cli": "^3.1.0",
+    "webpack-dev-server": "^3.1.5"
+  },
+  "dependencies": {
+    "react": "^16.4.1",
+    "react-dom": "^16.4.1"
+  }
+}
