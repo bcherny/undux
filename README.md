@@ -2,7 +2,7 @@
 
 [![Build Status][build]](https://circleci.com/gh/bcherny/undux) [![npm]](https://www.npmjs.com/package/undux) [![mit]](https://opensource.org/licenses/MIT) [![ts]](https://www.typescriptlang.org/) [![flow]](https://flow.org/)
 
-[build]: https://img.shields.io/circleci/project/bcherny/undux.svg?branch=master&style=flat-square
+[build]: https://img.shields.io/circleci/project/bcherny/undux/master.svg?style=flat-square
 [npm]: https://img.shields.io/npm/v/undux.svg?style=flat-square
 [mit]: https://img.shields.io/npm/l/undux.svg?style=flat-square
 [ts]: https://img.shields.io/badge/TypeScript-%E2%9C%93-007ACC.svg?style=flat-square
