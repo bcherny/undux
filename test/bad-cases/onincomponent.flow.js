@@ -1,5 +1,5 @@
 // @flow
-import { connectToTree, createStore, withLogger } from '../../dist/src'
+import { createConnectedStore, createStore, withLogger } from '../../dist/src'
 import type { Effect, Store } from '../../dist/src'
 import * as React from 'react'
 
@@ -18,7 +18,7 @@ let withEffects: Effect<State> = store => {
 
 let store = withEffects(withLogger(createStore(initialState)))
 
-let {Container, withStore} = connectToTree(initialState)
+let {Container, withStore} = createConnectedStore(initialState)
 
 type StoreProps = {|
   store: Store<State>

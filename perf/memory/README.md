@@ -4,7 +4,7 @@ Before, Undux only supported the `createStore` API for creating stores. This API
 
 [![](http://img.youtube.com/vi/apOfLKisEJU/0.jpg)](https://youtu.be/apOfLKisEJU)
 
-The updated Undux `connectToTree` API correctly deallocates a store once it's no longer referenced:
+The updated Undux `createConnectedStore` API correctly deallocates a store once it's no longer referenced:
 
 [![](http://img.youtube.com/vi/https://youtu.be/4clJGMF5dIg/0.jpg)](https://youtu.be/https://youtu.be/4clJGMF5dIg)
 

@@ -1,5 +1,5 @@
 // @flow strict-local
-import { connect, connectAs, connectToTree, connectToTreeAs, createStore, withLogger, withReduxDevtools } from '../dist/src'
+import { connect, connectAs, createConnectedStore, createConnectedStoreAs, createStore, withLogger, withReduxDevtools } from '../dist/src'
 import type { Effect, Store } from '../dist/src'
 import * as React from 'react'
 import { debounceTime, filter } from 'rxjs/operators'
@@ -145,9 +145,9 @@ type CombinedAugmentedComponentProps = {|
   x: number
 |}
 
-/////////////////// connectToTree ///////////////////
+/////////////////// createConnectedStore ///////////////////
 
-let StoreC = connectToTree({
+let StoreC = createConnectedStore({
   a: 1,
   b: 2
 })
@@ -170,9 +170,9 @@ let StoreCContainer = () =>
     <StoreCElement />
   </StoreC.Container>
 
-/////////////////// connectToTreeAs ///////////////////
+/////////////////// createConnectedStoreAs ///////////////////
 
-let StoreD = connectToTreeAs({
+let StoreD = createConnectedStoreAs({
   D: {
     a: 1,
     b: 2

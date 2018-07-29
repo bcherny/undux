@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { Store } from '../../../src'
-import { connectToTree } from '../../../src/react/connectToTree'
+import { createConnectedStore } from '../../../src/react/createConnectedStore'
 
 type X = {x: 1}
 
@@ -8,7 +8,7 @@ type State = {
   a: X[]
 }
 
-let { Container, withStore } = connectToTree<State>({ a: [{ x: 1 }] })
+let { Container, withStore } = createConnectedStore<State>({ a: [{ x: 1 }] })
 
 type Props = {
   store: Store<State>

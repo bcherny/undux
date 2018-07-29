@@ -2,12 +2,12 @@ import { test } from 'ava'
 import * as React from 'react'
 import { Simulate } from 'react-dom/test-utils'
 import { EffectAs } from '../../src'
-import { connectToTreeAs } from '../../src/react'
+import { createConnectedStoreAs } from '../../src/react'
 import { withElement } from '../testUtils'
 
 test('it should support combining stores', t => {
 
-  let C = connectToTreeAs({
+  let C = createConnectedStoreAs({
     A: { a: 1 },
     B: { b: 1 }
   })
@@ -56,7 +56,7 @@ test('it should support effects for multiple stores', t => {
     B.on('b').subscribe(b => t.is(b, 2))
   }
 
-  let C = connectToTreeAs({
+  let C = createConnectedStoreAs({
     A: { a: 1 },
     B: { b: 1 }
   }, withEffects)
@@ -81,7 +81,7 @@ test('it should support effects for multiple stores', t => {
 })
 
 test('it should support multiple instances of multiple stores', t => {
-  let { Container, withStores } = connectToTreeAs({
+  let { Container, withStores } = createConnectedStoreAs({
     A: { a: 1 },
     B: { b: 2 }
   })
@@ -125,7 +125,7 @@ test('it should support multiple instances of multiple stores', t => {
 
 test('it should support custom initialStates for multiple stores', t => {
 
-  let C = connectToTreeAs({
+  let C = createConnectedStoreAs({
     A: { a: 1 },
     B: { b: 1 }
   })
@@ -174,7 +174,7 @@ test('it should support custom effects for multiple stores', t => {
     B: { b: number }
   }
 
-  let C = connectToTreeAs<State>({
+  let C = createConnectedStoreAs<State>({
     A: { a: 1 },
     B: { b: 1 }
   })

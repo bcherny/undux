@@ -1,5 +1,5 @@
 // @flow
-import { connectToTree } from '../../dist/src'
+import { createConnectedStore } from '../../dist/src'
 import type { Effect, Store } from '../../dist/src'
 import * as React from 'react'
 
@@ -18,7 +18,7 @@ let withEffects: Effect<State> = store => {
   return store
 }
 
-let {Container, withStore} = connectToTree(initialState, withEffects)
+let {Container, withStore} = createConnectedStore(initialState, withEffects)
 
 type Props = {|
   store: Store<State>,
@@ -26,7 +26,7 @@ type Props = {|
 |}
 
 let A = ({store}: Props) =>
-  store.get('c') + 2 // Error: c is not a valid key
+  store.get('a').push(4) // Error: Can't call .push on a number
 
 let B = withStore(A)
 

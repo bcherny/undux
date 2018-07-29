@@ -1,5 +1,5 @@
 // @flow
-import { connectToTreeAs } from '../../dist/src'
+import { createConnectedStoreAs } from '../../dist/src'
 import type { EffectAs, Store } from '../../dist/src'
 import * as React from 'react'
 
@@ -35,7 +35,7 @@ let withEffects: EffectAs<State> = store => {
   return store
 }
 
-let {Container, withStores} = connectToTreeAs(initialState, withEffects)
+let {Container, withStores} = createConnectedStoreAs(initialState, withEffects)
 
 type Props = {|
   X: Store<StateX>,

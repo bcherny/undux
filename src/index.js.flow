@@ -82,7 +82,7 @@ declare export function connectAs<
   Component: React.ComponentType<Props>
 ) => Class<React.Component<$Diff<Props, Stores>>>
 
-// connectToTree
+// createConnectedStore
 
 export type ContainerProps<State: Object> = {|
   children: React.Node,
@@ -97,12 +97,12 @@ export type Connect<State: Object> = {|
   ) => Class<React.Component<$Diff<Props, {store: S}>>>
 |}
 
-declare export function connectToTree<State: Object>(
+declare export function createConnectedStore<State: Object>(
   initialState: State,
   effects?: Effect<State>
 ): Connect<State>
 
-// connectToTreeAs
+// createConnectedStoreAs
 
 export type ContainerPropsAs<States: {
   [alias: string]: any
@@ -122,6 +122,6 @@ export type ConnectAs<States: {
   ) => React.ComponentType<$Diff<Props, $ObjMap<States, ToStore>>>
 |}
 
-declare export function connectToTreeAs<States: {
+declare export function createConnectedStoreAs<States: {
   [alias: string]: any
 }>(initialStates: States, effects?: EffectAs<States>): ConnectAs<Exactly<States>>

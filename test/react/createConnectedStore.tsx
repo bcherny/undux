@@ -2,11 +2,11 @@ import { test } from 'ava'
 import * as React from 'react'
 import { Simulate } from 'react-dom/test-utils'
 import { Effect } from '../../src'
-import { connectToTree } from '../../src/react/connectToTree'
+import { createConnectedStore } from '../../src/react/createConnectedStore'
 import { withElement } from '../testUtils'
 
 test('it should render', t => {
-  let {Container, withStore} = connectToTree({ a: 1 })
+  let {Container, withStore} = createConnectedStore({ a: 1 })
   let B = withStore(({ store }) =>
     <button onClick={() => store.set('a')(store.get('a') + 1)}>
       {store.get('a')}
@@ -34,7 +34,7 @@ test('it should support effects', t => {
     })
   }
 
-  let { Container, withStore } = connectToTree({ a: 1 }, withEffects)
+  let { Container, withStore } = createConnectedStore({ a: 1 }, withEffects)
 
   let C = withStore(({store}) =>
     <button onClick={() => store.set('a')(store.get('a') + 1)}>
@@ -49,7 +49,7 @@ test('it should support effects', t => {
 })
 
 test('it should support multiple instances of a store', t => {
-  let {Container, withStore} = connectToTree({ a: 1 })
+  let {Container, withStore} = createConnectedStore({ a: 1 })
   let C = withStore(({ store }) =>
     <button onClick={() => store.set('a')(store.get('a') + 1)}>
       {store.get('a')}
@@ -73,8 +73,8 @@ test('it should support multiple instances of a store', t => {
 })
 
 test('it should support interleaved stores', t => {
-  let A = connectToTree({ a: 1 })
-  let B = connectToTree({ b: 1 })
+  let A = createConnectedStore({ a: 1 })
+  let B = createConnectedStore({ b: 1 })
   let C = A.withStore(({ store }) =>
     <button onClick={() => store.set('a')(store.get('a') + 1)}>
       {store.get('a')}
@@ -111,7 +111,7 @@ test('it should support interleaved stores', t => {
 })
 
 test('it should support custom initialState', t => {
-  let {Container, withStore} = connectToTree({ a: 1 })
+  let {Container, withStore} = createConnectedStore({ a: 1 })
   let C = withStore(({ store }) =>
     <button onClick={() => store.set('a')(store.get('a') + 1)}>
       {store.get('a')}
@@ -141,7 +141,7 @@ test('it should support custom effects', t => {
     a: number
   }
 
-  let { Container, withStore } = connectToTree({ a: 1 })
+  let { Container, withStore } = createConnectedStore({ a: 1 })
 
   let withEffects: Effect<State> = store => {
     store.on('a').subscribe(a => {
@@ -164,7 +164,7 @@ test('it should support custom effects', t => {
 })
 
 test('it should eagerly throw at runtime when using a consumer without a container', t => {
-  let {withStore} = connectToTree({ a: 1 })
+  let {withStore} = createConnectedStore({ a: 1 })
   let A = withStore(() => <div />)
   t.throws(() => withElement(A, _ => {}), /is not nested/)
 })

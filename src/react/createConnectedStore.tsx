@@ -17,7 +17,7 @@ export type ContainerProps<State extends object> = {
   initialState?: State
 }
 
-export function connectToTree<State extends object>(
+export function createConnectedStore<State extends object>(
   initialState: State,
   effects?: Effect<State>
 ): Connect<State> {

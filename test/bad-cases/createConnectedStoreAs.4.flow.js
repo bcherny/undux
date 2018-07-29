@@ -1,5 +1,5 @@
 // @flow
-import { connectToTreeAs } from '../../dist/src'
+import { createConnectedStoreAs } from '../../dist/src'
 import type { EffectAs, Store } from '../../dist/src'
 import * as React from 'react'
 
@@ -35,23 +35,21 @@ let withEffects: EffectAs<State> = store => {
   return store
 }
 
-let {Container, withStores} = connectToTreeAs(initialState, withEffects)
+let {Container, withStores} = createConnectedStoreAs(initialState, withEffects)
 
 type Props = {|
   X: Store<StateX>,
   Y: Store<StateY>
 |}
 
-let A = withStores(class extends React.Component<Props> {
-  render() {
-    return <div>
-      {this.props.X.get('a') * 4}
-      {this.props.X.get('b') * 4}
-      {this.props.Y.get('c').toUpperCase()}
-      {this.props.Y.get('d') * 8} // Error: Can't multiply a string
-    </div>
-  }
-})
+let A = withStores((props: Props) =>
+  <div>
+    {props.X.get('a') * 4}
+    {props.X.get('b') * 4}
+    {props.Y.get('c').toUpperCase()}
+    {props.Y.get('e') * 8} // Error: e is not a valid key
+  </div>
+)
 
 let StoreContainer = () =>
   <Container>

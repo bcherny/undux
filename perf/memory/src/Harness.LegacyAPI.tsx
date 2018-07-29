@@ -1,13 +1,13 @@
 import * as React from 'react'
 import { Store } from '../../../src'
-import { connectToTree } from '../../../src/react/connectToTree'
+import { createConnectedStore } from '../../../src/react/createConnectedStore'
 import { MemoryHog } from './MemoryHog.LegacyAPI'
 
 type State = {
   visibleComponent: 'a' | 'b'
 }
 
-let { Container, withStore } = connectToTree<State>({ visibleComponent: 'a' })
+let { Container, withStore } = createConnectedStore<State>({ visibleComponent: 'a' })
 
 let A = () => <MemoryHog />
 let B = () => <MemoryHog />

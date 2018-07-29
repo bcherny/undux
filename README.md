@@ -43,10 +43,10 @@ npm install undux@^3 --save
 ### 1. Create a store
 
 ```jsx
-import { connectToTree } from 'undux'
+import { createConnectedStore } from 'undux'
 
 // Create a store with an initial value.
-export default connectToTree({
+export default createConnectedStore({
   one: 0,
   two: 0
 })
@@ -199,14 +199,14 @@ let withLocalStorage: Effect = store => {
 ### Creating a store (TypeScript)
 
 ```ts
-import { connectToTree, Store } from 'undux'
+import { createConnectedStore, Store } from 'undux'
 
 type MyStore = {
   foo: number,
   bar: string[]
 }
 
-export default connectToTree<MyStore>({
+export default createConnectedStore<MyStore>({
   foo: 12,
   bar: []
 })

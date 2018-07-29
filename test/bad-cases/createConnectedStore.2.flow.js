@@ -1,5 +1,5 @@
 // @flow
-import { connectToTree } from '../../dist/src'
+import { createConnectedStore } from '../../dist/src'
 import type { Store } from '../../dist/src'
 import * as React from 'react'
 
@@ -13,7 +13,7 @@ let initialState: State = {
   b: 2
 }
 
-let {Container, withStore} = connectToTree(initialState)
+let {Container, withStore} = createConnectedStore(initialState)
 
 type Props = {|
   store: Store<State>

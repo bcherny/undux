@@ -22,7 +22,7 @@ export type ContainerPropsAs<States extends {
   initialStates?: States
 }
 
-export function connectToTreeAs<States extends {
+export function createConnectedStoreAs<States extends {
   [alias: string]: any
 }>(
   initialStates: States,
