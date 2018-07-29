@@ -26,3 +26,4 @@
 ! ./node_modules/.bin/flow focus-check test/bad-cases/connectToTreeAs.2.flow.js
 ! ./node_modules/.bin/flow focus-check test/bad-cases/connectToTreeAs.3.flow.js
 ! ./node_modules/.bin/flow focus-check test/bad-cases/connectToTreeAs.4.flow.js
+! ./node_modules/.bin/flow focus-check test/bad-cases/onincomponent.flow.js

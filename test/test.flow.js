@@ -1,6 +1,6 @@
 // @flow strict-local
 import { connect, connectAs, connectToTree, connectToTreeAs, createStore, withLogger, withReduxDevtools } from '../dist/src'
-import type { Plugin, Store } from '../dist/src'
+import type { Effect, Store } from '../dist/src'
 import * as React from 'react'
 import { debounceTime, filter } from 'rxjs/operators'
 
@@ -14,7 +14,7 @@ let initialState: State = {
   users: []
 }
 
-let withEffects: Plugin<State> = store => {
+let withEffects: Effect<State> = store => {
   store.onAll().subscribe(({ key, value, previousValue }) => {
     key.toUpperCase()
     if (typeof previousValue === 'boolean' || typeof value === 'boolean') {

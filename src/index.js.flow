@@ -21,16 +21,12 @@ export type Options = {
 export interface Store<State: Object> {
   get<K: $Keys<State>>(key: K): $ElementType<State, K>,
   set<K: $Keys<State>, V: $ElementType<State, K>>(key: K): (value: V) => void,
-  on<K: $Keys<State>>(key: K): Observable<$ElementType<State, K>>,
-  onAll(): Observable<$Values<Undux<State>>>,
   getState(): $ReadOnly<State>
 }
 
 declare export class StoreSnapshot<State: Object> implements Store<State> {
   get<K: $Keys<State>>(key: K): $ElementType<State, K>,
   set<K: $Keys<State>, V: $ElementType<State, K>>(key: K): (value: V) => void,
-  on<K: $Keys<State>>(key: K): Observable<$ElementType<State, K>>,
-  onAll(): Observable<$Values<Undux<State>>>,
   getState(): $ReadOnly<State>
 }
 
@@ -56,13 +52,18 @@ export type Effect<State: Object> = (store: StoreDefinition<State>) => StoreDefi
 export type Plugin<State: Object> = Effect<State>
 
 type ToStore = <State>(s: State) => Store<State>
+type ToStoreDefinition = <State>(s: State) => StoreDefinition<State>
 export type EffectAs<States: {
   [alias: string]: any
-}> = (stores: $ObjMap<States, ToStore>) => $ObjMap<States, ToStore>
+}> = (stores: $ObjMap<States, ToStoreDefinition>) => $ObjMap<States, ToStoreDefinition>
 
-declare export function withLogger<State: Object>(store: StoreDefinition<State>): StoreDefinition<State>
+declare export function withLogger<State: Object>(
+  store: StoreDefinition<State>
+): StoreDefinition<State>
 
-declare export function withReduxDevtools<State: Object>(store: StoreDefinition<State>): StoreDefinition<State>
+declare export function withReduxDevtools<State: Object>(
+  store: StoreDefinition<State>
+): StoreDefinition<State>
 
 declare export function connect<State: Object>(
   store: StoreDefinition<State>

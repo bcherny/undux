@@ -18,8 +18,6 @@ export type Undux<State extends object> = {
 export interface Store<State extends object> {
   get<K extends keyof State>(key: K): State[K]
   set<K extends keyof State>(key: K): (value: State[K]) => void
-  on<K extends keyof State>(key: K): RxJS.Observable<State[K]>
-  onAll(): RxJS.Observable<Undux<State>[keyof State]>
   getState(): Readonly<State>
 }
 
@@ -33,12 +31,6 @@ export class StoreSnapshot<State extends object> implements Store<State> {
   }
   set<K extends keyof State>(key: K) {
     return this.storeDefinition.set(key)
-  }
-  on<K extends keyof State>(key: K) {
-    return this.storeDefinition.on(key)
-  }
-  onAll() {
-    return this.storeDefinition.onAll()
   }
   getState() {
     return Object.freeze(this.state)
@@ -120,11 +112,11 @@ export function createStore<State extends object>(
 }
 
 export type Effect<State extends object> =
-  (store: Store<State>) => void
+  (store: StoreDefinition<State>) => void
 
 export type EffectAs<States extends {
   [alias: string]: any
-}> = (stores: {[K in keyof States]: Store<States[K]>}) => void
+}> = (stores: {[K in keyof States]: StoreDefinition<States[K]>}) => void
 
 /**
  * @deprecated Use `Effect` instead.
