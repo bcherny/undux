@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { Subscription } from 'rxjs'
-import { createStore, Effect, Store, StoreDefinition, StoreSnapshot } from '..'
+import { createStore, Effect, Store, StoreDefinition, StoreSnapshot, StoreTemplate } from '..'
 import { Diff, getDisplayName } from '../utils'
 
 export type Connect<State extends object> = {
@@ -22,6 +22,7 @@ export function connectToTree<State extends object>(
   effects?: Effect<State>
 ): Connect<State> {
   let Context = React.createContext({ __MISSING_PROVIDER__: true } as any)
+  let storeTemplates: StoreTemplate<State>[] = []
 
   type ContainerState = {
     storeDefinition: StoreDefinition<State> | null
@@ -94,7 +95,8 @@ export function connectToTree<State extends object>(
     return f
   }
 
-  return {
+  return new StoreTemplate(
+    StoreDefinition,
     Container,
     withStore
   }

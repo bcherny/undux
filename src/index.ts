@@ -1,6 +1,6 @@
 import * as RxJS from 'rxjs'
 import { Emitter } from 'typed-rx-emitter'
-import { mapValues } from './utils'
+import { Diff, mapValues } from './utils'
 
 const CYCLE_ERROR_MESSAGE = '[undux] Error: Cyclical dependency detected. '
   + 'This may cause a stack overflow unless you fix it. \n'
@@ -21,6 +21,37 @@ export interface Store<State extends object> {
   on<K extends keyof State>(key: K): RxJS.Observable<State[K]>
   onAll(): RxJS.Observable<Undux<State>[keyof State]>
   getState(): Readonly<State>
+}
+
+export type ContainerProps<State extends object> = {
+  effects?: Effect<State>
+  initialState?: State
+}
+
+export class StoreTemplate<State extends object> implements Store<State> {
+  constructor(
+    private storeDefinition: StoreDefinition<State>,
+    public Container: React.ComponentType<ContainerProps<State>>,
+    public withStore: <Props extends {store: Store<State>}>(
+      Component: React.ComponentType<Props>
+    ) => React.ComponentType<Diff<Props, {store: Store<State>}>>
+  ) {}
+  get<K extends keyof State>(key: K): State[K] {
+    return this.storeDefinition.get(key)
+  }
+  set<K extends keyof State>(key: K) {
+    return (value: State[K]) =>
+      this.storeDefinition.get(key)
+  }
+  on<K extends keyof State>(key: K): RxJS.Observable<State[K]> {
+    return this.storeDefinition.on(key)
+  }
+  onAll(): RxJS.Observable<Undux<State>[keyof State]> {
+    return this.storeDefinition.onAll()
+  }
+  getState(): Readonly<State> {
+    return this.storeDefinition.getState()
+  }
 }
 
 export class StoreSnapshot<State extends object> implements Store<State> {
