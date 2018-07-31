@@ -92,11 +92,9 @@ export function createConnectedStoreAs<States extends {
   }) =>
     <Context.Consumer>
       {stores => {
-        mapValues(stores, (store: StoreSnapshot<any>) => {
-          if (!isInitialized(store)) {
-            throw Error(`Component "${props.displayName}" is not nested in a <Container>. To fix this error, be sure to render the component in a <Container>...</Container> tag.`)
-          }
-        })
+        if (!isInitialized(stores)) {
+          throw Error(`[Undux] Component "${props.displayName}" does not seem to be nested in an Undux <Container>. To fix this error, be sure to render the component in the <Container>...</Container> component that you got back from calling createConnectedStoreAs().`)
+        }
         return props.children(stores)
       }}
     </Context.Consumer>

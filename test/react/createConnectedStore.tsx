@@ -166,5 +166,5 @@ test('it should support custom effects', t => {
 test('it should eagerly throw at runtime when using a consumer without a container', t => {
   let {withStore} = createConnectedStore({ a: 1 })
   let A = withStore(() => <div />)
-  t.throws(() => withElement(A, _ => {}), /is not nested/)
+  t.throws(() => withElement(A, _ => {}), /does not seem to be nested/)
 })

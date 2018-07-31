@@ -73,7 +73,7 @@ export function createConnectedStore<State extends object>(
     <Context.Consumer>
       {store => {
         if (!isInitialized(store)) {
-          throw Error(`Component "${props.displayName}" is not nested in a <Container>. To fix this error, be sure to render the component in a <Container>...</Container> tag.`)
+          throw Error(`[Undux] Component "${props.displayName}" does not seem to be nested in an Undux <Container>. To fix this error, be sure to render the component in the <Container>...</Container> component that you got back from calling createConnectedStore().`)
         }
         return props.children(store)
       }}
