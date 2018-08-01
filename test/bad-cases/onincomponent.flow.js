@@ -16,8 +16,6 @@ let withEffects: Effect<State> = store => {
   return store
 }
 
-let store = withEffects(withLogger(createStore(initialState)))
-
 let {Container, withStore} = createConnectedStore(initialState)
 
 type StoreProps = {|

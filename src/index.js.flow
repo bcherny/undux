@@ -21,12 +21,16 @@ export type Options = {
 export interface Store<State: Object> {
   get<K: $Keys<State>>(key: K): $ElementType<State, K>,
   set<K: $Keys<State>, V: $ElementType<State, K>>(key: K): (value: V) => void,
+  on<K: $Keys<State>>(key: K): Observable<$ElementType<State, K>>,
+  onAll(): Observable<$Values<Undux<State>>>,
   getState(): $ReadOnly<State>
 }
 
 declare export class StoreSnapshot<State: Object> implements Store<State> {
   get<K: $Keys<State>>(key: K): $ElementType<State, K>,
   set<K: $Keys<State>, V: $ElementType<State, K>>(key: K): (value: V) => void,
+  on<K: $Keys<State>>(key: K): Observable<$ElementType<State, K>>,
+  onAll(): Observable<$Values<Undux<State>>>,
   getState(): $ReadOnly<State>
 }
 
@@ -44,12 +48,12 @@ declare export function createStore<State: Object>(
   options?: Options
 ): StoreDefinition<Exactly<State>>
 
-export type Effect<State: Object> = (store: StoreDefinition<State>) => StoreDefinition<State>
+export type Effect<State: Object> = (store: StoreDefinition<State>) => void
 
 /**
  * @deprecated Use `Effect` instead.
  */
-export type Plugin<State: Object> = Effect<State>
+export type Plugin<State: Object> = (store: StoreDefinition<State>) => StoreDefinition<State>
 
 type ToStore = <State>(s: State) => Store<State>
 type ToStoreDefinition = <State>(s: State) => StoreDefinition<State>

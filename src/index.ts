@@ -18,6 +18,8 @@ export type Undux<State extends object> = {
 export interface Store<State extends object> {
   get<K extends keyof State>(key: K): State[K]
   set<K extends keyof State>(key: K): (value: State[K]) => void
+  on<K extends keyof State>(key: K): Observable<State[K]>
+  onAll(): Observable<Undux<State>[keyof State]>
   getState(): Readonly<State>
 }
 
@@ -31,6 +33,12 @@ export class StoreSnapshot<State extends object> implements Store<State> {
   }
   set<K extends keyof State>(key: K) {
     return this.storeDefinition.set(key)
+  }
+  on<K extends keyof State>(key: K) {
+    return this.storeDefinition.on(key)
+  }
+  onAll() {
+    return this.storeDefinition.onAll()
   }
   getState() {
     return Object.freeze(this.state)
@@ -121,7 +129,8 @@ export type EffectAs<States extends {
 /**
  * @deprecated Use `Effect` instead.
  */
-export type Plugin<State extends object> = Effect<State>
+export type Plugin<State extends object> =
+(store: Store<State>) => Store<State>
 
 export * from './plugins/withLogger'
 export * from './plugins/withReduxDevtools'
