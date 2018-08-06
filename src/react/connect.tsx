@@ -3,6 +3,9 @@ import { Subscription } from 'rxjs'
 import { Store, StoreDefinition, StoreSnapshot } from '../'
 import { Diff, equals, getDisplayName } from '../utils'
 
+/**
+ * @deprecated Use `createConnectedStore` instead.
+ */
 export function connect<StoreState extends object>(store: StoreDefinition<StoreState>) {
   return function <
     Props,

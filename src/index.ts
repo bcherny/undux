@@ -98,7 +98,7 @@ export class StoreDefinition<State extends object> implements Store<State> {
   get<K extends keyof State>(key: K) {
     return this.storeSnapshot.get(key)
   }
-  set<K extends keyof State>(key: K) {
+  set<K extends keyof State>(key: K): (value: State[K]) => void {
     return this.setters[key]
   }
   getCurrentSnapshot() {
@@ -112,6 +112,9 @@ export class StoreDefinition<State extends object> implements Store<State> {
   }
 }
 
+/**
+ * @deprecated Use `createConnectedStore` instead.
+ */
 export function createStore<State extends object>(
   initialState: State,
   options: Options = DEFAULT_OPTIONS
@@ -120,17 +123,18 @@ export function createStore<State extends object>(
 }
 
 export type Effect<State extends object> =
-  (store: StoreDefinition<State>) => void
+  (store: StoreDefinition<State>) => StoreDefinition<State>
 
 export type EffectAs<States extends {
   [alias: string]: any
-}> = (stores: {[K in keyof States]: StoreDefinition<States[K]>}) => void
+}> = (stores: {[K in keyof States]: StoreDefinition<States[K]>}) =>
+  {[K in keyof States]: StoreDefinition<States[K]>}
 
 /**
  * @deprecated Use `Effect` instead.
  */
 export type Plugin<State extends object> =
-(store: Store<State>) => Store<State>
+(store: StoreDefinition<State>) => StoreDefinition<State>
 
 export * from './plugins/withLogger'
 export * from './plugins/withReduxDevtools'

@@ -3,6 +3,9 @@ import { Subscription } from 'rxjs'
 import { StoreDefinition } from '../'
 import { Diff, equals, getDisplayName, keys, mapValues, some } from '../utils'
 
+/**
+ * @deprecated Use `createConnectedStoreAs` instead.
+ */
 export function connectAs<
   Stores extends {[alias: string]: StoreDefinition<any>}
 >(

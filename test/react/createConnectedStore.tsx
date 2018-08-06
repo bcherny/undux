@@ -32,6 +32,7 @@ test('it should support effects', t => {
     store.on('a').subscribe(a => {
       t.is(a, 2)
     })
+    return store
   }
 
   let { Container, withStore } = createConnectedStore({ a: 1 }, withEffects)
@@ -147,6 +148,7 @@ test('it should support custom effects', t => {
     store.on('a').subscribe(a => {
       t.is(a, 2)
     })
+    return store
   }
 
   let C = withStore(({store}) =>

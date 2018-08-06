@@ -54,6 +54,7 @@ test('it should support effects for multiple stores', t => {
   let withEffects: EffectAs<State> = ({ A, B }) => {
     A.on('a').subscribe(a => t.is(a, 2))
     B.on('b').subscribe(b => t.is(b, 2))
+    return {A, B}
   }
 
   let C = createConnectedStoreAs({
@@ -193,6 +194,7 @@ test('it should support custom effects for multiple stores', t => {
   let effects: EffectAs<State> = ({ A, B }) => {
     A.on('a').subscribe(a => t.is(a, 2))
     B.on('b').subscribe(b => t.is(b, 2))
+    return {A, B}
   }
 
   let Z = () => <C.Container effects={effects}>
