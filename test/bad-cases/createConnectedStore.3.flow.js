@@ -1,6 +1,6 @@
 // @flow
 import { createConnectedStore } from '../../dist/src'
-import type { Effect, Store } from '../../dist/src'
+import type { Effects, Store } from '../../dist/src'
 import * as React from 'react'
 
 type State = {|
@@ -13,7 +13,7 @@ let initialState: State = {
   b: 2
 }
 
-let withEffects: Effect<State> = store => {
+let withEffects: Effects<State> = store => {
   store.on('a').subscribe(a => a.toUpperCase())
   return store
 }

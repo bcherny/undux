@@ -1,6 +1,6 @@
 // @flow
 import { createConnectedStoreAs } from '../../dist/src'
-import type { EffectAs, Store } from '../../dist/src'
+import type { EffectsAs, Store } from '../../dist/src'
 import * as React from 'react'
 
 type StateX = {|
@@ -29,7 +29,7 @@ let initialState: State = {
   }
 }
 
-let withEffects: EffectAs<State> = store => {
+let withEffects: EffectsAs<State> = store => {
   store.X.on('a').subscribe(a => a * 4)
   store.Y.on('d').subscribe(d => d.toLowerCase())
   return store
