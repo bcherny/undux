@@ -1,6 +1,6 @@
 {
   "name": "undux",
-  "version": "5.0.0-alpha.8",
+  "version": "5.0.0-alpha.9",
   "description": "Dead simple state management for React",
   "main": "dist/src/index.js",
   "typings": "dist/src/index.d.ts",
