@@ -1,6 +1,6 @@
 // @flow
 import { connect, createStore, withLogger } from '../../dist/src'
-import type { Plugin, Store } from '../../dist/src'
+import type { Effects, Store } from '../../dist/src'
 import * as React from 'react'
 
 type State = {
@@ -13,7 +13,7 @@ let initialState: State = {
   users: []
 }
 
-let withEffects: Plugin<State> = store => {
+let withEffects: Effects<State> = store => {
   store.on('users').subscribe(_ => _.slice(0, 1))
   return store
 }

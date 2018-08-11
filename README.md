@@ -182,9 +182,9 @@ The logger will produce logs that look like this:
 Undux is easy to modify with effects. Just define a function that takes a store as an argument, adding listeners along the way. For generic plugins that work across different stores, use the `.onAll` method to listen on all changes on a store:
 
 ```ts
-import { Effect } from 'undux'
+import { Effects } from 'undux'
 
-let withLocalStorage: Effect = store => {
+let withLocalStorage: Effects = store => {
 
   // Listen on all changes to the store.
   store.onAll().subscribe(({ key, value, previousValue }) =>

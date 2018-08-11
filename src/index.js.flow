@@ -48,16 +48,16 @@ declare export function createStore<State: Object>(
   options?: Options
 ): StoreDefinition<Exactly<State>>
 
-export type Effect<State: Object> = (store: StoreDefinition<State>) => void
+export type Effects<State: Object> = (store: StoreDefinition<State>) => StoreDefinition<State>
 
 /**
- * @deprecated Use `Effect` instead.
+ * @deprecated Use `Effects` instead.
  */
 export type Plugin<State: Object> = (store: StoreDefinition<State>) => StoreDefinition<State>
 
 type ToStore = <State>(s: State) => Store<State>
 type ToStoreDefinition = <State>(s: State) => StoreDefinition<State>
-export type EffectAs<States: {
+export type EffectsAs<States: {
   [alias: string]: any
 }> = (stores: $ObjMap<States, ToStoreDefinition>) => $ObjMap<States, ToStoreDefinition>
 
@@ -90,7 +90,7 @@ declare export function connectAs<
 
 export type ContainerProps<State: Object> = {|
   children: React.Node,
-  effects?: Effect<State>,
+  effects?: Effects<State>,
   initialState?: State
 |}
 
@@ -103,7 +103,7 @@ export type Connect<State: Object> = {|
 
 declare export function createConnectedStore<State: Object>(
   initialState: State,
-  effects?: Effect<State>
+  effects?: Effects<State>
 ): Connect<State>
 
 // createConnectedStoreAs
@@ -112,7 +112,7 @@ export type ContainerPropsAs<States: {
   [alias: string]: any
 }> = {|
   children: React.Node,
-  effects?: EffectAs<States>,
+  effects?: EffectsAs<States>,
   initialStates?: States
 |}
 
@@ -128,4 +128,4 @@ export type ConnectAs<States: {
 
 declare export function createConnectedStoreAs<States: {
   [alias: string]: any
-}>(initialStates: States, effects?: EffectAs<States>): ConnectAs<Exactly<States>>
+}>(initialStates: States, effects?: EffectsAs<States>): ConnectAs<Exactly<States>>

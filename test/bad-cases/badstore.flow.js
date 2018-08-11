@@ -1,6 +1,6 @@
 // @flow
 import { connect, createStore, withLogger, withReduxDevtools } from '../../dist/src'
-import type { Plugin, Store } from '../../dist/src'
+import type { Effects, Store } from '../../dist/src'
 import * as React from 'react'
 
 type State = {

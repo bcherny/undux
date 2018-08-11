@@ -122,16 +122,16 @@ export function createStore<State extends object>(
   return new StoreDefinition<State>(initialState, options)
 }
 
-export type Effect<State extends object> =
+export type Effects<State extends object> =
   (store: StoreDefinition<State>) => StoreDefinition<State>
 
-export type EffectAs<States extends {
+export type EffectsAs<States extends {
   [alias: string]: any
 }> = (stores: {[K in keyof States]: StoreDefinition<States[K]>}) =>
   {[K in keyof States]: StoreDefinition<States[K]>}
 
 /**
- * @deprecated Use `Effect` instead.
+ * @deprecated Use `Effects` instead.
  */
 export type Plugin<State extends object> =
 (store: StoreDefinition<State>) => StoreDefinition<State>

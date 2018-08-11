@@ -1,7 +1,7 @@
 import { test } from 'ava'
 import * as React from 'react'
 import { Simulate } from 'react-dom/test-utils'
-import { EffectAs } from '../../src'
+import { EffectsAs } from '../../src'
 import { createConnectedStoreAs } from '../../src/react'
 import { withElement } from '../testUtils'
 
@@ -51,7 +51,7 @@ test('it should support effects for multiple stores', t => {
     B: { b: number }
   }
 
-  let withEffects: EffectAs<State> = ({ A, B }) => {
+  let withEffects: EffectsAs<State> = ({ A, B }) => {
     A.on('a').subscribe(a => t.is(a, 2))
     B.on('b').subscribe(b => t.is(b, 2))
     return {A, B}
@@ -191,7 +191,7 @@ test('it should support custom effects for multiple stores', t => {
     </>
   )
 
-  let effects: EffectAs<State> = ({ A, B }) => {
+  let effects: EffectsAs<State> = ({ A, B }) => {
     A.on('a').subscribe(a => t.is(a, 2))
     B.on('b').subscribe(b => t.is(b, 2))
     return {A, B}

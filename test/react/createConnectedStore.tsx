@@ -1,7 +1,7 @@
 import { test } from 'ava'
 import * as React from 'react'
 import { Simulate } from 'react-dom/test-utils'
-import { Effect } from '../../src'
+import { Effects } from '../../src'
 import { createConnectedStore } from '../../src/react/createConnectedStore'
 import { withElement } from '../testUtils'
 
@@ -28,7 +28,7 @@ test('it should support effects', t => {
     a: number
   }
 
-  let withEffects: Effect<State> = store => {
+  let withEffects: Effects<State> = store => {
     store.on('a').subscribe(a => {
       t.is(a, 2)
     })
@@ -205,7 +205,7 @@ test('it should support custom effects', t => {
 
   let { Container, withStore } = createConnectedStore({ a: 1 })
 
-  let withEffects: Effect<State> = store => {
+  let withEffects: Effects<State> = store => {
     store.on('a').subscribe(a => {
       t.is(a, 2)
     })

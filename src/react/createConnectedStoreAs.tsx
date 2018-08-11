@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { Subscription } from 'rxjs'
-import { createStore, EffectAs, Store, StoreDefinition, StoreSnapshot } from '..'
+import { createStore, EffectsAs, Store, StoreDefinition, StoreSnapshot } from '..'
 import { Diff, getDisplayName, mapValues } from '../utils'
 
 export type ConnectAs<States extends {
@@ -18,7 +18,7 @@ export type ConnectAs<States extends {
 export type ContainerPropsAs<States extends {
   [alias: string]: any
 }> = {
-  effects?: EffectAs<States>
+  effects?: EffectsAs<States>
   initialStates?: States
 }
 
@@ -26,7 +26,7 @@ export function createConnectedStoreAs<States extends {
   [alias: string]: any
 }>(
   initialStates: States,
-  effects?: EffectAs<States>
+  effects?: EffectsAs<States>
 ): ConnectAs<States> {
   let Context = React.createContext({ __MISSING_PROVIDER__: true } as any)
 

@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { Subscription } from 'rxjs'
-import { createStore, Effect, Store, StoreDefinition, StoreSnapshot } from '..'
+import { createStore, Effects, Store, StoreDefinition, StoreSnapshot } from '..'
 import { Diff, getDisplayName } from '../utils'
 
 export type Connect<State extends object> = {
@@ -13,13 +13,13 @@ export type Connect<State extends object> = {
 }
 
 export type ContainerProps<State extends object> = {
-  effects?: Effect<State>
+  effects?: Effects<State>
   initialState?: State
 }
 
 export function createConnectedStore<State extends object>(
   initialState: State,
-  effects?: Effect<State>
+  effects?: Effects<State>
 ): Connect<State> {
   let Context = React.createContext({ __MISSING_PROVIDER__: true } as any)
 
