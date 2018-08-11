@@ -73,6 +73,67 @@ test('it should support multiple instances of a store', t => {
   )
 })
 
+test('it should support multiple instances of a store, with disjoint lifecycles', t => {
+  let {Container, withStore} = createConnectedStore({ a: 1 })
+  let C = withStore(({ store }) =>
+    <button onClick={() => store.set('a')(store.get('a') + 1)}>
+      {store.get('a')}
+    </button>
+  )
+  let A = () => <Container><C /></Container>
+  let B = () => <Container><C /></Container>
+
+  withElement(A, a => {
+    t.is(a.querySelector('button')!.innerHTML, '1')
+    Simulate.click(a.querySelector('button')!)
+    t.is(a.querySelector('button')!.innerHTML, '2')
+  })
+
+  withElement(B, b => {
+    t.is(b.querySelector('button')!.innerHTML, '1')
+    Simulate.click(b.querySelector('button')!)
+    t.is(b.querySelector('button')!.innerHTML, '2')
+  })
+})
+
+test('it should support multiple instances of a store in one tree, with disjoint lifecycles', t => {
+  let Test = createConnectedStore({ isA: true })
+  let {Container, withStore} = createConnectedStore({ a: 1 })
+  let C = withStore(({ store }) =>
+    <button id='C' onClick={() => store.set('a')(store.get('a') + 1)}>
+      {store.get('a')}
+    </button>
+  )
+  let A = () => <Container><C /></Container>
+  let B = () => <Container><C /></Container>
+
+  let D = Test.withStore(({store}) =>
+    <>
+      {store.get('isA') ? <A /> : <B />}
+      <button id='D' onClick={() => store.set('isA')(!store.get('isA'))} />
+    </>
+  )
+  let E = () => <Test.Container><D /></Test.Container>
+
+  withElement(E, e => {
+    t.is(e.querySelector('#C')!.innerHTML, '1')
+    Simulate.click(e.querySelector('#C')!)
+    t.is(e.querySelector('#C')!.innerHTML, '2')
+
+    // Swap subtree
+    Simulate.click(e.querySelector('#D')!)
+    t.is(e.querySelector('#C')!.innerHTML, '1')
+    Simulate.click(e.querySelector('#C')!)
+    t.is(e.querySelector('#C')!.innerHTML, '2')
+
+    // Swap subtree
+    Simulate.click(e.querySelector('#D')!)
+    t.is(e.querySelector('#C')!.innerHTML, '1')
+    Simulate.click(e.querySelector('#C')!)
+    t.is(e.querySelector('#C')!.innerHTML, '2')
+  })
+})
+
 test('it should support interleaved stores', t => {
   let A = createConnectedStore({ a: 1 })
   let B = createConnectedStore({ b: 1 })
