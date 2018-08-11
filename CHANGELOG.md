@@ -1,5 +1,11 @@
 # Changelog
 
+## 5.0.0
+
+- Deprecated `createStore` and `connect` in favor of new top-level `createConnectedStore` method [3909ed9](https://github.com/bcherny/undux/commit/3909ed9e580e37a8989af908706bd5fe3d35879e)
+- Deprecated `createStoreAs` and `connect` in favor of new top-level `createConnectedStoreAs` method [3909ed9](https://github.com/bcherny/undux/commit/3909ed9e580e37a8989af908706bd5fe3d35879e)
+- Deprecated `Plugin` type in favor of `Effects` [3909ed9](https://github.com/bcherny/undux/commit/3909ed9e580e37a8989af908706bd5fe3d35879e)
+
 ### 4.8.0
 
 - Revert 4.7.0 performance update
