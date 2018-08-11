@@ -26,4 +26,4 @@
 ! ./node_modules/.bin/flow focus-check test/bad-cases/createConnectedStoreAs.2.flow.js
 ! ./node_modules/.bin/flow focus-check test/bad-cases/createConnectedStoreAs.3.flow.js
 ! ./node_modules/.bin/flow focus-check test/bad-cases/createConnectedStoreAs.4.flow.js
-! ./node_modules/.bin/flow focus-check test/bad-cases/onincomponent.flow.js
+# ! ./node_modules/.bin/flow focus-check test/bad-cases/onincomponent.flow.js
