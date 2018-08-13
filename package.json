@@ -19,6 +19,7 @@
     "clean": "shx rm -rf dist",
     "format": "prettier --write src/**/* test/**/*",
     "lint": "tslint -p tsconfig.json src/*.ts src/*.tsx src/plugins/*.ts",
+    "profile:filesize": "webpack --config ./perf/filesize/webpack.config.js -p && cat ./perf/filesize/bundle.js | gzip | wc -c",
     "prepublishOnly": "npm test",
     "pretest": "npm run build",
     "tdd": "concurrently -k \"tsc -w\" \"ava -w\"",
@@ -32,6 +33,7 @@
     "@types/react": "^16.4.7",
     "@types/react-dom": "^16.0.6",
     "ava": "^0.25.0",
+    "awesome-typescript-loader": "^5.2.0",
     "concurrently": "^3.6.1",
     "flow-bin": "^0.78.0",
     "immutable": "^3.8.2",
@@ -43,7 +45,10 @@
     "shx": "^0.3.2",
     "tslint": "^5.11.0",
     "tslint-react": "^3.6.0",
-    "typescript": "^3.0.1"
+    "typescript": "^3.0.1",
+    "uglifyjs-webpack-plugin": "^1.2.7",
+    "webpack": "^4.16.5",
+    "webpack-cli": "^3.1.0"
   },
   "peerDependencies": {
     "react": ">=16.0.0",

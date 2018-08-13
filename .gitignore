@@ -1,4 +1,5 @@
 .DS_Store
 dist
 node_modules
+perf/filesize/bundle.js
 yarn-error.log
