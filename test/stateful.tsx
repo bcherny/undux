@@ -1,7 +1,7 @@
 import { test } from 'ava'
 import * as React from 'react'
 import { Simulate } from 'react-dom/test-utils'
-import { connect, connectAs, createStore, Store, StoreSnapshot } from '../src'
+import { connect, connectAs, createStore, LegacyStoreSnapshot, Store } from '../src'
 import { withElement } from './testUtils'
 
 type State = {
@@ -244,8 +244,8 @@ test('[stateful] it should render with multiple stores', t => {
   let storeB = createStore<B>({ b: 'c' })
 
   type Props = {
-    a: StoreSnapshot<A>,
-    b: StoreSnapshot<B>
+    a: LegacyStoreSnapshot<A>,
+    b: LegacyStoreSnapshot<B>
   }
 
   class Component extends React.Component<Props> {
@@ -279,9 +279,9 @@ test('[stateful] it should update with multiple stores', t => {
   let storeC = createStore<C>({ c: { d: true } })
 
   type Props = {
-    a: StoreSnapshot<A>,
-    b: StoreSnapshot<B>,
-    c: StoreSnapshot<C>
+    a: LegacyStoreSnapshot<A>,
+    b: LegacyStoreSnapshot<B>,
+    c: LegacyStoreSnapshot<C>
   }
 
   let Component = connectAs({
@@ -330,8 +330,8 @@ test('[stateful] it should update when any of the stores updated', t => {
   let storeB = createStore<B>({ b: 'c' })
 
   type Props = {
-    a: StoreSnapshot<A>,
-    b: StoreSnapshot<B>
+    a: LegacyStoreSnapshot<A>,
+    b: LegacyStoreSnapshot<B>
   }
 
   let renderCount = 0

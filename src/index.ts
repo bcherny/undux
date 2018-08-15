@@ -23,10 +23,10 @@ export interface Store<State extends object> {
   getState(): Readonly<State>
 }
 
-export class StoreSnapshot<State extends object> implements Store<State> {
+export class LegacyStoreSnapshot<State extends object> implements Store<State> {
   constructor(
     private state: State,
-    private storeDefinition: StoreDefinition<State>
+    private storeDefinition: LegacyStoreDefinition<State>
   ) { }
   get<K extends keyof State>(key: K) {
     return this.state[key]
@@ -45,6 +45,44 @@ export class StoreSnapshot<State extends object> implements Store<State> {
   }
 }
 
+function StoreSnapshot<State extends object>(
+  state: State,
+  storeDefinition: StoreDefinition<State>
+): State {
+  return Object.freeze(Object.preventExtensions(
+    Object.defineProperties({}, mapValues(state, (value, key) => {
+      let d = Object.getOwnPropertyDescriptor(state, key)
+      let memoizeCache: Partial<State> = {}
+      if (d && d.get) {
+        return {
+          configurable: false,
+          enumerable: true,
+          get() {
+            if (key in memoizeCache) {
+              return memoizeCache[key]
+            }
+            memoizeCache[key] = state[key]
+            return memoizeCache[key]
+          },
+          set(v: typeof value) {
+            return storeDefinition.set(key)(v)
+          }
+        }
+      }
+      return {
+        configurable: false,
+        enumerable: true,
+        get() {
+          return value
+        },
+        set(v: typeof value) {
+          return storeDefinition.set(key)(v)
+        }
+      }
+    }))
+  ))
+}
+
 export type Options = {
   isDevMode: boolean
 }
@@ -54,7 +92,7 @@ let DEFAULT_OPTIONS: Readonly<Options> = {
 }
 
 export class StoreDefinition<State extends object> implements Store<State> {
-  private storeSnapshot: StoreSnapshot<State>
+  private storeSnapshot: State
   private alls: Emitter<Undux<State>>
   private emitter: Emitter<State>
   private setters: {
@@ -74,13 +112,69 @@ export class StoreDefinition<State extends object> implements Store<State> {
     this.emitter = new Emitter(emitterOptions)
 
     // Set initial state
-    this.storeSnapshot = new StoreSnapshot(state, this)
+    this.storeSnapshot = StoreSnapshot(state, this)
+
+    // Cache setters
+    this.setters = mapValues(state, (v, key) =>
+      (value: typeof v) => {
+        let previousValue = this.storeSnapshot[key]
+        this.storeSnapshot = StoreSnapshot(Object.assign({}, this.storeSnapshot, { [key]: value }), this)
+        this.emitter.emit(key, value)
+        this.alls.emit(key, { key, previousValue, value })
+      }
+    )
+  }
+  on<K extends keyof State>(key: K): Observable<State[K]> {
+    return this.emitter.on(key)
+  }
+  onAll(): Observable<Undux<State>[keyof State]> {
+    return this.alls.all()
+  }
+  get<K extends keyof State>(key: K) {
+    return this.storeSnapshot[key]
+  }
+  set<K extends keyof State>(key: K): (value: State[K]) => void {
+    return this.setters[key]
+  }
+  getCurrentSnapshot() {
+    return this.storeSnapshot
+  }
+  toStore(): State {
+    return this.storeSnapshot
+  }
+  getState() {
+    return this.storeSnapshot
+  }
+}
+
+export class LegacyStoreDefinition<State extends object> implements Store<State> {
+  private storeSnapshot: LegacyStoreSnapshot<State>
+  private alls: Emitter<Undux<State>>
+  private emitter: Emitter<State>
+  private setters: {
+    readonly [K in keyof State]: (value: State[K]) => void
+  }
+  constructor(state: State, options: Options) {
+
+    let emitterOptions = {
+      isDevMode: options.isDevMode,
+      onCycle(chain: (string | number | symbol)[]) {
+        console.error(CYCLE_ERROR_MESSAGE + chain.join(' -> '))
+      }
+    }
+
+    // Initialize emitters
+    this.alls = new Emitter(emitterOptions)
+    this.emitter = new Emitter(emitterOptions)
+
+    // Set initial state
+    this.storeSnapshot = new LegacyStoreSnapshot(state, this)
 
     // Cache setters
     this.setters = mapValues(state, (v, key) =>
       (value: typeof v) => {
         let previousValue = this.storeSnapshot.get(key)
-        this.storeSnapshot = new StoreSnapshot(
+        this.storeSnapshot = new LegacyStoreSnapshot(
           Object.assign({}, this.storeSnapshot.getState(), { [key]: value }),
           this
         )

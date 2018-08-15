@@ -1,12 +1,12 @@
 import * as React from 'react'
 import { Subscription } from 'rxjs'
-import { Store, StoreDefinition, StoreSnapshot } from '../'
+import { LegacyStoreDefinition, LegacyStoreSnapshot, Store } from '../'
 import { Diff, equals, getDisplayName } from '../utils'
 
 /**
  * @deprecated Use `createConnectedStore` instead.
  */
-export function connect<StoreState extends object>(store: StoreDefinition<StoreState>) {
+export function connect<StoreState extends object>(store: LegacyStoreDefinition<StoreState>) {
   return function <
     Props,
     PropsWithStore extends { store: Store<StoreState> } & Props = { store: Store<StoreState> } & Props
@@ -15,7 +15,7 @@ export function connect<StoreState extends object>(store: StoreDefinition<StoreS
   ): React.ComponentClass<Diff<PropsWithStore, { store: Store<StoreState> }>> {
 
     type State = {
-      store: StoreSnapshot<StoreState>
+      store: LegacyStoreSnapshot<StoreState>
       subscription: Subscription
     }
 

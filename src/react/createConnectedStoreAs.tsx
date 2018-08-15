@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { Subscription } from 'rxjs'
-import { createStore, EffectsAs, Store, StoreDefinition, StoreSnapshot } from '..'
+import { createStore, EffectsAs, LegacyStoreSnapshot, Store, StoreDefinition } from '..'
 import { Diff, getDisplayName, mapValues } from '../utils'
 
 export type ConnectAs<States extends {
@@ -35,7 +35,7 @@ export function createConnectedStoreAs<States extends {
       [K in keyof States]: StoreDefinition<States[K]> | null
     }
     storeSnapshots: {
-      [K in keyof States]: StoreSnapshot<States[K]> | null
+      [K in keyof States]: LegacyStoreSnapshot<States[K]> | null
     }
     subscriptions: {
       [K in keyof States]: Subscription
@@ -87,7 +87,7 @@ export function createConnectedStoreAs<States extends {
   }
 
   let Consumer = (props: {
-    children: (stores: { [K in keyof States]: StoreSnapshot<States[K]> }) => JSX.Element
+    children: (stores: { [K in keyof States]: LegacyStoreSnapshot<States[K]> }) => JSX.Element
     displayName: string
   }) =>
     <Context.Consumer>
@@ -122,7 +122,7 @@ export function createConnectedStoreAs<States extends {
 }
 
 function isInitialized<State extends object>(
-  store: StoreSnapshot<State> | {__MISSING_PROVIDER__: true}
+  store: LegacyStoreSnapshot<State> | {__MISSING_PROVIDER__: true}
 ) {
   return !('__MISSING_PROVIDER__' in store)
 }

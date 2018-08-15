@@ -1,13 +1,13 @@
 import * as React from 'react'
 import { Subscription } from 'rxjs'
-import { StoreDefinition } from '../'
+import { LegacyStoreDefinition } from '../'
 import { Diff, equals, getDisplayName, keys, mapValues, some } from '../utils'
 
 /**
  * @deprecated Use `createConnectedStoreAs` instead.
  */
 export function connectAs<
-  Stores extends {[alias: string]: StoreDefinition<any>}
+  Stores extends {[alias: string]: LegacyStoreDefinition<any>}
 >(
   stores: Stores
 ) {

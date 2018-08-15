@@ -1,15 +1,15 @@
 import * as React from 'react'
 import { Subscription } from 'rxjs'
-import { createStore, Effects, Store, StoreDefinition, StoreSnapshot } from '..'
+import { createStore, Effects, StoreDefinition } from '..'
 import { Diff, getDisplayName } from '../utils'
 
 export type Connect<State extends object> = {
   Container: React.ComponentType<ContainerProps<State>>
   withStore: <
-    Props extends {store: Store<State>}
+    Props extends {store: State}
   >(
     Component: React.ComponentType<Props>
-  ) => React.ComponentType<Diff<Props, {store: Store<State>}>>
+  ) => React.ComponentType<Diff<Props, {store: State}>>
 }
 
 export type ContainerProps<State extends object> = {
@@ -25,7 +25,7 @@ export function createConnectedStore<State extends object>(
 
   type ContainerState = {
     storeDefinition: StoreDefinition<State> | null
-    storeSnapshot: StoreSnapshot<State> | null
+    storeSnapshot: State | null
     subscription: Subscription
   }
 
@@ -67,7 +67,7 @@ export function createConnectedStore<State extends object>(
   }
 
   let Consumer = (props: {
-    children: (store: StoreSnapshot<State>) => JSX.Element
+    children: (store: State) => JSX.Element
     displayName: string
   }) =>
     <Context.Consumer>
@@ -80,8 +80,8 @@ export function createConnectedStore<State extends object>(
     </Context.Consumer>
 
   function withStore<
-    Props extends {store: Store<State>},
-    PropsWithoutStore = Diff<Props, {store: Store<State>}>
+    Props extends {store: State},
+    PropsWithoutStore = Diff<Props, {store: State}>
   >(
     Component: React.ComponentType<Props>
   ): React.ComponentType<PropsWithoutStore> {
@@ -101,7 +101,7 @@ export function createConnectedStore<State extends object>(
 }
 
 function isInitialized<State extends object>(
-  store: StoreSnapshot<State> | {__MISSING_PROVIDER__: true}
+  store: State | {__MISSING_PROVIDER__: true}
 ) {
   return !('__MISSING_PROVIDER__' in store)
 }
