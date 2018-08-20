@@ -23,6 +23,32 @@ export interface Store<State extends object> {
   getState(): Readonly<State>
 }
 
+export class StoreSnapshotXComponent<StoreState extends object> implements Store<StoreState> {
+  constructor(
+    private snapshot: StoreSnapshot<StoreState>,
+    private onGetOrSet: <K extends keyof StoreState>(key: K) => void,
+    private onGetAll: () => void
+  ) { }
+  get<K extends keyof StoreState>(key: K) {
+    this.onGetOrSet(key)
+    return this.snapshot.get(key)
+  }
+  set<K extends keyof StoreState>(key: K) {
+    this.onGetOrSet(key)
+    return this.snapshot.set(key)
+  }
+  on<K extends keyof StoreState>(key: K) {
+    return this.snapshot.on(key)
+  }
+  onAll() {
+    return this.snapshot.onAll()
+  }
+  getState() {
+    this.onGetAll()
+    return this.snapshot.getState()
+  }
+}
+
 export class StoreSnapshot<State extends object> implements Store<State> {
   constructor(
     private state: State,

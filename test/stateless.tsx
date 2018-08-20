@@ -99,10 +99,7 @@ test('[stateless] it should only re-render if something actually changed', t => 
   })
 })
 
-// There is room for perf optimization down the line.
-// TODO: Add some benchmarks to see how bad this really is. Intuitively, it could
-// cause app perf to degrade at least linearly as the app scales.
-test('[stateless] it should re-render even if an unused model property changed', t => {
+test('[stateless] it should not re-render if an unused model property changed', t => {
 
   let renderCount = 0
   let store = createStore({
@@ -117,7 +114,7 @@ test('[stateless] it should re-render even if an unused model property changed',
   withElement(A, _ => {
     store.set('b')('y')
     store.set('b')('z')
-    t.is(renderCount, 3)
+    t.is(renderCount, 1)
   })
 })
 
@@ -311,6 +308,268 @@ test('[stateless] it should update when any of the stores updated', t => {
     t.is(renderCount, 6)
   })
 
+})
+
+test('[stateless] it should update when a get() that depends on a get() renders', t => {
+  let renderCount = 0
+
+  let store = createStore({
+    counter: 0,
+    fruits: {
+      banana: 100
+    }
+  })
+  let withStore = connect(store)
+
+  const C = withStore(({ store }) => {
+
+    const incrCounter = () => store.set('counter')(store.get('counter') + 1)
+    const decrCounter = () => store.set('counter')(store.get('counter') - 1)
+
+    renderCount++
+    return (
+      <div>
+        <button id='incr' onClick={incrCounter}>Incr</button>
+        <button id='decr' onClick={decrCounter}>Decr</button>
+        {store.get('counter') > 0 ?
+          <div>{store.get('fruits').banana}</div>
+          : <span/>
+        }
+      </div>
+    )
+  })
+
+  withElement(C, _ => {
+    Simulate.click(_.querySelector('#incr')!)
+    t.is(store.get('counter'), 1)
+    Simulate.click(_.querySelector('#decr')!)
+    t.is(store.get('counter'), 0)
+    store.set('fruits')({banana: 200})
+    t.is(renderCount, 4) // Initial + Incr + Decr + setFruits
+  })
+})
+
+test('[stateful] it should update only when subscribed fields change (get)', t => {
+  let store = createStore({
+    a: 0,
+    b: 'foo'
+  })
+  let renderCount = 0
+  type Props = {
+    store: Store<{a: number, b: string }>
+  }
+  let A = connect(store)(class extends React.Component<Props> {
+    render() {
+      renderCount++
+      return <>
+        {this.props.store.get('a')}
+        <button id='a' onClick={() => this.props.store.set('a')(this.props.store.get('a') + 1)} />
+        <button id='b' onClick={() => this.props.store.set('a')(this.props.store.get('a') - 1)} />
+        {this.props.store.get('a') > 0
+          ? <div>{this.props.store.get('b')}</div>
+          : <span />
+        }
+      </>
+    }
+  })
+  withElement(A, _ => {
+    store.set('b')('bar') // No render
+    t.is(_.innerHTML, '0<button id="a"></button><button id="b"></button><span></span>')
+    Simulate.click(_.querySelector('#a')!) // Render
+    t.is(_.innerHTML, '1<button id="a"></button><button id="b"></button><div>bar</div>')
+    Simulate.click(_.querySelector('#b')!) // Render
+    t.is(_.innerHTML, '0<button id="a"></button><button id="b"></button><span></span>')
+    store.set('b')('baz') // Render
+    t.is(_.innerHTML, '0<button id="a"></button><button id="b"></button><span></span>')
+    t.is(renderCount, 4)
+  })
+})
+
+test('[stateful] it should update only when subscribed fields change (get in lifecycle)', t => {
+  let store = createStore({
+    a: 0,
+    b: 'foo'
+  })
+  let renderCount = 0
+  type Props = {
+    store: Store<{a: number, b: string }>
+  }
+  let A = connect(store)(class extends React.Component<Props> {
+    shouldComponentUpdate(p: Props) {
+      return p.store.get('b') !== this.props.store.get('b') || true
+    }
+    render() {
+      renderCount++
+      return <>
+        {this.props.store.get('a')}
+        {this.props.store.get('a') > 0
+          ? <div>{this.props.store.get('b')}</div>
+          : <span />
+        }
+      </>
+    }
+  })
+  withElement(A, _ => {
+    store.set('b')('bar') // No render
+    t.is(_.innerHTML, '0<span></span>')
+    store.set('a')(1) // Render, and trigger shouldComponentUpdate
+    store.set('b')('a') // Render
+    store.set('b')('b') // Render
+    t.is(renderCount, 4)
+  })
+})
+
+test('[stateful] it should update only when subscribed fields change (getState in lifecycle 1)', t => {
+  let store = createStore({
+    a: 0,
+    b: 'foo'
+  })
+  let renderCount = 0
+  type Props = {
+    store: Store<{a: number, b: string }>
+  }
+  let A = connect(store)(class extends React.Component<Props> {
+    shouldComponentUpdate(p: Props) {
+      return p.store.getState().b !== this.props.store.get('b') || true
+    }
+    render() {
+      renderCount++
+      return this.props.store.get('a')
+    }
+  })
+  withElement(A, _ => {
+    store.set('b')('bar') // No render
+    t.is(_.innerHTML, '0')
+    store.set('a')(1) // Render, and trigger shouldComponentUpdate
+    store.set('b')('a') // Render
+    store.set('b')('b') // Render
+    t.is(renderCount, 4)
+  })
+})
+
+test('[stateful] it should update only when subscribed fields change (getState in lifecycle 2)', t => {
+  let store = createStore({
+    a: 0,
+    b: 'foo'
+  })
+  let renderCount = 0
+  type Props = {
+    store: Store<{a: number, b: string }>
+  }
+  let A = connect(store)(class extends React.Component<Props> {
+    shouldComponentUpdate(p: Props) {
+      return p.store.get('b') !== this.props.store.getState().b || true
+    }
+    render() {
+      renderCount++
+      return this.props.store.get('a')
+    }
+  })
+  withElement(A, _ => {
+    store.set('b')('bar') // No render
+    t.is(_.innerHTML, '0')
+    store.set('a')(1) // Render, and trigger shouldComponentUpdate
+    store.set('b')('a') // Render
+    store.set('b')('b') // Render
+    t.is(renderCount, 4)
+  })
+})
+
+test('[stateful] it should update only when subscribed fields change (get in constructor)', t => {
+  let store = createStore({
+    a: 0,
+    b: 'foo'
+  })
+  let renderCount = 0
+  type Props = {
+    store: Store<{a: number, b: string }>
+  }
+  let A = connect(store)(class extends React.Component<Props> {
+    constructor(p: Props) {
+      super(p)
+      let _ = this.props.store.get('b') // Trigger read
+    }
+    render() {
+      renderCount++
+      return <>
+        {this.props.store.get('a')}
+        {this.props.store.get('a') > 0
+          ? <div>{this.props.store.get('b')}</div>
+          : <span />
+        }
+      </>
+    }
+  })
+  withElement(A, _ => {
+    store.set('b')('bar') // Render
+    t.is(_.innerHTML, '0<span></span>')
+    store.set('a')(1) // Render
+    store.set('b')('a') // Render
+    store.set('b')('b') // Render
+    t.is(renderCount, 5)
+  })
+})
+
+test('[stateful] it should update only when subscribed fields change (set in constructor)', t => {
+  let store = createStore({
+    a: 0
+  })
+  let renderCount = 0
+  type Props = {
+    store: typeof store
+  }
+  let A = connect(store)(class extends React.Component<Props> {
+    constructor(p: Props) {
+      super(p)
+      this.props.store.set('a')(1)
+    }
+    render() {
+      renderCount++
+      return <>
+        {this.props.store.get('a')}
+      </>
+    }
+  })
+  withElement(A, _ => {
+    t.is(_.innerHTML, '1')
+    t.is(renderCount, 2)
+  })
+})
+
+test('[stateful] it should update when any field changes (getState)', t => {
+  let store = createStore({
+    a: 0,
+    b: 'foo'
+  })
+  let renderCount = 0
+  type Props = {
+    store: Store<{a: number, b: string }>
+  }
+  let A = connect(store)(class extends React.Component<Props> {
+    render() {
+      renderCount++
+      return <>
+        {this.props.store.getState().a}
+        <button id='a' onClick={() => this.props.store.set('a')(this.props.store.get('a') + 1)} />
+        <button id='b' onClick={() => this.props.store.set('a')(this.props.store.get('a') - 1)} />
+        {this.props.store.get('a') > 0
+          ? <div>{this.props.store.get('b')}</div>
+          : <span />
+        }
+      </>
+    }
+  })
+  withElement(A, _ => {
+    store.set('b')('bar') // Render (this is the deoptimization when you use .getState)
+    t.is(_.innerHTML, '0<button id="a"></button><button id="b"></button><span></span>')
+    Simulate.click(_.querySelector('#a')!) // Render
+    t.is(_.innerHTML, '1<button id="a"></button><button id="b"></button><div>bar</div>')
+    Simulate.click(_.querySelector('#b')!) // Render
+    t.is(_.innerHTML, '0<button id="a"></button><button id="b"></button><span></span>')
+    store.set('b')('baz') // Render
+    t.is(_.innerHTML, '0<button id="a"></button><button id="b"></button><span></span>')
+    t.is(renderCount, 5)
+  })
 })
 
 //
