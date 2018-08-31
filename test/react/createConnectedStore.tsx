@@ -21,6 +21,41 @@ test('it should render', t => {
   })
 })
 
+test('it should update (with extra props)', t => {
+  let {Container, withStore} = createConnectedStore({ a: 1 })
+  type Props = {
+    extra: string
+    onChange(): void
+    store: Store<{a: number}>
+  }
+  let B = withStore((props: Props) =>
+    <>
+      <button onClick={() => props.onChange()}>
+        {props.extra}
+      </button>
+      {props.store.get('a')}
+    </>
+  )
+  class A extends React.Component {
+    state = {
+      extra: 'a'
+    }
+    onChange = () =>
+      this.setState({ extra: 'b' })
+    render() {
+      return <Container>
+        <B extra={this.state.extra} onChange={this.onChange} />
+      </Container>
+    }
+  }
+
+  withElement(A, a => {
+    t.is(a.querySelector('button')!.innerHTML, 'a')
+    Simulate.click(a.querySelector('button')!)
+    t.is(a.querySelector('button')!.innerHTML, 'b')
+  })
+})
+
 test('it should support effects', t => {
   t.plan(1)
 
@@ -386,7 +421,7 @@ test('it should update only when subscribed fields change (getState in lifecycle
     store.set('a')(1) // Render, and trigger shouldComponentUpdate
     store.set('b')('a') // Render
     store.set('b')('b') // Render
-    t.is(renderCount, 5) // TODO: We can reduce this down to 4
+    t.is(renderCount, 4)
   })
 })
 
@@ -419,7 +454,7 @@ test('[stateful] it should update only when subscribed fields change (getState i
     store.set('a')(1) // Render, and trigger shouldComponentUpdate
     store.set('b')('a') // Render
     store.set('b')('b') // Render
-    t.is(renderCount, 5) // TODO: We can reduce this down to 4
+    t.is(renderCount, 4)
   })
 })
 

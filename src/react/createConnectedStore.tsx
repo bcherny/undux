@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { Subscription } from 'rxjs'
 import { createStore, Effects, Store, StoreDefinition, StoreSnapshot, StoreSnapshotWrapper } from '..'
-import { Diff, equals, getDisplayName } from '../utils'
+import { Diff, equals, getDisplayName, keys, some } from '../utils'
 
 export type Connect<State extends object> = {
   Container: React.ComponentType<ContainerProps<State>>
@@ -23,113 +23,43 @@ export function createConnectedStore<State extends object>(
 ): Connect<State> {
   let Context = React.createContext({ __MISSING_PROVIDER__: true } as any)
 
-  type SubscriptionKeys = keyof State | '<all>'
-
   type ContainerState = {
-    storeDefinition: StoreDefinition<State> | null
-    storeSnapshotWrapper: StoreSnapshotWrapper<State> | null
+    storeSnapshot: StoreSnapshot<State>
   }
 
   class Container extends React.Component<ContainerProps<State>, ContainerState> {
+    subscription: Subscription
+    storeDefinition: StoreDefinition<State>
     constructor(props: ContainerProps<State>) {
       super(props)
 
       // Create store definition from initial state
       let state = props.initialState || initialState
-      let storeDefinition = createStore(state)
+      this.storeDefinition = createStore(state)
 
       // Apply effects?
       let fx = props.effects || effects
       if (fx) {
-        fx(storeDefinition)
+        fx(this.storeDefinition)
       }
 
       this.state = {
-        storeDefinition,
-        storeSnapshotWrapper: new StoreSnapshotWrapper(
-          storeDefinition.getCurrentSnapshot(),
-          this.onGetOrSet,
-          this.onGetAll
-        )
+        storeSnapshot: this.storeDefinition.getCurrentSnapshot()
       }
-    }
-    subscriptions: Map<SubscriptionKeys, Subscription> = new Map
-    onGetOrSet = (field: keyof State) => {
-      if (this.subscriptions.has(field) || this.subscriptions.has('<all>')) {
-        return
-      }
-      let {storeDefinition, storeSnapshotWrapper} = this.state
-      if (!storeDefinition || !storeSnapshotWrapper) {
-        return
-      }
-      let newSubscriptions = new Map(this.subscriptions)
-      newSubscriptions.set(
-        field,
-        storeDefinition.on(field).subscribe(value => {
-          let {storeDefinition, storeSnapshotWrapper} = this.state
-          if (!storeDefinition || !storeSnapshotWrapper) {
-            return
-          }
-          if (equals(value, storeSnapshotWrapper.get(field))) {
-            return
-          }
-          this.setState({
-            storeSnapshotWrapper: new StoreSnapshotWrapper(
-              storeDefinition.getCurrentSnapshot(),
-              this.onGetOrSet,
-              this.onGetAll
-            )
-          })
-        })
+
+      this.subscription = this.storeDefinition.onAll().subscribe(() =>
+        this.setState({ storeSnapshot: this.storeDefinition.getCurrentSnapshot() })
       )
-      this.subscriptions = newSubscriptions
-    }
-    onGetAll = () => {
-      if (this.subscriptions.has('<all>')) {
-        return
-      }
-      let {storeDefinition, storeSnapshotWrapper} = this.state
-      if (!storeDefinition || !storeSnapshotWrapper) {
-        return
-      }
-      let newSubscriptions = new Map
-      newSubscriptions.set(
-        '<all>',
-        storeDefinition.onAll().subscribe(({ key, previousValue, value }) => {
-          let {storeDefinition} = this.state
-          if (!storeDefinition) {
-            return
-          }
-          if (equals(previousValue, value)) {
-            return
-          }
-          this.setState({
-            storeSnapshotWrapper: new StoreSnapshotWrapper(
-              storeDefinition.getCurrentSnapshot(),
-              this.onGetOrSet,
-              this.onGetAll
-            )
-          })
-        })
-      )
-      // TODO: Find a way to test this. React batches render() calls,
-      // so it's hard to test that this actually prevents extra re-renders.
-      this.clearSubscriptions()
-      this.subscriptions = newSubscriptions
-    }
-    clearSubscriptions() {
-      this.subscriptions.forEach(_ => _.unsubscribe())
     }
     componentWillUnmount() {
-      this.clearSubscriptions();
+      this.subscription.unsubscribe();
       // Let the state get GC'd.
       // TODO: Find a more elegant way to do this.
-      (this.state.storeSnapshotWrapper as any).state = null;
-      (this.state.storeSnapshotWrapper as any).storeDefinition = null;
-      (this.state.storeDefinition as any).storeSnapshot = null
+      (this.storeDefinition as any).storeSnapshot = null;
+      (this as any).storeDefinition = null
     }
     render() {
-      return <Context.Provider value={this.state.storeSnapshotWrapper}>
+      return <Context.Provider value={this.state.storeSnapshot}>
         {this.props.children}
       </Context.Provider>
     }
@@ -155,9 +85,51 @@ export function createConnectedStore<State extends object>(
     Component: React.ComponentType<Props>
   ): React.ComponentType<PropsWithoutStore> {
     let displayName = getDisplayName(Component)
+
+    type _Props = {
+      props: object
+      storeSnapshot: StoreSnapshot<State>
+    }
+
+    class SnapshotComponent extends React.Component<_Props> {
+      private isSubscribedToAllFields = false
+      // https://jsperf.com/set-membership-vs-object-key-lookup
+      private subscribedFields: Partial<Record<keyof State, true>> = {}
+      shouldComponentUpdate(nextProps: _Props) {
+        if (this.isSubscribedToAllFields) {
+          return true
+        }
+        return some(
+          this.subscribedFields,
+          (_, k) => !equals(nextProps.storeSnapshot.get(k), this.props.storeSnapshot.get(k))
+        ) || some(
+          nextProps.props,
+          (v, k) => !equals(v, this.props.props[k])
+        )
+      }
+      onGetOrSet = (key: keyof State) => {
+        if (this.isSubscribedToAllFields) {
+          return
+        }
+        this.subscribedFields[key] = true
+      }
+      onGetAll = () => {
+        this.isSubscribedToAllFields = true
+        this.subscribedFields = {}
+      }
+      render() {
+        let wrapper = new StoreSnapshotWrapper(
+          this.props.storeSnapshot,
+          this.onGetOrSet,
+          this.onGetAll
+        )
+        return <Component store={wrapper} {...this.props.props} />
+      }
+    }
+
     let f: React.StatelessComponent<PropsWithoutStore> = props =>
       <Consumer displayName={displayName}>
-        {store => <Component store={store} {...props} />}
+        {storeSnapshot => <SnapshotComponent storeSnapshot={storeSnapshot} props={props} />}
       </Consumer>
     f.displayName = `withStore(${displayName})`
     return f
