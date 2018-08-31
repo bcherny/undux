@@ -26,7 +26,7 @@
     "test": "ava && flow focus-check ./test/test.flow.js && ./test/bad-cases/run.sh"
   },
   "dependencies": {
-    "typed-rx-emitter": "^1.1.5"
+    "typed-rx-emitter": "1.1.4"
   },
   "devDependencies": {
     "@types/jsdom": "^11.0.6",
