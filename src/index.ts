@@ -15,6 +15,10 @@ export type Undux<State extends object> = {
   }
 }
 
+/**
+ * Public Store interface. When you want to reference the Store type,
+ * this is the type to use.
+ */
 export interface Store<State extends object> {
   get<K extends keyof State>(key: K): State[K]
   set<K extends keyof State>(key: K): (value: State[K]) => void
@@ -23,6 +27,10 @@ export interface Store<State extends object> {
   getState(): Readonly<State>
 }
 
+/**
+ * Immutable snapshot of the current store state. One StoreSnapshot per
+ * StoreDefinition is usually alive at a time.
+ */
 export class StoreSnapshot<State extends object> implements Store<State> {
   constructor(
     private state: State,
@@ -45,6 +53,38 @@ export class StoreSnapshot<State extends object> implements Store<State> {
   }
 }
 
+/**
+ * Immutable edge from StoreSnapshot to a component that consumes it
+ * via withStore(). We use it to keep track of which fields a consumer
+ * reads from, so that we can improve performance by only subscribing
+ * to those fields.
+ */
+export class StoreSnapshotWrapper<State extends object> implements Store<State> {
+  constructor(
+    private snapshot: StoreSnapshot<State>,
+    private onGetOrSet: (key: keyof State) => void,
+    private onGetAll: () => void
+  ) { }
+  get<K extends keyof State>(key: K) {
+    this.onGetOrSet(key)
+    return this.snapshot.get(key)
+  }
+  set<K extends keyof State>(key: K) {
+    this.onGetOrSet(key)
+    return this.snapshot.set(key)
+  }
+  on<K extends keyof State>(key: K) {
+    return this.snapshot.on(key)
+  }
+  onAll() {
+    return this.snapshot.onAll()
+  }
+  getState() {
+    this.onGetAll()
+    return this.snapshot.getState()
+  }
+}
+
 export type Options = {
   isDevMode: boolean
 }
@@ -53,6 +93,9 @@ let DEFAULT_OPTIONS: Readonly<Options> = {
   isDevMode: false
 }
 
+/**
+ * We create a single instance of this per <Container />.
+ */
 export class StoreDefinition<State extends object> implements Store<State> {
   private storeSnapshot: StoreSnapshot<State>
   private alls: Emitter<Undux<State>>

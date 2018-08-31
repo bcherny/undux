@@ -1,7 +1,7 @@
 import { test } from 'ava'
 import * as React from 'react'
 import { Simulate } from 'react-dom/test-utils'
-import { Effects } from '../../src'
+import { Effects, Store } from '../../src'
 import { createConnectedStore } from '../../src/react/createConnectedStore'
 import { withElement } from '../testUtils'
 
@@ -230,4 +230,303 @@ test('it should eagerly throw at runtime when using a consumer without a contain
   let {withStore} = createConnectedStore({ a: 1 })
   let A = withStore(() => <div />)
   t.throws(() => withElement(A, _ => {}), /does not seem to be nested/)
+})
+
+test('it should re-render if a used model property changed', t => {
+  let renderCount = 0
+  let store: Store<{a: number, b: number}>
+  let S = createConnectedStore({
+    a: 1,
+    b: 1
+  }, s => {
+    store = s
+    return s
+  })
+  let A = S.withStore(({ store }) => {
+    renderCount++
+    return <>{store.get('a')}</>
+  })
+  let B = () => <S.Container><A /></S.Container>
+
+  withElement(B, _ => {
+    store.set('a')(2)
+    store.set('a')(3)
+    t.is(renderCount, 3)
+  })
+})
+
+test('it should not re-render if an unused model property changed', t => {
+  let renderCount = 0
+  let store: Store<{a: number, b: number}>
+  let S = createConnectedStore({
+    a: 1,
+    b: 1
+  }, s => {
+    store = s
+    return s
+  })
+  let A = S.withStore(({ store }) => {
+    renderCount++
+    return <>{store.get('a')}</>
+  })
+  let B = () => <S.Container><A /></S.Container>
+  withElement(B, _ => {
+    store.set('b')(2)
+    store.set('b')(3)
+    t.is(renderCount, 1)
+  })
+})
+
+test('it should update when subscribed fields change (get)', t => {
+  let store: Store<{a: number, b: string }>
+  let S = createConnectedStore({
+    a: 0,
+    b: 'foo'
+  }, s => {
+    store = s
+    return s
+  })
+  let renderCount = 0
+  type Props = {
+    store: Store<{a: number, b: string }>
+  }
+  let A = S.withStore(class extends React.Component<Props> {
+    render() {
+      renderCount++
+      return <>
+        {this.props.store.get('a')}
+        <button id='a' onClick={() => this.props.store.set('a')(this.props.store.get('a') + 1)} />
+        <button id='b' onClick={() => this.props.store.set('a')(this.props.store.get('a') - 1)} />
+        {this.props.store.get('a') > 0
+          ? <div>{this.props.store.get('b')}</div>
+          : <span />
+        }
+      </>
+    }
+  })
+  let B = () => <S.Container><A /></S.Container>
+  withElement(B, _ => {
+    store.set('b')('bar') // No render
+    t.is(_.innerHTML, '0<button id="a"></button><button id="b"></button><span></span>')
+    Simulate.click(_.querySelector('#a')!) // Render
+    t.is(_.innerHTML, '1<button id="a"></button><button id="b"></button><div>bar</div>')
+    Simulate.click(_.querySelector('#b')!) // Render
+    t.is(_.innerHTML, '0<button id="a"></button><button id="b"></button><span></span>')
+    store.set('b')('baz') // Render
+    t.is(_.innerHTML, '0<button id="a"></button><button id="b"></button><span></span>')
+    t.is(renderCount, 4)
+  })
+})
+
+test('it should update when subscribed fields change (get in lifecycle)', t => {
+  let store: Store<{a: number, b: string }>
+  let S = createConnectedStore({
+    a: 0,
+    b: 'foo'
+  }, s => {
+    store = s
+    return s
+  })
+  let renderCount = 0
+  type Props = {
+    store: Store<{a: number, b: string }>
+  }
+  let A = S.withStore(class extends React.Component<Props> {
+    shouldComponentUpdate(p: Props) {
+      return p.store.get('b') !== this.props.store.get('b') || true
+    }
+    render() {
+      renderCount++
+      return <>
+        {this.props.store.get('a')}
+        {this.props.store.get('a') > 0
+          ? <div>{this.props.store.get('b')}</div>
+          : <span />
+        }
+      </>
+    }
+  })
+  let B = () => <S.Container><A /></S.Container>
+  withElement(B, _ => {
+    store.set('b')('bar') // No render
+    t.is(_.innerHTML, '0<span></span>')
+    store.set('a')(1) // Render, and trigger shouldComponentUpdate
+    store.set('b')('a') // Render
+    store.set('b')('b') // Render
+    t.is(renderCount, 4)
+  })
+})
+
+test('it should update only when subscribed fields change (getState in lifecycle 1)', t => {
+  let store: Store<{a: number, b: string }>
+  let S = createConnectedStore({
+    a: 0,
+    b: 'foo'
+  }, s => {
+    store = s
+    return s
+  })
+  let renderCount = 0
+  type Props = {
+    store: Store<{a: number, b: string }>
+  }
+  let A = S.withStore(class extends React.Component<Props> {
+    shouldComponentUpdate(p: Props) {
+      return p.store.getState().b !== this.props.store.get('b') || true
+    }
+    render() {
+      renderCount++
+      return this.props.store.get('a')
+    }
+  })
+  let B = () => <S.Container><A /></S.Container>
+  withElement(B, _ => {
+    store.set('b')('bar') // No render
+    t.is(_.innerHTML, '0')
+    store.set('a')(1) // Render, and trigger shouldComponentUpdate
+    store.set('b')('a') // Render
+    store.set('b')('b') // Render
+    t.is(renderCount, 5) // TODO: We can reduce this down to 4
+  })
+})
+
+test('[stateful] it should update only when subscribed fields change (getState in lifecycle 2)', t => {
+  let store: Store<{a: number, b: string }>
+  let S = createConnectedStore({
+    a: 0,
+    b: 'foo'
+  }, s => {
+    store = s
+    return s
+  })
+  let renderCount = 0
+  type Props = {
+    store: Store<{a: number, b: string }>
+  }
+  let A = S.withStore(class extends React.Component<Props> {
+    shouldComponentUpdate(p: Props) {
+      return p.store.get('b') !== this.props.store.getState().b || true
+    }
+    render() {
+      renderCount++
+      return this.props.store.get('a')
+    }
+  })
+  let B = () => <S.Container><A /></S.Container>
+  withElement(B, _ => {
+    store.set('b')('bar') // No render
+    t.is(_.innerHTML, '0')
+    store.set('a')(1) // Render, and trigger shouldComponentUpdate
+    store.set('b')('a') // Render
+    store.set('b')('b') // Render
+    t.is(renderCount, 5) // TODO: We can reduce this down to 4
+  })
+})
+
+test('[stateful] it should update only when subscribed fields change (get in constructor)', t => {
+  let store: Store<{a: number, b: string }>
+  let S = createConnectedStore({
+    a: 0,
+    b: 'foo'
+  }, s => {
+    store = s
+    return s
+  })
+  let renderCount = 0
+  type Props = {
+    store: Store<{a: number, b: string }>
+  }
+  let A = S.withStore(class extends React.Component<Props> {
+    constructor(p: Props) {
+      super(p)
+      let _ = this.props.store.get('b') // Trigger read
+    }
+    render() {
+      renderCount++
+      return <>
+        {this.props.store.get('a')}
+        {this.props.store.get('a') > 0
+          ? <div>{this.props.store.get('b')}</div>
+          : <span />
+        }
+      </>
+    }
+  })
+  let B = () => <S.Container><A /></S.Container>
+  withElement(B, _ => {
+    store.set('b')('bar') // Render
+    t.is(_.innerHTML, '0<span></span>')
+    store.set('a')(1) // Render
+    store.set('b')('a') // Render
+    store.set('b')('b') // Render
+    t.is(renderCount, 5)
+  })
+})
+
+test('it should update when subscribed fields change (set in constructor)', t => {
+  let S = createConnectedStore({
+    a: 0
+  })
+  let renderCount = 0
+  type Props = {
+    store: Store<{ a: number}>
+  }
+  let A = S.withStore(class extends React.Component<Props> {
+    constructor(p: Props) {
+      super(p)
+      this.props.store.set('a')(1)
+    }
+    render() {
+      renderCount++
+      return <>
+        {this.props.store.get('a')}
+      </>
+    }
+  })
+  let B = () => <S.Container><A /></S.Container>
+  withElement(B, _ => {
+    t.is(_.innerHTML, '1')
+    t.is(renderCount, 2)
+  })
+})
+
+test('[stateful] it should update when any field changes (getState)', t => {
+  let store: Store<{a: number, b: string }>
+  let S = createConnectedStore({
+    a: 0,
+    b: 'foo'
+  }, s => {
+    store = s
+    return s
+  })
+  let renderCount = 0
+  type Props = {
+    store: Store<{a: number, b: string }>
+  }
+  let A = S.withStore(class extends React.Component<Props> {
+    render() {
+      renderCount++
+      return <>
+        {this.props.store.getState().a}
+        <button id='a' onClick={() => this.props.store.set('a')(this.props.store.get('a') + 1)} />
+        <button id='b' onClick={() => this.props.store.set('a')(this.props.store.get('a') - 1)} />
+        {this.props.store.get('a') > 0
+          ? <div>{this.props.store.get('b')}</div>
+          : <span />
+        }
+      </>
+    }
+  })
+  let B = () => <S.Container><A /></S.Container>
+  withElement(B, _ => {
+    store.set('b')('bar') // Render (this is the deoptimization when you use .getState)
+    t.is(_.innerHTML, '0<button id="a"></button><button id="b"></button><span></span>')
+    Simulate.click(_.querySelector('#a')!) // Render
+    t.is(_.innerHTML, '1<button id="a"></button><button id="b"></button><div>bar</div>')
+    Simulate.click(_.querySelector('#b')!) // Render
+    t.is(_.innerHTML, '0<button id="a"></button><button id="b"></button><span></span>')
+    store.set('b')('baz') // Render
+    t.is(_.innerHTML, '0<button id="a"></button><button id="b"></button><span></span>')
+    t.is(renderCount, 5)
+  })
 })

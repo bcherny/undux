@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { Subscription } from 'rxjs'
-import { createStore, Effects, Store, StoreDefinition, StoreSnapshot } from '..'
-import { Diff, getDisplayName } from '../utils'
+import { createStore, Effects, Store, StoreDefinition, StoreSnapshot, StoreSnapshotWrapper } from '..'
+import { Diff, equals, getDisplayName } from '../utils'
 
 export type Connect<State extends object> = {
   Container: React.ComponentType<ContainerProps<State>>
@@ -23,10 +23,11 @@ export function createConnectedStore<State extends object>(
 ): Connect<State> {
   let Context = React.createContext({ __MISSING_PROVIDER__: true } as any)
 
+  type SubscriptionKeys = keyof State | '<all>'
+
   type ContainerState = {
     storeDefinition: StoreDefinition<State> | null
-    storeSnapshot: StoreSnapshot<State> | null
-    subscription: Subscription
+    storeSnapshotWrapper: StoreSnapshotWrapper<State> | null
   }
 
   class Container extends React.Component<ContainerProps<State>, ContainerState> {
@@ -45,22 +46,90 @@ export function createConnectedStore<State extends object>(
 
       this.state = {
         storeDefinition,
-        storeSnapshot: storeDefinition.getCurrentSnapshot(),
-        subscription: storeDefinition.onAll().subscribe(() =>
-          this.setState({ storeSnapshot: storeDefinition.getCurrentSnapshot() })
+        storeSnapshotWrapper: new StoreSnapshotWrapper(
+          storeDefinition.getCurrentSnapshot(),
+          this.onGetOrSet,
+          this.onGetAll
         )
       }
     }
+    subscriptions: Map<SubscriptionKeys, Subscription> = new Map
+    onGetOrSet = (field: keyof State) => {
+      if (this.subscriptions.has(field) || this.subscriptions.has('<all>')) {
+        return
+      }
+      let {storeDefinition, storeSnapshotWrapper} = this.state
+      if (!storeDefinition || !storeSnapshotWrapper) {
+        return
+      }
+      let newSubscriptions = new Map(this.subscriptions)
+      newSubscriptions.set(
+        field,
+        storeDefinition.on(field).subscribe(value => {
+          let {storeDefinition, storeSnapshotWrapper} = this.state
+          if (!storeDefinition || !storeSnapshotWrapper) {
+            return
+          }
+          if (equals(value, storeSnapshotWrapper.get(field))) {
+            return
+          }
+          this.setState({
+            storeSnapshotWrapper: new StoreSnapshotWrapper(
+              storeDefinition.getCurrentSnapshot(),
+              this.onGetOrSet,
+              this.onGetAll
+            )
+          })
+        })
+      )
+      this.subscriptions = newSubscriptions
+    }
+    onGetAll = () => {
+      if (this.subscriptions.has('<all>')) {
+        return
+      }
+      let {storeDefinition, storeSnapshotWrapper} = this.state
+      if (!storeDefinition || !storeSnapshotWrapper) {
+        return
+      }
+      let newSubscriptions = new Map
+      newSubscriptions.set(
+        '<all>',
+        storeDefinition.onAll().subscribe(({ key, previousValue, value }) => {
+          let {storeDefinition} = this.state
+          if (!storeDefinition) {
+            return
+          }
+          if (equals(previousValue, value)) {
+            return
+          }
+          this.setState({
+            storeSnapshotWrapper: new StoreSnapshotWrapper(
+              storeDefinition.getCurrentSnapshot(),
+              this.onGetOrSet,
+              this.onGetAll
+            )
+          })
+        })
+      )
+      // TODO: Find a way to test this. React batches render() calls,
+      // so it's hard to test that this actually prevents extra re-renders.
+      this.clearSubscriptions()
+      this.subscriptions = newSubscriptions
+    }
+    clearSubscriptions() {
+      this.subscriptions.forEach(_ => _.unsubscribe())
+    }
     componentWillUnmount() {
-      this.state.subscription.unsubscribe();
+      this.clearSubscriptions();
       // Let the state get GC'd.
       // TODO: Find a more elegant way to do this.
-      (this.state.storeSnapshot as any).state = null;
-      (this.state.storeSnapshot as any).storeDefinition = null;
+      (this.state.storeSnapshotWrapper as any).state = null;
+      (this.state.storeSnapshotWrapper as any).storeDefinition = null;
       (this.state.storeDefinition as any).storeSnapshot = null
     }
     render() {
-      return <Context.Provider value={this.state.storeSnapshot}>
+      return <Context.Provider value={this.state.storeSnapshotWrapper}>
         {this.props.children}
       </Context.Provider>
     }
