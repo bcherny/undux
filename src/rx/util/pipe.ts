@@ -1,4 +1,4 @@
-import { UnaryFunction } from '../types'
+import { UnaryFunction } from 'rxjs/internal/types'
 import { noop } from './noop'
 
 /* tslint:disable:max-line-length */

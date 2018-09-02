@@ -2,7 +2,7 @@
 import { empty as emptyObserver } from './Observer'
 import { Subscription } from './Subscription'
 import { rxSubscriber as rxSubscriberSymbol } from './symbol/rxSubscriber'
-import { Observer, PartialObserver } from './types'
+import { Observer, PartialObserver, TeardownLogic } from './types'
 import { hostReportError } from './util/hostReportError'
 import { isFunction } from './util/isFunction'
 
@@ -49,6 +49,9 @@ export class Subscriber<T> extends Subscription implements Observer<T> {
 
   protected isStopped: boolean = false
   protected destination: PartialObserver<any> // this `any` is the escape hatch to erase extra type param (e.g. R)
+
+  private _parentSubscription: Subscription | null = null
+
   /**
    * @param {Observer|function(value: T): void} [destinationOrNext] A partially
    * defined Observer or a `next` callback function.
@@ -164,6 +167,20 @@ export class Subscriber<T> extends Subscription implements Observer<T> {
   protected _complete(): void {
     this.destination.complete!()
     this.unsubscribe()
+  }
+
+  /** @deprecated This is an internal implementation detail, do not use. */
+  _addParentTeardownLogic(parentTeardownLogic: TeardownLogic) {
+    if (parentTeardownLogic !== this) {
+      this._parentSubscription = this.add(parentTeardownLogic)
+    }
+  }
+
+  /** @deprecated This is an internal implementation detail, do not use. */
+  _unsubscribeParentSubscription() {
+    if (this._parentSubscription !== null) {
+      this._parentSubscription.unsubscribe()
+    }
   }
 
   /** @deprecated This is an internal implementation detail, do not use. */

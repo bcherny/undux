@@ -1,16 +1,12 @@
 // import { config } from './config'
 // import { iif } from './iif'
+import { OperatorFunction } from 'rxjs/internal/types'
 import { Operator } from './Operator'
 import { Subscriber } from './Subscriber'
 import { Subscription } from './Subscription'
 import { observable as Symbol_observable } from './symbol/observable'
 // import { throwError } from './throwError'
-import {
-  OperatorFunction,
-  PartialObserver,
-  Subscribable,
-  TeardownLogic
-} from './types'
+import { PartialObserver, Subscribable, TeardownLogic } from './types'
 import { pipeFromArray } from './util/pipe'
 import { toSubscriber } from './util/toSubscriber'
 
@@ -392,7 +388,7 @@ export class Observable<T> implements Subscribable<T> {
       return this as any
     }
 
-    return pipeFromArray(operations)(this)
+    return pipeFromArray(operations)(this as any) as any
   }
 
   /* tslint:disable:max-line-length */
