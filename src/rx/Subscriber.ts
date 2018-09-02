@@ -1,4 +1,3 @@
-// import { config } from './config'
 import { empty as emptyObserver } from './Observer'
 import { Subscription } from './Subscription'
 import { rxSubscriber as rxSubscriberSymbol } from './symbol/rxSubscriber'
@@ -6,41 +5,9 @@ import { Observer, PartialObserver, TeardownLogic } from './types'
 import { hostReportError } from './util/hostReportError'
 import { isFunction } from './util/isFunction'
 
-/**
- * Implements the {@link Observer} interface and extends the
- * {@link Subscription} class. While the {@link Observer} is the public API for
- * consuming the values of an {@link Observable}, all Observers get converted to
- * a Subscriber, in order to provide Subscription-like capabilities such as
- * `unsubscribe`. Subscriber is a common type in RxJS, and crucial for
- * implementing operators, but it is rarely used as a public API.
- *
- * @class Subscriber<T>
- */
 export class Subscriber<T> extends Subscription implements Observer<T> {
   [rxSubscriberSymbol]() {
     return this
-  }
-
-  /**
-   * A static factory for a Subscriber, given a (potentially partial) definition
-   * of an Observer.
-   * @param {function(x: ?T): void} [next] The `next` callback of an Observer.
-   * @param {function(e: ?any): void} [error] The `error` callback of an
-   * Observer.
-   * @param {function(): void} [complete] The `complete` callback of an
-   * Observer.
-   * @return {Subscriber<T>} A Subscriber wrapping the (partially defined)
-   * Observer represented by the given arguments.
-   * @nocollapse
-   */
-  static create<T>(
-    next?: (x?: T) => void,
-    error?: (e?: any) => void,
-    complete?: () => void
-  ): Subscriber<T> {
-    const subscriber = new Subscriber(next, error, complete)
-    subscriber.syncErrorThrowable = false
-    return subscriber
   }
 
   /** @internal */ syncErrorValue: any = null

@@ -1,11 +1,8 @@
-// import { config } from './config'
-// import { iif } from './iif'
 import { OperatorFunction } from 'rxjs/internal/types'
 import { Operator } from './Operator'
 import { Subscriber } from './Subscriber'
 import { Subscription } from './Subscription'
 import { observable as Symbol_observable } from './symbol/observable'
-// import { throwError } from './throwError'
 import { PartialObserver, Subscribable, TeardownLogic } from './types'
 import { pipeFromArray } from './util/pipe'
 import { toSubscriber } from './util/toSubscriber'
@@ -42,23 +39,6 @@ export class Observable<T> implements Subscribable<T> {
     if (subscribe) {
       this._subscribe = subscribe
     }
-  }
-
-  // HACK: Since TypeScript inherits static properties too, we have to
-  // fight against TypeScript here so Subject can have a different static create signature
-  /**
-   * Creates a new cold Observable by calling the Observable constructor
-   * @static true
-   * @owner Observable
-   * @method create
-   * @param {Function} subscribe? the subscriber function to be passed to the Observable constructor
-   * @return {Observable} a new cold observable
-   * @nocollapse
-   */
-  static create: Function = <T>(
-    subscribe?: (subscriber: Subscriber<T>) => TeardownLogic
-  ) => {
-    return new Observable<T>(subscribe)
   }
 
   /**
@@ -265,19 +245,6 @@ export class Observable<T> implements Subscribable<T> {
     return source && source.subscribe(subscriber)
   }
 
-  // `if` and `throw` are special snow flakes, the compiler sees them as reserved words. Deprecated in
-  // favor of iif and throwError functions.
-  /**
-   * @nocollapse
-   * @deprecated In favor of iif creation function: import { iif } from 'rxjs';
-   */
-  // static if: typeof iif
-  /**
-   * @nocollapse
-   * @deprecated In favor of throwError creation function: import { throwError } from 'rxjs';
-   */
-  // static throw: typeof throwError;
-
   /**
    * An interop point defined by the es7-observable spec https://github.com/zenparsing/es-observable
    * @method Symbol.observable
@@ -287,7 +254,6 @@ export class Observable<T> implements Subscribable<T> {
     return this
   }
 
-  /* tslint:disable:max-line-length */
   pipe(): Observable<T>
   pipe<A>(op1: OperatorFunction<T, A>): Observable<A>
   pipe<A, B>(
@@ -362,7 +328,6 @@ export class Observable<T> implements Subscribable<T> {
     op9: OperatorFunction<H, I>,
     ...operations: OperatorFunction<any, any>[]
   ): Observable<{}>
-  /* tslint:enable:max-line-length */
 
   /**
    * Used to stitch together functional operators into a chain.
@@ -391,14 +356,12 @@ export class Observable<T> implements Subscribable<T> {
     return pipeFromArray(operations)(this as any) as any
   }
 
-  /* tslint:disable:max-line-length */
   toPromise<T>(this: Observable<T>): Promise<T>
   toPromise<T>(this: Observable<T>, PromiseCtor: typeof Promise): Promise<T>
   toPromise<T>(
     this: Observable<T>,
     PromiseCtor: PromiseConstructorLike
   ): Promise<T>
-  /* tslint:enable:max-line-length */
 
   toPromise(promiseCtor?: PromiseConstructorLike): Promise<T> {
     promiseCtor = getPromiseCtor(promiseCtor)
