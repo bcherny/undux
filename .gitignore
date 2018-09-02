@@ -1,5 +1,6 @@
 .DS_Store
 dist
+dist.esnext
 node_modules
 perf/filesize/bundle.js
 yarn-error.log

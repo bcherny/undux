@@ -1,19 +1,27 @@
 {
   "compilerOptions": {
+    "baseUrl": ".",
     "forceConsistentCasingInFileNames": true,
     "jsx": "react",
     "lib": [
       "dom",
       "es2015"
     ],
-    "module": "commonjs",
+    "module": "esnext",
     "moduleResolution": "node",
     "newLine": "LF",
-    "outDir": "dist",
+    "outDir": "dist.esnext",
     "preserveConstEnums": true,
     "skipLibCheck": true,
     "sourceMap": true,
     "strict": true,
-    "target": "es5"
-  }
+    "target": "esnext",
+    "paths": {
+      "typed-rx-emitter": ["node_modules/typed-rx-emitter/dist.esnext"]
+    }
+  },
+  "files": [
+    "types.d.ts",
+    "src/index.ts"
+  ]
 }

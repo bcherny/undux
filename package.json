@@ -3,6 +3,7 @@
   "version": "5.0.0-alpha.13",
   "description": "Dead simple state management for React",
   "main": "dist/src/index.js",
+  "main:esnext": "dist.esnext/index.js",
   "typings": "dist/src/index.d.ts",
   "author": "Boris Cherny <boris@performancejs.com>",
   "license": "MIT",
@@ -15,8 +16,9 @@
   },
   "homepage": "https://github.com/bcherny/undux#readme",
   "scripts": {
-    "build": "npm run clean && npm run lint && tsc -d && flow focus-check src/index.js.flow && cp src/index.js.flow dist/src/index.js.flow",
-    "clean": "shx rm -rf dist",
+    "build": "npm run clean && npm run lint && tsc -d && npm run build:esnext && flow focus-check src/index.js.flow && cp src/index.js.flow dist/src/index.js.flow",
+    "build:esnext": "tsc -d -p ./tsconfig.esnext.json",
+    "clean": "shx rm -rf dist dist.esnext",
     "format": "prettier --write src/**/* test/**/*",
     "lint": "tslint -p tsconfig.json src/*.ts src/*.tsx src/plugins/*.ts",
     "profile:filesize": "webpack --config ./perf/filesize/webpack.config.js -p && cat ./perf/filesize/bundle.js | gzip | wc -c",
@@ -26,7 +28,7 @@
     "test": "ava && flow focus-check ./test/test.flow.js && ./test/bad-cases/run.sh"
   },
   "dependencies": {
-    "typed-rx-emitter": "1.1.4"
+    "typed-rx-emitter": "1.2.0"
   },
   "devDependencies": {
     "@types/jsdom": "^11.0.6",
