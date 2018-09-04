@@ -1,5 +1,5 @@
+import { Observable } from 'rxjs-observable'
 import { Emitter } from './Emitter'
-import { Observable } from './rx/Observable'
 import { mapValues } from './utils'
 
 const CYCLE_ERROR_MESSAGE =

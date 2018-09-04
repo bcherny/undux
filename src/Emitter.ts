@@ -1,5 +1,4 @@
-import { Observable } from './rx/Observable'
-import { Observer } from './rx/types'
+import { Observable, Observer } from 'rxjs-observable'
 
 export type ALL = '__ALL__'
 const ALL: ALL = '__ALL__'

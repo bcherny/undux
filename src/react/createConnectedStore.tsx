@@ -1,4 +1,5 @@
 import * as React from 'react'
+import { Subscription } from 'rxjs-observable'
 import {
   createStore,
   Effects,
@@ -7,7 +8,6 @@ import {
   StoreSnapshot,
   StoreSnapshotWrapper
 } from '..'
-import { Subscription } from '../rx/Subscription'
 import { Diff, equals, getDisplayName, some } from '../utils'
 
 export type Connect<State extends object> = {

@@ -28,6 +28,7 @@
     "test": "ava && flow focus-check ./test/test.flow.js && ./test/bad-cases/run.sh"
   },
   "dependencies": {
+    "rxjs-observable": "^0.0.5",
     "typed-rx-emitter": "1.2.0"
   },
   "devDependencies": {

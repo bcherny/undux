@@ -1,4 +1,5 @@
 import * as React from 'react'
+import { Subscription } from 'rxjs-observable'
 import {
   createStore,
   EffectsAs,
@@ -6,7 +7,6 @@ import {
   StoreDefinition,
   StoreSnapshot
 } from '..'
-import { Subscription } from '../rx/Subscription'
 import { Diff, getDisplayName, mapValues } from '../utils'
 
 export type ConnectAs<

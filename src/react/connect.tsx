@@ -1,6 +1,6 @@
 import * as React from 'react'
+import { Subscription } from 'rxjs-observable'
 import { Store, StoreDefinition, StoreSnapshot } from '../'
-import { Subscription } from '../rx/Subscription'
 import { Diff, equals, getDisplayName } from '../utils'
 
 /**
