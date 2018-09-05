@@ -5136,11 +5136,6 @@ type-check@~0.3.2:
   dependencies:
     prelude-ls "~1.1.2"
 
-typed-rx-emitter@1.2.0:
-  version "1.2.0"
-  resolved "https://registry.yarnpkg.com/typed-rx-emitter/-/typed-rx-emitter-1.2.0.tgz#369d274c955e430a03e778e3f92299747e200448"
-  integrity sha512-Ptc7hiRWKLfSJ9P/CLkQxqFgAV+wfkTJRroDIRhPl54do9da+Ps3G0XA0uZPBkTBiaZ8yB1QlOsk3le6TNhdhw==
-
 typedarray@^0.0.6:
   version "0.0.6"
   resolved "https://registry.yarnpkg.com/typedarray/-/typedarray-0.0.6.tgz#867ac74e3864187b1d3d47d996a78ec5c8830777"

@@ -1,5 +1,5 @@
 import { Observable } from 'rxjs'
-import { Emitter } from 'typed-rx-emitter'
+import { Emitter } from './emitter'
 import { mapValues } from './utils'
 
 const CYCLE_ERROR_MESSAGE = '[undux] Error: Cyclical dependency detected. '
