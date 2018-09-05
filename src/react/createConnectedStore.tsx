@@ -85,51 +85,13 @@ export function createConnectedStore<State extends object>(
     Component: React.ComponentType<Props>
   ): React.ComponentType<PropsWithoutStore> {
     let displayName = getDisplayName(Component)
-
-    type _Props = {
-      props: object
-      storeSnapshot: StoreSnapshot<State>
-    }
-
-    class SnapshotComponent extends React.Component<_Props> {
-      private isSubscribedToAllFields = false
-      // https://jsperf.com/set-membership-vs-object-key-lookup
-      private subscribedFields: Partial<Record<keyof State, true>> = {}
-      shouldComponentUpdate(nextProps: _Props) {
-        if (this.isSubscribedToAllFields) {
-          return true
-        }
-        return some(
-          this.subscribedFields,
-          (_, k) => !equals(nextProps.storeSnapshot.get(k), this.props.storeSnapshot.get(k))
-        ) || some(
-          nextProps.props,
-          (v, k) => !equals(v, this.props.props[k])
-        )
-      }
-      onGetOrSet = (key: keyof State) => {
-        if (this.isSubscribedToAllFields) {
-          return
-        }
-        this.subscribedFields[key] = true
-      }
-      onGetAll = () => {
-        this.isSubscribedToAllFields = true
-        this.subscribedFields = {}
-      }
-      render() {
-        let wrapper = new StoreSnapshotWrapper(
-          this.props.storeSnapshot,
-          this.onGetOrSet,
-          this.onGetAll
-        )
-        return <Component store={wrapper} {...this.props.props} />
-      }
-    }
-
     let f: React.StatelessComponent<PropsWithoutStore> = props =>
       <Consumer displayName={displayName}>
-        {storeSnapshot => <SnapshotComponent storeSnapshot={storeSnapshot} props={props} />}
+        {storeSnapshot => <SnapshotComponent
+          Component={Component}
+          props={props}
+          storeSnapshot={storeSnapshot}
+        />}
       </Consumer>
     f.displayName = `withStore(${displayName})`
     return f
@@ -138,6 +100,55 @@ export function createConnectedStore<State extends object>(
   return {
     Container,
     withStore
+  }
+}
+
+type SnapshotComponentProps<
+  State extends Object,
+  Props extends {store: Store<State>}
+> = {
+  props: object
+  Component: React.ComponentType<Props>
+  storeSnapshot: StoreSnapshot<State>
+}
+
+class SnapshotComponent<
+  State extends Object,
+  Props extends {store: Store<State>}
+> extends React.Component<SnapshotComponentProps<State, Props>> {
+  private isSubscribedToAllFields = false
+  // https://jsperf.com/set-membership-vs-object-key-lookup
+  private subscribedFields: Partial<Record<keyof State, true>> = {}
+  shouldComponentUpdate(nextProps: SnapshotComponentProps<State, Props>) {
+    if (this.isSubscribedToAllFields) {
+      return true
+    }
+    return some(
+      this.subscribedFields,
+      (_, k) => !equals(nextProps.storeSnapshot.get(k), this.props.storeSnapshot.get(k))
+    ) || some(
+      nextProps.props,
+      (v, k) => !equals(v, this.props.props[k])
+    )
+  }
+  onGetOrSet = (key: keyof State) => {
+    if (this.isSubscribedToAllFields) {
+      return
+    }
+    this.subscribedFields[key] = true
+  }
+  onGetAll = () => {
+    this.isSubscribedToAllFields = true
+    this.subscribedFields = {}
+  }
+  render() {
+    let {Component, props} = this.props
+    let wrapper = new StoreSnapshotWrapper(
+      this.props.storeSnapshot,
+      this.onGetOrSet,
+      this.onGetAll
+    )
+    return <Component store={wrapper} {...props} />
   }
 }
 
