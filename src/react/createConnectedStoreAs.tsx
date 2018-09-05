@@ -1,10 +1,10 @@
 import * as React from 'react'
 import { Subscription } from 'rxjs'
 import { createStore, EffectsAs, Store, StoreDefinition, StoreSnapshot } from '..'
-import { Diff, getDisplayName, mapValues } from '../utils'
+import { Diff, getDisplayName, mapValues, some } from '../utils'
 
 export type ConnectAs<States extends {
-  [alias: string]: any
+  [alias: string]: object
 }> = {
   Container: React.ComponentType<ContainerPropsAs<States>>
   initialStates: States,
@@ -16,14 +16,14 @@ export type ConnectAs<States extends {
 }
 
 export type ContainerPropsAs<States extends {
-  [alias: string]: any
+  [alias: string]: object
 }> = {
   effects?: EffectsAs<States>
   initialStates?: States
 }
 
 export function createConnectedStoreAs<States extends {
-  [alias: string]: any
+  [alias: string]: object
 }>(
   initialStates: States,
   effects?: EffectsAs<States>
@@ -31,35 +31,38 @@ export function createConnectedStoreAs<States extends {
   let Context = React.createContext({ __MISSING_PROVIDER__: true } as any)
 
   type ContainerState = {
-    storeDefinitions: {
-      [K in keyof States]: StoreDefinition<States[K]> | null
-    }
     storeSnapshots: {
-      [K in keyof States]: StoreSnapshot<States[K]> | null
-    }
-    subscriptions: {
-      [K in keyof States]: Subscription
+      [K in keyof States]: StoreSnapshot<States[K]>
     }
   }
 
   class Container extends React.Component<ContainerPropsAs<States>, ContainerState> {
+    storeDefinitions: {
+      [K in keyof States]: StoreDefinition<States[K]>
+    }
+    subscriptions: {
+      [K in keyof States]: Subscription
+    }
     constructor(props: ContainerPropsAs<States>) {
       super(props)
 
       // Create store definition from initial state
       let states = props.initialStates || initialStates
-      let stores = mapValues(states, _ => createStore(_))
+      this.storeDefinitions = mapValues(states, _ => createStore(_))
 
       // Apply effects?
       let fx = props.effects || effects
       if (fx) {
-        fx(stores)
+        fx(this.storeDefinitions)
       }
 
       this.state = {
-        storeDefinitions: stores,
-        storeSnapshots: mapValues(stores, _ => _.getCurrentSnapshot()),
-        subscriptions: mapValues(stores, (_, k) => _.onAll().subscribe(() =>
+        storeSnapshots: mapValues(this.storeDefinitions, _ => _.getCurrentSnapshot())
+      }
+
+      this.subscriptions = mapValues(
+        this.storeDefinitions,
+        (_, k) => _.onAll().subscribe(() =>
           this.setState({
             storeSnapshots: Object.assign(
               {},
@@ -67,17 +70,15 @@ export function createConnectedStoreAs<States extends {
               { [k]: _.getCurrentSnapshot() }
             )
           })
-        ))
-      }
+        )
+      )
     }
     componentWillUnmount() {
-      mapValues(this.state.subscriptions, _ => _.unsubscribe())
+      mapValues(this.subscriptions, _ => _.unsubscribe())
       // Let the state get GC'd.
       // TODO: Find a more elegant way to do this.
-      if (this.state.storeSnapshots) {}
-      mapValues(this.state.storeSnapshots, _ => (_ as any).state = null)
-      mapValues(this.state.storeSnapshots, _ => (_ as any).storeDefinition = null)
-      mapValues(this.state.storeDefinitions, _ => (_ as any).storeSnapshot = null)
+      mapValues(this.storeDefinitions, _ => (_ as any).storeSnapshot = null);
+      (this as any).storeDefinitions = {}
     }
     render() {
       return <Context.Provider value={this.state.storeSnapshots}>
@@ -108,7 +109,11 @@ export function createConnectedStoreAs<States extends {
     let displayName = getDisplayName(Component)
     let f: React.StatelessComponent<PropsWithoutStore> = props =>
       <Consumer displayName={displayName}>
-        {stores => <Component {...stores} {...props} />}
+        {storeSnapshots => <SnapshotComponent
+          Component={Component}
+          props={props}
+          storeSnapshots={storeSnapshots}
+        />}
       </Consumer>
     f.displayName = `withStores(${displayName})`
     return f
@@ -118,6 +123,63 @@ export function createConnectedStoreAs<States extends {
     Container,
     initialStates,
     withStores
+  }
+}
+
+type SnapshotComponentProps<
+  States extends {
+    [alias: string]: object
+  },
+  Props extends {[K in keyof States]: Store<States[K]>}
+> = {
+  props: object
+  Component: React.ComponentType<Props>
+  storeSnapshots: {
+    [K in keyof States]: StoreSnapshot<States[K]>
+  }
+}
+
+class SnapshotComponent<
+  States extends {
+    [alias: string]: object
+  },
+  Props extends {[K in keyof States]: Store<States[K]>}
+> extends React.Component<SnapshotComponentProps<States, Props>> {
+  private isSubscribedToAllFields: Record<keyof States, boolean> = mapValues(this.props.storeSnapshots, () => false)
+  // https://jsperf.com/set-membership-vs-object-key-lookup
+  private subscribedFields: {
+    [S in keyof States]?: Partial<Record<keyof S, true>>
+   } = {}
+  shouldComponentUpdate(nextProps: SnapshotComponentProps<States, Props>) {
+    if (this.isSubscribedToAllFields) {
+      return true
+    }
+    return some(
+      this.subscribedFields,
+      (_, k) => !equals(nextProps.storeSnapshot.get(k), this.props.storeSnapshot.get(k))
+    ) || some(
+      nextProps.props,
+      (v, k) => !equals(v, this.props.props[k])
+    )
+  }
+  onGetOrSet = (key: keyof State) => {
+    if (this.isSubscribedToAllFields) {
+      return
+    }
+    this.subscribedFields[key] = true
+  }
+  onGetAll = () => {
+    this.isSubscribedToAllFields = true
+    this.subscribedFields = {}
+  }
+  render() {
+    let {Component, props} = this.props
+    let wrapper = new StoreSnapshotWrapper(
+      this.props.storeSnapshots,
+      this.onGetOrSet,
+      this.onGetAll
+    )
+    return <Component store={wrapper} {...props} />
   }
 }
 
