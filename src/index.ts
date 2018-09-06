@@ -2,11 +2,6 @@ import { Observable } from 'rxjs'
 import { Emitter } from './emitter'
 import { mapValues } from './utils'
 
-const CYCLE_ERROR_MESSAGE = '[undux] Error: Cyclical dependency detected. '
-  + 'This may cause a stack overflow unless you fix it. \n'
-  + 'The culprit is the following sequence of .set calls, '
-  + 'called from one or more of your Undux Effects: '
-
 export type Undux<State extends object> = {
   [K in keyof State]: {
     key: K
@@ -77,16 +72,9 @@ export class StoreDefinition<State extends object> implements Store<State> {
   }
   constructor(state: State, options: Options) {
 
-    let emitterOptions = {
-      isDevMode: options.isDevMode,
-      onCycle(chain: (string | number | symbol)[]) {
-        console.error(CYCLE_ERROR_MESSAGE + chain.join(' -> '))
-      }
-    }
-
     // Initialize emitters
-    this.alls = new Emitter(emitterOptions)
-    this.emitter = new Emitter(emitterOptions)
+    this.alls = new Emitter(options.isDevMode)
+    this.emitter = new Emitter(options.isDevMode)
 
     // Set initial state
     this.storeSnapshot = new StoreSnapshot(state, this)

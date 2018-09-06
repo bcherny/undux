@@ -7,50 +7,35 @@ interface State<Messages extends object> {
   callChain: Set<keyof Messages | ALL>
   observables: Map<keyof Messages | ALL, Observable<any>[]>
   observers: Map<keyof Messages | ALL, Observer<any>[]>
-  options: Options<Messages>
 }
 
-export type Options<Messages> = {
-  onCycle(chain: (keyof Messages | ALL)[]): void
-  isDevMode: boolean
-}
+const CYCLE_ERROR_MESSAGE = '[undux] Error: Cyclical dependency detected. '
+  + 'This may cause a stack overflow unless you fix it. \n'
+  + 'The culprit is the following sequence of .set calls, '
+  + 'called from one or more of your Undux Effects: '
 
 export class Emitter<Messages extends object> {
 
-  private emitterState: State<Messages>
-
-  constructor(options?: Partial<Options<Messages>>) {
-
-    let DEFAULT_OPTIONS: Options<Messages> = {
-      isDevMode: false,
-      onCycle(chain) {
-        console.error(
-          '[typed-rx-emitter] Error: Cyclical dependency detected. '
-          + 'This may cause a stack overflow unless you fix it. '
-          + chain.join(' -> ')
-        )
-      }
-    }
-
-    this.emitterState = {
-      callChain: new Set,
-      observables: new Map,
-      observers: new Map,
-      options: {...DEFAULT_OPTIONS, ...options}
-    }
+  private state: State<Messages> = {
+    callChain: new Set,
+    observables: new Map,
+    observers: new Map
   }
+
+  constructor(private isDevMode = false) {}
 
   /**
    * Emit an event (silently fails if no listeners are hooked up yet)
    */
   emit<K extends keyof Messages>(key: K, value: Messages[K]): this {
-    let { isDevMode, onCycle } = this.emitterState.options
-    if (isDevMode) {
-      if (this.emitterState.callChain.has(key)) {
-        onCycle(Array.from(this.emitterState.callChain).concat(key))
+    if (this.isDevMode) {
+      if (this.state.callChain.has(key)) {
+        console.error(
+          CYCLE_ERROR_MESSAGE + Array.from(this.state.callChain).concat(key).join(' -> ')
+        )
         return this
       } else {
-        this.emitterState.callChain.add(key)
+        this.state.callChain.add(key)
       }
     }
     if (this.hasChannel(key)) {
@@ -59,7 +44,7 @@ export class Emitter<Messages extends object> {
     if (this.hasChannel(ALL)) {
       this.emitOnChannel(ALL, value)
     }
-    if (isDevMode) this.emitterState.callChain.clear()
+    if (this.isDevMode) this.state.callChain.clear()
     return this
   }
 
@@ -80,18 +65,18 @@ export class Emitter<Messages extends object> {
   ///////////////////// privates /////////////////////
 
   private createChannel<K extends keyof Messages>(key: K | ALL) {
-    if (!this.emitterState.observers.has(key)) {
-      this.emitterState.observers.set(key, [])
+    if (!this.state.observers.has(key)) {
+      this.state.observers.set(key, [])
     }
-    if (!this.emitterState.observables.has(key)) {
-      this.emitterState.observables.set(key, [])
+    if (!this.state.observables.has(key)) {
+      this.state.observables.set(key, [])
     }
     const observable: Observable<Messages[K]> = Observable
       .create((_: Observer<Messages[K]>) => {
-        this.emitterState.observers.get(key)!.push(_)
+        this.state.observers.get(key)!.push(_)
         return () => this.deleteChannel(key, observable)
       })
-    this.emitterState.observables.get(key)!.push(observable)
+    this.state.observables.get(key)!.push(observable)
     return observable
   }
 
@@ -99,18 +84,18 @@ export class Emitter<Messages extends object> {
     key: K | ALL,
     observable: Observable<Messages[K]>
   ) {
-    if (!this.emitterState.observables.has(key)) {
+    if (!this.state.observables.has(key)) {
       return
     }
-    const array = this.emitterState.observables.get(key)!
+    const array = this.state.observables.get(key)!
     const index = array.indexOf(observable)
     if (index < 0) {
       return
     }
     array.splice(index, 1)
     if (!array.length) {
-      this.emitterState.observables.delete(key)
-      this.emitterState.observers.delete(key)
+      this.state.observables.delete(key)
+      this.state.observers.delete(key)
     }
   }
 
@@ -118,10 +103,10 @@ export class Emitter<Messages extends object> {
     key: K | ALL,
     value: Messages[K]
   ) {
-    this.emitterState.observers.get(key)!.forEach(_ => _.next(value))
+    this.state.observers.get(key)!.forEach(_ => _.next(value))
   }
 
   private hasChannel<K extends keyof Messages>(key: K | ALL): boolean {
-    return this.emitterState.observables.has(key)
+    return this.state.observables.has(key)
   }
 }
