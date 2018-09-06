@@ -1,4 +1,5 @@
-import { Observable, Observer } from 'rxjs'
+import { Observable as ObservableType } from 'rxjs'
+import { Observable, Observer } from 'rxjs-observable'
 
 export type ALL = '__ALL__'
 const ALL: ALL = '__ALL__'
@@ -51,15 +52,15 @@ export class Emitter<Messages extends object> {
   /**
    * Subscribe to an event
    */
-  on<K extends keyof Messages>(key: K): Observable<Messages[K]> {
-    return this.createChannel(key)
+  on<K extends keyof Messages>(key: K): ObservableType<Messages[K]> {
+    return this.createChannel(key) as any
   }
 
   /**
    * Subscribe to all events
    */
-  all(): Observable<Messages[keyof Messages]> {
-    return this.createChannel(ALL)
+  all(): ObservableType<Messages[keyof Messages]> {
+    return this.createChannel(ALL) as any
   }
 
   ///////////////////// privates /////////////////////
@@ -71,11 +72,10 @@ export class Emitter<Messages extends object> {
     if (!this.state.observables.has(key)) {
       this.state.observables.set(key, [])
     }
-    const observable: Observable<Messages[K]> = Observable
-      .create((_: Observer<Messages[K]>) => {
-        this.state.observers.get(key)!.push(_)
-        return () => this.deleteChannel(key, observable)
-      })
+    const observable = new Observable<Messages[K]>(_ => {
+      this.state.observers.get(key)!.push(_)
+      return () => this.deleteChannel(key, observable)
+    })
     this.state.observables.get(key)!.push(observable)
     return observable
   }
