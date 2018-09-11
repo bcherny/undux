@@ -60,13 +60,13 @@ export function createConnectedStoreAs<States extends {
         storeDefinitions: stores,
         storeSnapshots: mapValues(stores, _ => _.getCurrentSnapshot()),
         subscriptions: mapValues(stores, (_, k) => _.onAll().subscribe(() =>
-          this.setState({
+          this.setState(state => ({
             storeSnapshots: Object.assign(
               {},
-              this.state.storeSnapshots,
+              state.storeSnapshots,
               { [k]: _.getCurrentSnapshot() }
             )
-          })
+          }))
         ))
       }
     }

@@ -35,9 +35,9 @@ export function connectAs<
             if (equals(previousValue, value)) {
               return false
             }
-            this.setState({
-              stores: Object.assign({}, this.state.stores as any, {[k]: stores[k].getCurrentSnapshot()})
-            })
+            this.setState(state => ({
+              stores: Object.assign({}, state.stores as any, {[k]: stores[k].getCurrentSnapshot()})
+            }))
           })
         )
       }
