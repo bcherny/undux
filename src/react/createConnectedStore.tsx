@@ -146,7 +146,9 @@ class SnapshotComponent<
     let wrapper = new StoreSnapshotWrapper(
       this.props.storeSnapshot,
       this.onGetOrSet,
-      this.onGetAll
+      this.onGetAll,
+      this.subscribedFields,
+      this.isSubscribedToAllFields
     )
     return <Component store={wrapper} {...props} />
   }

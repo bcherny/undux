@@ -63,10 +63,16 @@ export class StoreSnapshotWrapper<State extends object> implements Store<State> 
   constructor(
     private snapshot: StoreSnapshot<State>,
     private onGetOrSet: (key: keyof State) => void,
-    private onGetAll: () => void
+    private onGetAll: () => void,
+    private subscribedFields: Partial<Record<keyof State, true>> | null,
+    private isSubscribedToAllFields: boolean
   ) { }
   get<K extends keyof State>(key: K) {
-    this.onGetOrSet(key)
+    // Get the most up to date version of the field if we failed to notice a subscription
+    if (!this.isSubscribedToAllFields && (this.subscribedFields && !(key in this.subscribedFields))) {
+      this.onGetOrSet(key)
+      return this.snapshot['storeDefinition'].get(key)
+    }
     return this.snapshot.get(key)
   }
   set<K extends keyof State>(key: K) {
