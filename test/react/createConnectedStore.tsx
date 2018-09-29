@@ -601,3 +601,50 @@ test('it should get the most up-to-date version of a field, even if Undux doesn\
     Simulate.click(_.querySelector('button')!)
   })
 })
+
+test('it should return the same value when call .get multiple times for one snapshot', t => {
+  t.plan(4)
+  let S = createConnectedStore({
+    a: 0
+  })
+  type Props = {
+    store: Store<{ a: number}>
+  }
+  let A = S.withStore(class extends React.Component<Props> {
+    constructor(p: Props) {
+      super(p)
+      this.props.store.set('a')(1)
+    }
+    render() {
+      return <>{this.props.store.get('a')}</>
+    }
+  })
+  let B = S.withStore(class extends React.Component<Props & {onClick(a: number): void}> {
+    onClick = () => {
+      this.props.onClick(this.props.store.get('a'))
+      this.props.onClick(this.props.store.get('a'))
+      this.props.onClick(this.props.store.get('a'))
+    }
+    render() {
+      return <>
+        <button onClick={this.onClick} />
+        <A />
+      </>
+    }
+  })
+  let call = 0
+  let C = () => <S.Container>
+    <B onClick={a => {
+      switch (call) {
+        case 0: return t.is(a, 1)
+        case 1: return t.is(a, 1)
+        case 2: return t.is(a, 1)
+      }
+      call++
+    }} />
+  </S.Container>
+  withElement(C, _ => {
+    t.is(_.innerHTML, '<button></button>1')
+    Simulate.click(_.querySelector('button')!)
+  })
+})

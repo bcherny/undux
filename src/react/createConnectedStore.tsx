@@ -147,7 +147,7 @@ class SnapshotComponent<
       this.props.storeSnapshot,
       this.onGetOrSet,
       this.onGetAll,
-      this.subscribedFields,
+      Object.assign({}, this.subscribedFields), // Be careful not to mutate
       this.isSubscribedToAllFields
     )
     return <Component store={wrapper} {...props} />
