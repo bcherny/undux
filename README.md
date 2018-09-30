@@ -268,6 +268,7 @@ class MyComponent extends React.Component<Props> {
 
 export default MyStore.withStore(MyComponent)
 
+// Usage
 <MyComponent foo={3} />
 ```
 
