@@ -290,7 +290,7 @@ test('it should re-render if a used model property changed', t => {
   })
 })
 
-test('it should not re-render if an unused model property changed', t => {
+test('it should re-render if an unused model property changed', t => {
   let renderCount = 0
   let store: Store<{a: number, b: number}>
   let S = createConnectedStore({
@@ -308,11 +308,11 @@ test('it should not re-render if an unused model property changed', t => {
   withElement(B, _ => {
     store.set('b')(2)
     store.set('b')(3)
-    t.is(renderCount, 1)
+    t.is(renderCount, 3)
   })
 })
 
-test('it should update when subscribed fields change (get)', t => {
+test('it should update even when unused fields change (get)', t => {
   let store: Store<{a: number, b: string }>
   let S = createConnectedStore({
     a: 0,
@@ -349,11 +349,11 @@ test('it should update when subscribed fields change (get)', t => {
     t.is(_.innerHTML, '0<button id="a"></button><button id="b"></button><span></span>')
     store.set('b')('baz') // Render
     t.is(_.innerHTML, '0<button id="a"></button><button id="b"></button><span></span>')
-    t.is(renderCount, 4)
+    t.is(renderCount, 5)
   })
 })
 
-test('it should update when subscribed fields change (get in lifecycle)', t => {
+test('it should update even when unused fields change (get in lifecycle)', t => {
   let store: Store<{a: number, b: string }>
   let S = createConnectedStore({
     a: 0,
@@ -388,11 +388,11 @@ test('it should update when subscribed fields change (get in lifecycle)', t => {
     store.set('a')(1) // Render, and trigger shouldComponentUpdate
     store.set('b')('a') // Render
     store.set('b')('b') // Render
-    t.is(renderCount, 4)
+    t.is(renderCount, 5)
   })
 })
 
-test('it should update only when subscribed fields change (getState in lifecycle 1)', t => {
+test('it should update even when unused fields change (getState in lifecycle 1)', t => {
   let store: Store<{a: number, b: string }>
   let S = createConnectedStore({
     a: 0,
@@ -421,11 +421,11 @@ test('it should update only when subscribed fields change (getState in lifecycle
     store.set('a')(1) // Render, and trigger shouldComponentUpdate
     store.set('b')('a') // Render
     store.set('b')('b') // Render
-    t.is(renderCount, 4)
+    t.is(renderCount, 5)
   })
 })
 
-test('[stateful] it should update only when subscribed fields change (getState in lifecycle 2)', t => {
+test('[stateful] it should update even when unused fields change (getState in lifecycle 2)', t => {
   let store: Store<{a: number, b: string }>
   let S = createConnectedStore({
     a: 0,
@@ -454,7 +454,7 @@ test('[stateful] it should update only when subscribed fields change (getState i
     store.set('a')(1) // Render, and trigger shouldComponentUpdate
     store.set('b')('a') // Render
     store.set('b')('b') // Render
-    t.is(renderCount, 4)
+    t.is(renderCount, 5)
   })
 })
 
@@ -646,5 +646,55 @@ test('it should return the same value when call .get multiple times for one snap
   withElement(C, _ => {
     t.is(_.innerHTML, '<button></button>1')
     Simulate.click(_.querySelector('button')!)
+  })
+})
+
+test('it should return the same value when call .get multiple times for one snapshot, even when using shouldComponentUpdate', t => {
+  let S = createConnectedStore({
+    a: 'a'
+  })
+  let X = S.withStore(props =>
+    <button onClick={() => props.store.set('a')('x')}>{props.store.get('a')}</button>
+  )
+  let Y = S.withStore(props =>
+    <button onClick={() => props.store.set('a')('y')}>{props.store.get('a')}</button>
+  )
+  let Z = S.withStore(props =>
+    <button onClick={() => props.store.set('a')('z')}>{props.store.get('a')}</button>
+  )
+  let A = S.withStore(class extends React.Component<{store: Store<{a: string}>}> {
+    shouldComponentUpdate(props: {store: Store<{a: string}>}) {
+      return props.store.get('a') !== this.props.store.get('a')
+    }
+    render() {
+      switch (this.props.store.get('a')) {
+        case 'a': return <X />
+        case 'x': return <Y />
+        case 'y': return <Z />
+        default: return <>{this.props.store.get('a')}</>
+      }
+    }
+  })
+  let store: Store<{a: string}>
+  let Leak = S.withStore(props => {
+    store = (props as any).store['storeDefinition']
+    return null
+  })
+  let C = () => <S.Container>
+    <Leak />
+    <A />
+  </S.Container>
+  withElement(C, _ => {
+    t.is(_.innerHTML, '<button>a</button>')
+    t.is(store.get('a'), 'a')
+    Simulate.click(_.querySelector('button')!)
+    t.is(store.get('a'), 'x')
+    t.is(_.innerHTML, '<button>x</button>')
+    Simulate.click(_.querySelector('button')!)
+    t.is(store.get('a'), 'y')
+    t.is(_.innerHTML, '<button>y</button>')
+    Simulate.click(_.querySelector('button')!)
+    t.is(store.get('a'), 'z')
+    t.is(_.innerHTML, 'z')
   })
 })

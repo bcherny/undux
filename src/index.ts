@@ -53,44 +53,6 @@ export class StoreSnapshot<State extends object> implements Store<State> {
   }
 }
 
-/**
- * Immutable edge from StoreSnapshot to a component that consumes it
- * via withStore(). We use it to keep track of which fields a consumer
- * reads from, so that we can improve performance by only subscribing
- * to those fields.
- */
-export class StoreSnapshotWrapper<State extends object> implements Store<State> {
-  constructor(
-    private snapshot: StoreSnapshot<State>,
-    private onGetOrSet: (key: keyof State) => void,
-    private onGetAll: () => void,
-    private subscribedFields: Partial<Record<keyof State, true>> | null,
-    private isSubscribedToAllFields: boolean
-  ) { }
-  get<K extends keyof State>(key: K) {
-    // Get the most up to date version of the field if we failed to notice a subscription
-    if (!this.isSubscribedToAllFields && (this.subscribedFields && !(key in this.subscribedFields))) {
-      this.onGetOrSet(key)
-      return this.snapshot['storeDefinition'].get(key)
-    }
-    return this.snapshot.get(key)
-  }
-  set<K extends keyof State>(key: K) {
-    this.onGetOrSet(key)
-    return this.snapshot.set(key)
-  }
-  on<K extends keyof State>(key: K) {
-    return this.snapshot.on(key)
-  }
-  onAll() {
-    return this.snapshot.onAll()
-  }
-  getState() {
-    this.onGetAll()
-    return this.snapshot.getState()
-  }
-}
-
 export type Options = {
   isDevMode: boolean
 }
