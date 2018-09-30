@@ -201,48 +201,57 @@ let withLocalStorage: Effects = store => {
 ```ts
 import { createConnectedStore, Store } from 'undux'
 
-type MyStore = {
-  foo: number,
+type State = {
+  foo: number
   bar: string[]
 }
 
-export default createConnectedStore<MyStore>({
+let initialState: State = {
   foo: 12,
   bar: []
-})
+}
+
+export default createConnectedStore(initialState)
 
 export type StoreProps = {
-  store: Store<MyStore>
+  store: Store<State>
 }
 ```
+
+[See full example here](https://undux.org/#examples/basic-usage).
 
 ### Stateless component with props
 
 Have your own props? No problem.
 
 ```ts
-import { withStore } from './MyStore'
+import MyStore, { StoreProps } from './MyStore'
 
-type Props = {
+type Props = StoreProps & {
   foo: number
 }
 
-let MyComponent = withStore<Props>(({ foo, store }) =>
-  <div>
-    Today is {store.get('today')}
-    Foo is {foo}
-  </div>
-)
+function MyComponent(props: Props) {
+  return <>
+    Today is {props.store.get('today')}
+    Foo is {props.foo}
+  </>
+}
 
+export default MyStore.withStore(MyComponent)
+
+// Usage
 <MyComponent foo={3} />
 ```
+
+[See full example here](https://undux.org/#examples/stateless-component-with-props).
 
 ### Stateful component with props
 
 Undux is as easy to use with stateful components as with stateless ones.
 
 ```tsx
-import { StoreProps, withStore } from './MyStore'
+import MyStore, { StoreProps } from './MyStore'
 
 type Props = StoreProps & {
   foo: number
@@ -250,17 +259,19 @@ type Props = StoreProps & {
 
 class MyComponent extends React.Component<Props> {
   render() {
-    return <div>
+    return <>
       Today is {this.props.store.get('today')}
       Foo is {this.props.foo}
-    </div>
+    </>
   }
 }
 
-export default withStore(MyComponent)
+export default MyStore.withStore(MyComponent)
 
 <MyComponent foo={3} />
 ```
+
+[See full example here](https://undux.org/#examples/class-component-with-props).
 
 ### Undux + Hot module reloading
 
