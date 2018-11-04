@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "noEmitOnError": false,
     "forceConsistentCasingInFileNames": true,
     "jsx": "react",
     "lib": [

@@ -75,3 +75,8 @@ declare module 'ReduxDevtoolsExtension' {
     }
   }
 }
+
+declare module 'jsdom-global' {
+  function installGlobally(): void
+  export = installGlobally
+}
