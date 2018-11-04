@@ -5,7 +5,7 @@ import { Diff, getDisplayName } from '../utils'
 
 export type Connect<State extends object> = {
   Container: React.ComponentType<ContainerProps<State>>
-  useStore(): [Readonly<State>, (state: Partial<State>) => void]
+  useStore<K extends keyof State>(field: K): [Readonly<State[K]>, (value: State[K]) => void]
   withStore: <
     Props extends {store: Store<State>}
   >(
@@ -79,13 +79,13 @@ export function createConnectedStore<State extends object>(
       }}
     </Context.Consumer>
 
-  function useStore() {
+  function useStore<K extends keyof State>(field: K) {
     let store = (React as any).useContext(Context) as Store<State>
-    return [store.getState(), (state: Partial<State>) => {
-      for (let field in state) {
-        store.set(field)(state[field!] as any)
-      }
-    }] as [Readonly<State>, (state: Partial<State>) => void]
+    assertInitialized(store, 'Component')
+    return [store.get(field), store.set(field)] as [
+      State[K],
+      (field: State[K]) => void
+    ]
   }
 
   function withStore<
@@ -110,8 +110,18 @@ export function createConnectedStore<State extends object>(
   }
 }
 
+function assertInitialized<State extends object>(
+  store: Store<State> | {__MISSING_PROVIDER__: true},
+  displayName: string
+): store is Store<State> {
+  if (!isInitialized(store)) {
+    throw Error(`[Undux] Component "${displayName}" does not seem to be nested in an Undux <Container>. To fix this error, be sure to render the component in the <Container>...</Container> component that you got back from calling createConnectedStore().`)
+  }
+  return true
+}
+
 function isInitialized<State extends object>(
-  store: StoreSnapshot<State> | {__MISSING_PROVIDER__: true}
+  store: Store<State> | {__MISSING_PROVIDER__: true}
 ) {
   return !('__MISSING_PROVIDER__' in store)
 }

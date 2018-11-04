@@ -7,9 +7,9 @@ import { withElement } from '../testUtils'
 test('it should render', t => {
   let {Container, useStore} = createConnectedStore({ a: 1 })
   function B() {
-    let [state, setState] = useStore()
-    return <button onClick={() => setState({a: state.a + 1})}>
-      {state.a}
+    let [a, setA] = useStore('a')
+    return <button onClick={() => setA(a + 1)}>
+      {a}
     </button>
   }
   let A = () => <Container><B /></Container>
@@ -21,41 +21,12 @@ test('it should render', t => {
   })
 })
 
-test('it should update (with extra props)', t => {
-  let {Container, useStore} = createConnectedStore({ a: 1 })
-  type Props = {
-    extra: string
-    onChange(): void
-  }
-  function A() {
-    let [extra, setExtra] = React.useState('a')
-    return <Container>
-      <B extra={extra} onChange={() => setExtra('b')} />
-    </Container>
-  }
-  function B(props: Props) {
-    let [{a}] = useStore()
-    return <>
-      <button onClick={() => props.onChange()}>
-        {props.extra}
-      </button>
-      {a}
-    </>
-  }
-
-  withElement(A, a => {
-    t.is(a.querySelector('button')!.innerHTML, 'a')
-    Simulate.click(a.querySelector('button')!)
-    t.is(a.querySelector('button')!.innerHTML, 'b')
-  })
-})
-
 test('it should support multiple instances of a store', t => {
   let {Container, useStore} = createConnectedStore({ a: 1 })
   function C() {
-    let [store, setStore] = useStore()
-    return <button onClick={() => setStore({a: store.a + 1})}>
-      {store.a}
+    let [a, setA] = useStore('a')
+    return <button onClick={() => setA(a + 1)}>
+      {a}
     </button>
   }
   let A = () => <Container><C /></Container>
@@ -78,9 +49,9 @@ test('it should support multiple instances of a store', t => {
 test('it should support multiple instances of a store, with non-overlapping lifecycles', t => {
   let {Container, useStore} = createConnectedStore({ a: 1 })
   let C = () => {
-    let [store, setStore] = useStore()
-    return <button onClick={() => setStore({ a: store.a + 1})}>
-      {store.a}
+    let [a, setA] = useStore('a')
+    return <button onClick={() => setA(a + 1)}>
+      {a}
     </button>
   }
   let A = () => <Container><C /></Container>
@@ -100,25 +71,25 @@ test('it should support multiple instances of a store, with non-overlapping life
 })
 
 test('it should support multiple instances of a store in one tree, with non-overlapping lifecycles', t => {
-  let Test = createConnectedStore({ isA: true })
-  let {Container, useStore} = createConnectedStore({ a: 1 })
+  let X = createConnectedStore({ isA: true })
+  let Y = createConnectedStore({ a: 1 })
   let C = () => {
-    let [store, setStore] = useStore()
-    return <button id='C' onClick={() => setStore({a: store.a + 1})}>
-      {store.a}
+    let [a, setA] = Y.useStore('a')
+    return <button id='C' onClick={() => setA(a + 1)}>
+      {a}
     </button>
   }
-  let A = () => <Container><C /></Container>
-  let B = () => <Container><C /></Container>
+  let A = () => <Y.Container><C /></Y.Container>
+  let B = () => <Y.Container><C /></Y.Container>
 
   let D = () => {
-    let [store, setStore] = Test.useStore()
+    let [isA, setIsA] = X.useStore('isA')
     return <>
-      {store.isA ? <A /> : <B />}
-      <button id='D' onClick={() => setStore({ isA: !store.isA})} />
+      {isA ? <A /> : <B />}
+      <button id='D' onClick={() => setIsA(!isA)} />
     </>
   }
-  let E = () => <Test.Container><D /></Test.Container>
+  let E = () => <X.Container><D /></X.Container>
 
   withElement(E, e => {
     t.is(e.querySelector('#C')!.innerHTML, '1')
@@ -143,15 +114,15 @@ test('it should support interleaved stores', t => {
   let A = createConnectedStore({ a: 1 })
   let B = createConnectedStore({ b: 1 })
   let C = () => {
-    let [store, setStore] = A.useStore()
-    return <button onClick={() => setStore({a: store.a + 1})}>
-      {store.a}
+    let [a, setA] = A.useStore('a')
+    return <button onClick={() => setA(a + 1)}>
+      {a}
     </button>
   }
   let D = () => {
-    let [store, setStore] = B.useStore()
-    return <button onClick={() => setStore({b: store.b + 1})}>
-      {store.b}
+    let [b, setB] = B.useStore('b')
+    return <button onClick={() => setB(b + 1)}>
+      {b}
     </button>
   }
   let X = () => <A.Container>
@@ -191,8 +162,8 @@ test('it should re-render if a used model property changed', t => {
   })
   let A = () => {
     renderCount++
-    let [store] = S.useStore()
-    return <>{store.a}</>
+    let [a] = S.useStore('a')
+    return <>{a}</>
   }
   let B = () => <S.Container><A /></S.Container>
 
@@ -201,4 +172,13 @@ test('it should re-render if a used model property changed', t => {
     store.set('a')(3)
     t.is(renderCount, 3)
   })
+})
+
+test('it should eagerly throw at runtime when using a consumer without a container', t => {
+  let {useStore} = createConnectedStore({ a: 1 })
+  let A = () => {
+    let [] = useStore('a')
+    return <div />
+  }
+  t.throws(() => withElement(A, _ => {}), /does not seem to be nested/)
 })
