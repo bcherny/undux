@@ -5,6 +5,7 @@ import { Diff, getDisplayName } from '../utils'
 
 export type Connect<State extends object> = {
   Container: React.ComponentType<ContainerProps<State>>
+  useStore(): Store<State>
   withStore: <
     Props extends {store: Store<State>}
   >(
@@ -78,6 +79,10 @@ export function createConnectedStore<State extends object>(
       }}
     </Context.Consumer>
 
+  function useStore() {
+    return (React as any).useContext(Context)
+  }
+
   function withStore<
     Props extends {store: Store<State>},
     PropsWithoutStore = Diff<Props, {store: Store<State>}>
@@ -95,6 +100,7 @@ export function createConnectedStore<State extends object>(
 
   return {
     Container,
+    useStore,
     withStore
   }
 }

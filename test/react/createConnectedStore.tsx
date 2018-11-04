@@ -108,7 +108,7 @@ test('it should support multiple instances of a store', t => {
   )
 })
 
-test('it should support multiple instances of a store, with disjoint lifecycles', t => {
+test('it should support multiple instances of a store, with non-overlapping lifecycles', t => {
   let {Container, withStore} = createConnectedStore({ a: 1 })
   let C = withStore(({ store }) =>
     <button onClick={() => store.set('a')(store.get('a') + 1)}>
@@ -131,7 +131,7 @@ test('it should support multiple instances of a store, with disjoint lifecycles'
   })
 })
 
-test('it should support multiple instances of a store in one tree, with disjoint lifecycles', t => {
+test('it should support multiple instances of a store in one tree, with non-overlapping lifecycles', t => {
   let Test = createConnectedStore({ isA: true })
   let {Container, withStore} = createConnectedStore({ a: 1 })
   let C = withStore(({ store }) =>
