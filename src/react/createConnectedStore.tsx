@@ -5,7 +5,7 @@ import { Diff, getDisplayName } from '../utils'
 
 export type Connect<State extends object> = {
   Container: React.ComponentType<ContainerProps<State>>
-  useStore(): Store<State>
+  useStore(): [Readonly<State>, (state: Partial<State>) => void]
   withStore: <
     Props extends {store: Store<State>}
   >(
@@ -80,7 +80,12 @@ export function createConnectedStore<State extends object>(
     </Context.Consumer>
 
   function useStore() {
-    return (React as any).useContext(Context)
+    let store = (React as any).useContext(Context) as Store<State>
+    return [store.getState(), (state: Partial<State>) => {
+      for (let field in state) {
+        store.set(field)(state[field!] as any)
+      }
+    }] as [Readonly<State>, (state: Partial<State>) => void]
   }
 
   function withStore<
