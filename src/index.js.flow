@@ -120,7 +120,6 @@ export type ConnectAs<States: {
   [alias: string]: any
 }> = {|
   Container: React.ComponentType<ContainerPropsAs<States>>,
-  initialStates: States,
   withStores: <Props: $ObjMap<States, ToStore>>(
     Component: React.ComponentType<Props>
   ) => React.ComponentType<$Diff<Props, $ObjMap<States, ToStore>>>

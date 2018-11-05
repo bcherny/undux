@@ -7,7 +7,6 @@ export type ConnectAs<States extends {
   [alias: string]: any
 }> = {
   Container: React.ComponentType<ContainerPropsAs<States>>
-  initialStates: States,
   withStores: <
     Props extends {[K in keyof States]: Store<States[K]>}
   >(
@@ -116,7 +115,6 @@ export function createConnectedStoreAs<States extends {
 
   return {
     Container,
-    initialStates,
     withStores
   }
 }
