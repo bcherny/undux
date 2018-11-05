@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { Subscription } from 'rxjs'
 import { createStore, Effects, Store, StoreDefinition, StoreSnapshot } from '..'
-import { Diff, equals, getDisplayName, keys, some } from '../utils'
+import { Diff, getDisplayName } from '../utils'
 
 export type Connect<State extends object> = {
   Container: React.ComponentType<ContainerProps<State>>
