@@ -115,8 +115,10 @@ export function createConnectedStoreAs<States extends {
 
   return {
     Container,
-    withStores
-  }
+    withStores,
+    /** @private */
+    __CONTEXT_DO_NOT_USE_OR_YOU_WILL_BE_FIRED: Context
+  } as ConnectAs<States>
 }
 
 function isInitialized<State extends object>(
