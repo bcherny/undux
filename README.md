@@ -10,6 +10,10 @@
 
 > Dead simple state management for React
 
+------
+## 📖 Official docs: https://undux.org
+------
+
 ## Install (with RxJS v5 or v6 - recommended)
 
 ```sh
@@ -154,9 +158,9 @@ setUsers(['amy', 'bob'])
 Undux works out of the box with the Redux Devtools browser extension (download: [Chrome](https://chrome.google.com/webstore/detail/redux-devtools/lmhkpmbekcpmknklioeibfkpmmfibljd), [Firefox](https://addons.mozilla.org/firefox/addon/remotedev/), [React Native](https://github.com/zalmoxisus/remote-redux-devtools)). To enable it, just wrap your store with the Redux Devtools plugin:
 
 ```ts
-import { createStore, withReduxDevtools } from 'undux'
+import { createConnectedStore, withReduxDevtools } from 'undux'
 
-let store = withReduxDevtools(createStore(...))
+let store = createConnectedStore(initialState, withReduxDevtools)
 ```
 
 Redux Devtools has an inspector, a time travel debugger, and jump-to-state built in. All of these features are enabled for Undux as well. It looks like this:
@@ -168,9 +172,9 @@ Alternatively, Undux has a simple, console-based debugger built in. Just create 
 To enable the logger, simply import `withLogger` and wrap your store with it:
 
 ```ts
-import { createStore, withLogger } from 'undux'
+import { createConnectedStore, withLogger } from 'undux'
 
-let store = withLogger(createStore(...))
+let store = createConnectedStore(initialState, withLogger)
 ```
 
 The logger will produce logs that look like this:
@@ -182,9 +186,19 @@ The logger will produce logs that look like this:
 Undux is easy to modify with effects. Just define a function that takes a store as an argument, adding listeners along the way. For generic plugins that work across different stores, use the `.onAll` method to listen on all changes on a store:
 
 ```ts
+// MyStore.ts (if using TypeScript)
 import { Effects } from 'undux'
 
-let withLocalStorage: Effects = store => {
+type State = {
+  // ...
+}
+
+export type StoreEffects = Effects<State>
+
+// MyEffects.ts
+import { StoreEffects } from './MyStore'
+
+let withLocalStorage: StoreEffects = store => {
 
   // Listen on all changes to the store.
   store.onAll().subscribe(({ key, value, previousValue }) =>
@@ -199,7 +213,7 @@ let withLocalStorage: Effects = store => {
 ### Creating a store (TypeScript)
 
 ```ts
-import { createConnectedStore, Store } from 'undux'
+import { createConnectedStore, Effects, Store } from 'undux'
 
 type State = {
   foo: number
@@ -216,11 +230,13 @@ export default createConnectedStore(initialState)
 export type StoreProps = {
   store: Store<State>
 }
+
+export type StoreEffects = Effects<State>
 ```
 
-[See full example here](https://undux.org/#examples/basic-usage).
+[See full example (in JavaScript, TypeScript, or Flow) here](https://undux.org/#examples/basic-usage).
 
-### Stateless component with props
+### Stateless component with props (TypeScript)
 
 Have your own props? No problem.
 
@@ -244,9 +260,9 @@ export default MyStore.withStore(MyComponent)
 <MyComponent foo={3} />
 ```
 
-[See full example here](https://undux.org/#examples/stateless-component-with-props).
+[See full example (in JavaScript, TypeScript, or Flow) here](https://undux.org/#examples/stateless-component-with-props).
 
-### Stateful component with props
+### Stateful component with props (TypeScript)
 
 Undux is as easy to use with stateful components as with stateless ones.
 
@@ -272,7 +288,7 @@ export default MyStore.withStore(MyComponent)
 <MyComponent foo={3} />
 ```
 
-[See full example here](https://undux.org/#examples/class-component-with-props).
+[See full example (in JavaScript, TypeScript, or Flow) here](https://undux.org/#examples/class-component-with-props).
 
 ### Undux + Hot module reloading
 
