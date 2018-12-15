@@ -846,3 +846,47 @@ test('setFrom should compose', t => {
     t.deepEqual(store.get('as'), [0, 1, 2, 3, 4, 5])
   })
 })
+
+test('setFrom should chain', t => {
+  type State = {
+    as: number
+  }
+  let S = createConnectedStore<State>({ as: 0 })
+
+  type Props = {
+    store: Store<State>
+  }
+  class A extends React.Component<Props> {
+    componentDidMount() {
+      this.props.store.setFrom(store =>
+        store.set('as')(store.get('as') + 1)
+      )
+      this.props.store.setFrom(store =>
+        store.set('as')(store.get('as') + 1)
+      )
+      this.props.store.setFrom(store =>
+        store.set('as')(store.get('as') + 1)
+      )
+    }
+    render() {
+      return <div />
+    }
+  }
+  let A1 = S.withStore(A)
+
+  let store: Store<State>
+  let Leak = S.withStore(props => {
+    store = (props as any).store['storeDefinition']
+    return null
+  })
+
+  function C() {
+    return <S.Container>
+      <Leak />
+      <A1 />
+    </S.Container>
+  }
+  withElement(C, _ => {
+    t.deepEqual(store.get('as'), 3)
+  })
+})
