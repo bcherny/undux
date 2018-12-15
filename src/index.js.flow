@@ -21,6 +21,7 @@ export type Options = {
 export interface Store<State: Object> {
   get<K: $Keys<State>>(key: K): $ElementType<State, K>,
   set<K: $Keys<State>, V: $ElementType<State, K>>(key: K): (value: V) => void,
+  setFrom_EXPERIMENTAL(Store<State> => void): void,
   on<K: $Keys<State>>(key: K): Observable<$ElementType<State, K>>,
   onAll(): Observable<$Values<Undux<State>>>,
   getState(): $ReadOnly<State>
@@ -29,6 +30,7 @@ export interface Store<State: Object> {
 declare export class StoreSnapshot<State: Object> implements Store<State> {
   get<K: $Keys<State>>(key: K): $ElementType<State, K>,
   set<K: $Keys<State>, V: $ElementType<State, K>>(key: K): (value: V) => void,
+  setFrom_EXPERIMENTAL(Store<State> => void): void,
   on<K: $Keys<State>>(key: K): Observable<$ElementType<State, K>>,
   onAll(): Observable<$Values<Undux<State>>>,
   getState(): $ReadOnly<State>
@@ -37,6 +39,7 @@ declare export class StoreSnapshot<State: Object> implements Store<State> {
 declare export class StoreDefinition<State: Object> implements Store<State> {
   get<K: $Keys<State>>(key: K): $ElementType<State, K>,
   set<K: $Keys<State>, V: $ElementType<State, K>>(key: K): (value: V) => void,
+  setFrom_EXPERIMENTAL(Store<State> => void): void,
   on<K: $Keys<State>>(key: K): Observable<$ElementType<State, K>>,
   onAll(): Observable<$Values<Undux<State>>>,
   getCurrentSnapshot(): StoreSnapshot<State>,

@@ -22,6 +22,7 @@ export type Undux<State extends object> = {
 export interface Store<State extends object> {
   get<K extends keyof State>(key: K): State[K]
   set<K extends keyof State>(key: K): (value: State[K]) => void
+  setFrom_EXPERIMENTAL(f: (store: Store<State>) => void): void
   on<K extends keyof State>(key: K): Observable<State[K]>
   onAll(): Observable<Undux<State>[keyof State]>
   getState(): Readonly<State>
@@ -41,6 +42,9 @@ export class StoreSnapshot<State extends object> implements Store<State> {
   }
   set<K extends keyof State>(key: K) {
     return this.storeDefinition.set(key)
+  }
+  setFrom_EXPERIMENTAL(f: (store: Store<State>) => void): void {
+    return this.storeDefinition.setFrom_EXPERIMENTAL(f)
   }
   on<K extends keyof State>(key: K) {
     return this.storeDefinition.on(key)
@@ -111,6 +115,9 @@ export class StoreDefinition<State extends object> implements Store<State> {
   }
   set<K extends keyof State>(key: K): (value: State[K]) => void {
     return this.setters[key]
+  }
+  setFrom_EXPERIMENTAL(f: (store: Store<State>) => void): void {
+    return f(this.storeSnapshot)
   }
   getCurrentSnapshot() {
     return this.storeSnapshot

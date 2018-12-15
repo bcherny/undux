@@ -124,6 +124,12 @@ store.onAll().subscribe(_ => {
   _.value === true
 })
 
+/////////////////// setFrom_EXPERIMENTAL ///////////////////
+
+store.setFrom_EXPERIMENTAL(store => {
+  store.set('isTrue')(true)
+})
+
 /////////////////// connectAs ///////////////////
 
 type CombinedA = {| a: number |}

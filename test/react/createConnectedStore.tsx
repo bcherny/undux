@@ -698,3 +698,195 @@ test('it should return the same value when call .get multiple times for one snap
     t.is(_.innerHTML, 'z')
   })
 })
+
+test('it should fail for async updates by default', t => {
+  type State = {
+    as: number[]
+  }
+  let S = createConnectedStore<State>({ as: [] })
+  let index = 0
+
+  type Props = {
+    store: Store<State>
+  }
+  class A extends React.Component<Props> {
+    componentDidMount() {
+      const as = this.props.store.get('as')
+      this.props.store.set('as')([...as, index++])
+    }
+    render() {
+      return <div />
+    }
+  }
+  let A1 = S.withStore(A)
+
+  function B() {
+    return <>
+      <A1 />
+      <A1 />
+      <A1 />
+    </>
+  }
+
+  let store: Store<State>
+  let Leak = S.withStore(props => {
+    store = (props as any).store['storeDefinition']
+    return null
+  })
+
+  function C() {
+    return <S.Container>
+      <Leak />
+      <B />
+    </S.Container>
+  }
+  withElement(C, _ => {
+    t.deepEqual(store.get('as'), [2])
+  })
+})
+
+test('it should work for async updates using setFrom_EXPERIMENTAL', t => {
+  type State = {
+    as: number[]
+  }
+  let S = createConnectedStore<State>({ as: [] })
+  let index = 0
+
+  type Props = {
+    store: Store<State>
+  }
+  class A extends React.Component<Props> {
+    componentDidMount() {
+      this.props.store.setFrom_EXPERIMENTAL(store => {
+        let as = store.get('as')
+        store.set('as')([...as, index++])
+      })
+    }
+    render() {
+      return <div />
+    }
+  }
+  let A1 = S.withStore(A)
+
+  function B() {
+    return <>
+      <A1 />
+      <A1 />
+      <A1 />
+    </>
+  }
+
+  let store: Store<State>
+  let Leak = S.withStore(props => {
+    store = (props as any).store['storeDefinition']
+    return null
+  })
+
+  function C() {
+    return <S.Container>
+      <Leak />
+      <B />
+    </S.Container>
+  }
+  withElement(C, _ => {
+    t.deepEqual(store.get('as'), [0, 1, 2])
+  })
+})
+
+test('setFrom_EXPERIMENTAL should compose', t => {
+  type State = {
+    as: number[]
+  }
+  let S = createConnectedStore<State>({ as: [] })
+  let index = 0
+
+  type Props = {
+    store: Store<State>
+  }
+  class A extends React.Component<Props> {
+    componentDidMount() {
+      this.props.store.setFrom_EXPERIMENTAL(store => {
+        let as = store.get('as')
+        store.set('as')([...as, index++])
+
+        // One more time
+        store.setFrom_EXPERIMENTAL(store => {
+          let as = store.get('as')
+          store.set('as')([...as, index++])
+        })
+      })
+    }
+    render() {
+      return <div />
+    }
+  }
+  let A1 = S.withStore(A)
+
+  function B() {
+    return <>
+      <A1 />
+      <A1 />
+      <A1 />
+    </>
+  }
+
+  let store: Store<State>
+  let Leak = S.withStore(props => {
+    store = (props as any).store['storeDefinition']
+    return null
+  })
+
+  function C() {
+    return <S.Container>
+      <Leak />
+      <B />
+    </S.Container>
+  }
+  withElement(C, _ => {
+    t.deepEqual(store.get('as'), [0, 1, 2, 3, 4, 5])
+  })
+})
+
+test('setFrom_EXPERIMENTAL should chain', t => {
+  type State = {
+    as: number
+  }
+  let S = createConnectedStore<State>({ as: 0 })
+
+  type Props = {
+    store: Store<State>
+  }
+  class A extends React.Component<Props> {
+    componentDidMount() {
+      this.props.store.setFrom_EXPERIMENTAL(store =>
+        store.set('as')(store.get('as') + 1)
+      )
+      this.props.store.setFrom_EXPERIMENTAL(store =>
+        store.set('as')(store.get('as') + 1)
+      )
+      this.props.store.setFrom_EXPERIMENTAL(store =>
+        store.set('as')(store.get('as') + 1)
+      )
+    }
+    render() {
+      return <div />
+    }
+  }
+  let A1 = S.withStore(A)
+
+  let store: Store<State>
+  let Leak = S.withStore(props => {
+    store = (props as any).store['storeDefinition']
+    return null
+  })
+
+  function C() {
+    return <S.Container>
+      <Leak />
+      <A1 />
+    </S.Container>
+  }
+  withElement(C, _ => {
+    t.deepEqual(store.get('as'), 3)
+  })
+})
