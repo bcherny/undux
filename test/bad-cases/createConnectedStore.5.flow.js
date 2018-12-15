@@ -29,7 +29,7 @@ type Props = {|
 |}
 
 let A = ({store}: Props) =>
-  store.setFrom(store => store.set('c')(2)) // Error: c is not a valid key
+  store.setFrom_EXPERIMENTAL(store => store.set('c')(2)) // Error: c is not a valid key
 
 let B = withStore(A)
 

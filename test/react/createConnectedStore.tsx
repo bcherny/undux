@@ -745,7 +745,7 @@ test('it should fail for async updates by default', t => {
   })
 })
 
-test('it should work for async updates using setFrom', t => {
+test('it should work for async updates using setFrom_EXPERIMENTAL', t => {
   type State = {
     as: number[]
   }
@@ -757,7 +757,7 @@ test('it should work for async updates using setFrom', t => {
   }
   class A extends React.Component<Props> {
     componentDidMount() {
-      this.props.store.setFrom(store => {
+      this.props.store.setFrom_EXPERIMENTAL(store => {
         let as = store.get('as')
         store.set('as')([...as, index++])
       })
@@ -793,7 +793,7 @@ test('it should work for async updates using setFrom', t => {
   })
 })
 
-test('setFrom should compose', t => {
+test('setFrom_EXPERIMENTAL should compose', t => {
   type State = {
     as: number[]
   }
@@ -805,12 +805,12 @@ test('setFrom should compose', t => {
   }
   class A extends React.Component<Props> {
     componentDidMount() {
-      this.props.store.setFrom(store => {
+      this.props.store.setFrom_EXPERIMENTAL(store => {
         let as = store.get('as')
         store.set('as')([...as, index++])
 
         // One more time
-        store.setFrom(store => {
+        store.setFrom_EXPERIMENTAL(store => {
           let as = store.get('as')
           store.set('as')([...as, index++])
         })
@@ -847,7 +847,7 @@ test('setFrom should compose', t => {
   })
 })
 
-test('setFrom should chain', t => {
+test('setFrom_EXPERIMENTAL should chain', t => {
   type State = {
     as: number
   }
@@ -858,13 +858,13 @@ test('setFrom should chain', t => {
   }
   class A extends React.Component<Props> {
     componentDidMount() {
-      this.props.store.setFrom(store =>
+      this.props.store.setFrom_EXPERIMENTAL(store =>
         store.set('as')(store.get('as') + 1)
       )
-      this.props.store.setFrom(store =>
+      this.props.store.setFrom_EXPERIMENTAL(store =>
         store.set('as')(store.get('as') + 1)
       )
-      this.props.store.setFrom(store =>
+      this.props.store.setFrom_EXPERIMENTAL(store =>
         store.set('as')(store.get('as') + 1)
       )
     }

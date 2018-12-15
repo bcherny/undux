@@ -124,9 +124,9 @@ store.onAll().subscribe(_ => {
   _.value === true
 })
 
-/////////////////// setFrom ///////////////////
+/////////////////// setFrom_EXPERIMENTAL ///////////////////
 
-store.setFrom(store => {
+store.setFrom_EXPERIMENTAL(store => {
   store.set('isTrue')(true)
 })
 
