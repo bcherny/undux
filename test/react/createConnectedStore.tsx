@@ -699,7 +699,7 @@ test('it should return the same value when call .get multiple times for one snap
   })
 })
 
-test.only('it should fail for async updates by default', t => {
+test('it should fail for async updates by default', t => {
   type State = {
     as: number[]
   }
@@ -745,7 +745,7 @@ test.only('it should fail for async updates by default', t => {
   })
 })
 
-test.only('it should work for async updates using setFrom', t => {
+test('it should work for async updates using setFrom', t => {
   type State = {
     as: number[]
   }
@@ -790,5 +790,59 @@ test.only('it should work for async updates using setFrom', t => {
   }
   withElement(C, _ => {
     t.deepEqual(store.get('as'), [0, 1, 2])
+  })
+})
+
+test('setFrom should compose', t => {
+  type State = {
+    as: number[]
+  }
+  let S = createConnectedStore<State>({ as: [] })
+  let index = 0
+
+  type Props = {
+    store: Store<State>
+  }
+  class A extends React.Component<Props> {
+    componentDidMount() {
+      this.props.store.setFrom(store => {
+        let as = store.get('as')
+        store.set('as')([...as, index++])
+
+        // One more time
+        store.setFrom(store => {
+          let as = store.get('as')
+          store.set('as')([...as, index++])
+        })
+      })
+    }
+    render() {
+      return <div />
+    }
+  }
+  let A1 = S.withStore(A)
+
+  function B() {
+    return <>
+      <A1 />
+      <A1 />
+      <A1 />
+    </>
+  }
+
+  let store: Store<State>
+  let Leak = S.withStore(props => {
+    store = (props as any).store['storeDefinition']
+    return null
+  })
+
+  function C() {
+    return <S.Container>
+      <Leak />
+      <B />
+    </S.Container>
+  }
+  withElement(C, _ => {
+    t.deepEqual(store.get('as'), [0, 1, 2, 3, 4, 5])
   })
 })
