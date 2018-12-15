@@ -698,3 +698,49 @@ test('it should return the same value when call .get multiple times for one snap
     t.is(_.innerHTML, 'z')
   })
 })
+
+test.only('it should work for async updates', t => {
+  type State = {
+    as: number[]
+  }
+  let S = createConnectedStore<State>({ as: [] })
+  let index = 0
+
+  type Props = {
+    store: Store<State>
+  }
+  class A extends React.Component<Props> {
+    componentDidMount() {
+      const as = this.props.store.get('as')
+      this.props.store.set('as')([...as, index++])
+    }
+    render() {
+      return <div />
+    }
+  }
+  let A1 = S.withStore(A)
+
+  function B() {
+    return <>
+      <A1 />
+      <A1 />
+      <A1 />
+    </>
+  }
+
+  let store: Store<State>
+  let Leak = S.withStore(props => {
+    store = (props as any).store['storeDefinition']
+    return null
+  })
+
+  function C() {
+    return <S.Container>
+      <Leak />
+      <B />
+    </S.Container>
+  }
+  withElement(C, _ => {
+    t.deepEqual(store.get('as'), [])
+  })
+})
