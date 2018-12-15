@@ -22,7 +22,7 @@ export type Undux<State extends object> = {
 export interface Store<State extends object> {
   get<K extends keyof State>(key: K): State[K]
   set<K extends keyof State>(key: K): (value: State[K]) => void
-  setFrom<K extends keyof State>(key: K): (f: (value: State[K]) => State[K]) => void
+  setFrom(f: (store: Store<State>) => void): void
   on<K extends keyof State>(key: K): Observable<State[K]>
   onAll(): Observable<Undux<State>[keyof State]>
   getState(): Readonly<State>
@@ -43,8 +43,8 @@ export class StoreSnapshot<State extends object> implements Store<State> {
   set<K extends keyof State>(key: K) {
     return this.storeDefinition.set(key)
   }
-  setFrom<K extends keyof State>(key: K): (f: (value: State[K]) => State[K]) => void {
-    return this.storeDefinition.setFrom(key)
+  setFrom(f: (store: Store<State>) => void): void {
+    return this.storeDefinition.setFrom(f)
   }
   on<K extends keyof State>(key: K) {
     return this.storeDefinition.on(key)
@@ -73,10 +73,7 @@ export class StoreDefinition<State extends object> implements Store<State> {
   private alls: Emitter<Undux<State>>
   private emitter: Emitter<State>
   private setters: {
-    readonly [K in keyof State]: [
-      (f: (value: State[K]) => State[K]) => void,
-      (value: State[K]) => void
-    ]
+    readonly [K in keyof State]: (value: State[K]) => void
   }
   constructor(state: State, options: Options) {
 
@@ -95,9 +92,8 @@ export class StoreDefinition<State extends object> implements Store<State> {
     this.storeSnapshot = new StoreSnapshot(state, this)
 
     // Cache setters
-    this.setters = mapValues(state, (v, key) => {
-
-      let set = (value: typeof v) => {
+    this.setters = mapValues(state, (v, key) =>
+      (value: typeof v) => {
         let previousValue = this.storeSnapshot.get(key)
         this.storeSnapshot = new StoreSnapshot(
           Object.assign({}, this.storeSnapshot.getState(), { [key]: value }),
@@ -106,16 +102,7 @@ export class StoreDefinition<State extends object> implements Store<State> {
         this.emitter.emit(key, value)
         this.alls.emit(key, { key, previousValue, value })
       }
-
-      return [
-        (f: (value: State[typeof key]) => State[typeof key]) => {
-          let previousValue = this.storeSnapshot.get(key)
-          let value = f(previousValue)
-          return set(value)
-        },
-        set
-      ] as any
-    })
+    )
   }
   on<K extends keyof State>(key: K): Observable<State[K]> {
     return this.emitter.on(key)
@@ -127,10 +114,11 @@ export class StoreDefinition<State extends object> implements Store<State> {
     return this.storeSnapshot.get(key)
   }
   set<K extends keyof State>(key: K): (value: State[K]) => void {
-    return this.setters[key][1]
+    return this.setters[key]
   }
-  setFrom<K extends keyof State>(key: K): (f: (value: State[K]) => State[K]) => void {
-    return this.setters[key][0]
+  setFrom(f: (store: Store<State>) => void): void {
+    // TODO: Make sure it doesn't cause extra re-renders
+    return f(this.storeSnapshot)
   }
   getCurrentSnapshot() {
     return this.storeSnapshot

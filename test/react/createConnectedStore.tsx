@@ -757,7 +757,10 @@ test.only('it should work for async updates using setFrom', t => {
   }
   class A extends React.Component<Props> {
     componentDidMount() {
-      this.props.store.setFrom('as')(as => [...as, index++])
+      this.props.store.setFrom(store => {
+        let as = store.get('as')
+        store.set('as')([...as, index++])
+      })
     }
     render() {
       return <div />
