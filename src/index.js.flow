@@ -99,6 +99,7 @@ export type ContainerProps<State: Object> = {|
 
 export type Connect<State: Object> = {|
   Container: React.ComponentType<ContainerProps<State>>,
+  useStore(): Store<State>,
   withStore: <S: Store<State>, Props: {store: S}>(
     Component: React.ComponentType<Props>
   ) => Class<React.Component<$Diff<Props, {store: S}>>>
@@ -123,6 +124,7 @@ export type ConnectAs<States: {
   [alias: string]: any
 }> = {|
   Container: React.ComponentType<ContainerPropsAs<States>>,
+  useStores(): $ObjMap<States, ToStore>,
   withStores: <Props: $ObjMap<States, ToStore>>(
     Component: React.ComponentType<Props>
   ) => React.ComponentType<$Diff<Props, $ObjMap<States, ToStore>>>

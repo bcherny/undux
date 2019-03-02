@@ -60,6 +60,34 @@ export default createConnectedStore({
 
 ### 2. Connect your React components
 
+#### With [React Hooks](https://reactjs.org/docs/hooks-intro.html):
+
+```jsx
+import Store from './MyStore'
+
+// Re-render the component when the store updates.
+function MyComponent() {
+  let store = Store.useStore()
+  return <div>
+    <NumberInput onChange={store.set('one')} value={store.get('one')} />
+    <NumberInput onChange={store.set('two')} value={store.get('two')} />
+    Sum: {store.get('one') + store.get('two')}
+  </div>
+}
+
+function NumberInput() {
+  return <input
+    onChange={e => this.props.onChange(parseInt(e.target.value, 10))}
+    type="number"
+    value={this.props.value}
+  />
+}
+
+export default MyComponent
+```
+
+#### Without React Hooks:
+
 ```jsx
 import Store from './MyStore'
 
@@ -143,7 +171,7 @@ store
   })
 ```
 
-### Partial application all the way through
+### Partial application
 
 Partially apply the `set` function to yield a convenient setter:
 

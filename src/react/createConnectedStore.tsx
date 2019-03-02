@@ -5,6 +5,7 @@ import { Diff, getDisplayName } from '../utils'
 
 export type Connect<State extends object> = {
   Container: React.ComponentType<ContainerProps<State>>
+  useStore(): Store<State>
   withStore: <Props extends { store: Store<State> }>(
     Component: React.ComponentType<Props>
   ) => React.ComponentType<Diff<Props, { store: Store<State> }>>
@@ -48,20 +49,18 @@ export function createConnectedStore<State extends object>(
         storeSnapshot: this.storeDefinition.getCurrentSnapshot()
       }
 
-      this.subscription = this.storeDefinition
-        .onAll()
-        .subscribe(() =>
-          this.setState({
-            storeSnapshot: this.storeDefinition.getCurrentSnapshot()
-          })
-        )
+      this.subscription = this.storeDefinition.onAll().subscribe(() =>
+        this.setState({
+          storeSnapshot: this.storeDefinition.getCurrentSnapshot()
+        })
+      )
     }
     componentWillUnmount() {
       this.subscription.unsubscribe()
       // Let the state get GC'd.
       // TODO: Find a more elegant way to do this.
-      ;(this.storeDefinition as any).storeSnapshot = null
-      ;(this as any).storeDefinition = null
+      ; (this.storeDefinition as any).storeSnapshot = null
+      ; (this as any).storeDefinition = null
     }
     render() {
       return (
@@ -108,10 +107,11 @@ export function createConnectedStore<State extends object>(
 
   return {
     Container,
-    withStore,
-    /** @private */
-    __CONTEXT_DO_NOT_USE_OR_YOU_WILL_BE_FIRED: Context
-  } as Connect<State>
+    useStore() {
+      return React.useContext(Context)
+    },
+    withStore
+  }
 }
 
 function isInitialized<State extends object>(

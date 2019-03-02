@@ -15,6 +15,7 @@ export type ConnectAs<
   }
 > = {
   Container: React.ComponentType<ContainerPropsAs<States>>
+  useStores(): { [K in keyof States]: Store<States[K]> }
   withStores: <Props extends { [K in keyof States]: Store<States[K]> }>(
     Component: React.ComponentType<Props>
   ) => React.ComponentType<
@@ -138,10 +139,11 @@ export function createConnectedStoreAs<
 
   return {
     Container,
-    withStores,
-    /** @private */
-    __CONTEXT_DO_NOT_USE_OR_YOU_WILL_BE_FIRED: Context
-  } as ConnectAs<States>
+    useStores() {
+      return React.useContext(Context)
+    },
+    withStores
+  }
 }
 
 function isInitialized<State extends object>(
