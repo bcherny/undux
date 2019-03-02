@@ -31,10 +31,10 @@ type Props = StoreProps & {
   bar: string
 }
 
-let A = connect(store)(({ foo, bar, store }: Props) =>
+let A = connect(store)(({ foo, bar, store }: Props) => (
   <div>
     {store.get('a') ? 'True' : 'False'}
     <button onClick={() => store.set('isTrue')(false)}>Update</button>
   </div>
-)
+))
 let a = <A />

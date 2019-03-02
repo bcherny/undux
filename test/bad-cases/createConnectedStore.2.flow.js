@@ -13,19 +13,22 @@ let initialState: State = {
   b: 2
 }
 
-let {Container, withStore} = createConnectedStore(initialState)
+let { Container, withStore } = createConnectedStore(initialState)
 
 type Props = {|
   store: Store<State>
 |}
 
-let A = withStore(class extends React.Component<Props> {
-  render() {
-    return this.props.store.get('c') + 2 // Error: c is not a valid key
+let A = withStore(
+  class extends React.Component<Props> {
+    render() {
+      return this.props.store.get('c') + 2 // Error: c is not a valid key
+    }
   }
-})
+)
 
-let StoreContainer = () =>
+let StoreContainer = () => (
   <Container>
     <A />
   </Container>
+)

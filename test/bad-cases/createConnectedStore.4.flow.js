@@ -18,19 +18,19 @@ let withEffects: Effects<State> = store => {
   return store
 }
 
-let {Container, withStore} = createConnectedStore(initialState, withEffects)
+let { Container, withStore } = createConnectedStore(initialState, withEffects)
 
 type Props = {|
   store: Store<State>,
   x: boolean
 |}
 
-let A = ({store}: Props) =>
-  store.get('c') + 2 // Error: c is not a valid key
+let A = ({ store }: Props) => store.get('c') + 2 // Error: c is not a valid key
 
 let B = withStore(A)
 
-let StoreContainer = () =>
+let StoreContainer = () => (
   <Container>
     <B x={true} />
   </Container>
+)

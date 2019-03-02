@@ -13,19 +13,22 @@ let initialState: State = {
   b: 2
 }
 
-let {Container, withStore} = createConnectedStore(initialState)
+let { Container, withStore } = createConnectedStore(initialState)
 
 type Props = {|
   store: Store<State>
 |}
 
-let A = withStore(class extends React.Component<Props> {
-  render() {
-    return this.props.store.get('a').push(4) // Error: Can't call .push on a number
+let A = withStore(
+  class extends React.Component<Props> {
+    render() {
+      return this.props.store.get('a').push(4) // Error: Can't call .push on a number
+    }
   }
-})
+)
 
-let StoreContainer = () =>
+let StoreContainer = () => (
   <Container>
     <A />
   </Container>
+)

@@ -31,9 +31,7 @@ type Props = StoreProps & {
   bar: string
 }
 
-let A = connect(store)(({ foo, bar, store }: Props) =>
-  <div>
-    {store.set('a')(2)}
-  </div>
-)
+let A = connect(store)(({ foo, bar, store }: Props) => (
+  <div>{store.set('a')(2)}</div>
+))
 let a = <A />

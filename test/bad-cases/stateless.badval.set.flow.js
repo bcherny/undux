@@ -31,9 +31,7 @@ type StoreProps = {
 
 /////////////////// A ///////////////////
 
-let A = connect(store)(({ store }: StoreProps) =>
-  <div>
-    {store.set('isTrue')(2)}
-  </div>
-)
+let A = connect(store)(({ store }: StoreProps) => (
+  <div>{store.set('isTrue')(2)}</div>
+))
 let a = <A />

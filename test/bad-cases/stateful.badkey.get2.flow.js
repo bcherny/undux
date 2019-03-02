@@ -29,13 +29,17 @@ type Props = StoreProps & {
   bar: string
 }
 
-let A = connect(store)(class extends React.Component<Props> {
-  render() {
-    return <div>
-      {this.props.foo * 12}
-      {this.props.bar + 'baz'}
-      {this.props.store.get('a')}
-    </div>
+let A = connect(store)(
+  class extends React.Component<Props> {
+    render() {
+      return (
+        <div>
+          {this.props.foo * 12}
+          {this.props.bar + 'baz'}
+          {this.props.store.get('a')}
+        </div>
+      )
+    }
   }
-})
+)
 let a = <A />

@@ -1,0 +1,16 @@
+{
+  "overrides": [{
+    "files": "*.flow",
+    "options": {
+      "parser": "flow"
+    }
+  }, {
+    "files": "*.tsx?",
+    "options": {
+      "parser": "typescript"
+    }
+  }],
+  "bracketSpacing": false,
+  "semi": false,
+  "singleQuote": true
+}

@@ -31,10 +31,10 @@ type StoreProps = {
 
 /////////////////// A ///////////////////
 
-let A = connect(store)(({ store }: StoreProps) =>
+let A = connect(store)(({ store }: StoreProps) => (
   <div>
     {store.get('a') ? 'True' : 'False'}
     <button onClick={() => store.set('isTrue')(false)}>Update</button>
   </div>
-)
+))
 let a = <A />

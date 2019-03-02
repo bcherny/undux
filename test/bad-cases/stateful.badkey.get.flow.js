@@ -29,11 +29,11 @@ type StoreProps = {
   store: Store<State>
 }
 
-let A = connect(store)(class extends React.Component<StoreProps> {
-  render() {
-    return <div>
-      {this.props.store.get('a') ? 'True' : 'False'}
-    </div>
+let A = connect(store)(
+  class extends React.Component<StoreProps> {
+    render() {
+      return <div>{this.props.store.get('a') ? 'True' : 'False'}</div>
+    }
   }
-})
+)
 let a = <A />

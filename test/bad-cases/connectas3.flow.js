@@ -17,12 +17,13 @@ type Props = {|
   b: Store<B>
 |}
 
-let Component = ({a, b}: Props) =>
+let Component = ({ a, b }: Props) => (
   <div>
     {a.get('a') * 4}
     {b.get('b').concat('d')}
     {b.get('b').push(4)} // ERROR: Can't call push on string
   </div>
+)
 
 let ConnectedComponent = connectAs({
   a: storeA,

@@ -18,7 +18,7 @@ let withEffects: Effects<State> = store => {
   return store
 }
 
-let {Container, withStore} = createConnectedStore<State>(
+let { Container, withStore } = createConnectedStore<State>(
   initialState,
   withEffects
 )
@@ -28,12 +28,13 @@ type Props = {|
   x: boolean
 |}
 
-let A = ({store}: Props) =>
+let A = ({ store }: Props) =>
   store.setFrom_EXPERIMENTAL(store => store.set('c')(2)) // Error: c is not a valid key
 
 let B = withStore(A)
 
-let StoreContainer = () =>
+let StoreContainer = () => (
   <Container>
     <B x={true} />
   </Container>
+)

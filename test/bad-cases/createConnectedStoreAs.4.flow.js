@@ -35,23 +35,27 @@ let withEffects: EffectsAs<State> = store => {
   return store
 }
 
-let {Container, withStores} = createConnectedStoreAs(initialState, withEffects)
+let { Container, withStores } = createConnectedStoreAs(
+  initialState,
+  withEffects
+)
 
 type Props = {|
   X: Store<StateX>,
   Y: Store<StateY>
 |}
 
-let A = withStores((props: Props) =>
+let A = withStores((props: Props) => (
   <div>
     {props.X.get('a') * 4}
     {props.X.get('b') * 4}
     {props.Y.get('c').toUpperCase()}
     {props.Y.get('e') * 8} // Error: e is not a valid key
   </div>
-)
+))
 
-let StoreContainer = () =>
+let StoreContainer = () => (
   <Container>
     <A />
   </Container>
+)

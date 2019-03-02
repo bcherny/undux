@@ -18,19 +18,19 @@ let withEffects: Effects<State> = store => {
   return store
 }
 
-let {Container, withStore} = createConnectedStore(initialState, withEffects)
+let { Container, withStore } = createConnectedStore(initialState, withEffects)
 
 type Props = {|
   store: Store<State>,
   x: boolean
 |}
 
-let A = ({store}: Props) =>
-  store.get('a').push(4) // Error: Can't call .push on a number
+let A = ({ store }: Props) => store.get('a').push(4) // Error: Can't call .push on a number
 
 let B = withStore(A)
 
-let StoreContainer = () =>
+let StoreContainer = () => (
   <Container>
     <B x={true} />
   </Container>
+)

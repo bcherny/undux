@@ -16,23 +16,26 @@ let withEffects: Effects<State> = store => {
   return store
 }
 
-let {Container, withStore} = createConnectedStore(initialState)
+let { Container, withStore } = createConnectedStore(initialState)
 
 type StoreProps = {|
   store: Store<State>
 |}
 
-let A = withStore(class extends React.Component<StoreProps> {
-  constructor() {
-    super()
-    this.props.store.on('a').subscribe(a => {}) // Error: .on is not defined
+let A = withStore(
+  class extends React.Component<StoreProps> {
+    constructor() {
+      super()
+      this.props.store.on('a').subscribe(a => {}) // Error: .on is not defined
+    }
+    render() {
+      return this.props.store.get('a')
+    }
   }
-  render() {
-    return this.props.store.get('a')
-  }
-})
+)
 
-let StoreContainer = () =>
+let StoreContainer = () => (
   <Container>
     <A />
   </Container>
+)

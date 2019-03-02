@@ -19,11 +19,13 @@ type Props = {|
 
 class Component extends React.Component<Props> {
   render() {
-    return <div>
-      {this.props.a.get('a') * 4}
-      {this.props.b.get('b').concat('d')}
-      {this.props.c.get('c')} // ERROR: Missing prop
-    </div>
+    return (
+      <div>
+        {this.props.a.get('a') * 4}
+        {this.props.b.get('b').concat('d')}
+        {this.props.c.get('c')} // ERROR: Missing prop
+      </div>
+    )
   }
 }
 

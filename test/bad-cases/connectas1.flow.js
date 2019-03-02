@@ -17,12 +17,13 @@ type Props = {|
   b: Store<B>
 |}
 
-let Component = ({a, b}: Props) =>
+let Component = ({ a, b }: Props) => (
   <div>
     {a.get('a') * 4}
     {b.get('b').concat('d')}
     {b.get('c')} // ERROR: Missing key
   </div>
+)
 
 let ConnectedComponent = connectAs({
   a: storeA,

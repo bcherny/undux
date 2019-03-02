@@ -5,11 +5,9 @@ import { Diff, getDisplayName } from '../utils'
 
 export type Connect<State extends object> = {
   Container: React.ComponentType<ContainerProps<State>>
-  withStore: <
-    Props extends {store: Store<State>}
-  >(
+  withStore: <Props extends { store: Store<State> }>(
     Component: React.ComponentType<Props>
-  ) => React.ComponentType<Diff<Props, {store: Store<State>}>>
+  ) => React.ComponentType<Diff<Props, { store: Store<State> }>>
 }
 
 export type ContainerProps<State extends object> = {
@@ -27,7 +25,10 @@ export function createConnectedStore<State extends object>(
     storeSnapshot: StoreSnapshot<State>
   }
 
-  class Container extends React.Component<ContainerProps<State>, ContainerState> {
+  class Container extends React.Component<
+    ContainerProps<State>,
+    ContainerState
+  > {
     subscription: Subscription
     storeDefinition: StoreDefinition<State>
     constructor(props: ContainerProps<State>) {
@@ -47,48 +48,60 @@ export function createConnectedStore<State extends object>(
         storeSnapshot: this.storeDefinition.getCurrentSnapshot()
       }
 
-      this.subscription = this.storeDefinition.onAll().subscribe(() =>
-        this.setState({ storeSnapshot: this.storeDefinition.getCurrentSnapshot() })
-      )
+      this.subscription = this.storeDefinition
+        .onAll()
+        .subscribe(() =>
+          this.setState({
+            storeSnapshot: this.storeDefinition.getCurrentSnapshot()
+          })
+        )
     }
     componentWillUnmount() {
-      this.subscription.unsubscribe();
+      this.subscription.unsubscribe()
       // Let the state get GC'd.
       // TODO: Find a more elegant way to do this.
-      (this.storeDefinition as any).storeSnapshot = null;
-      (this as any).storeDefinition = null
+      ;(this.storeDefinition as any).storeSnapshot = null
+      ;(this as any).storeDefinition = null
     }
     render() {
-      return <Context.Provider value={this.state.storeSnapshot}>
-        {this.props.children}
-      </Context.Provider>
+      return (
+        <Context.Provider value={this.state.storeSnapshot}>
+          {this.props.children}
+        </Context.Provider>
+      )
     }
   }
 
   let Consumer = (props: {
     children: (store: StoreSnapshot<State>) => JSX.Element
     displayName: string
-  }) =>
+  }) => (
     <Context.Consumer>
       {store => {
         if (!isInitialized(store)) {
-          throw Error(`[Undux] Component "${props.displayName}" does not seem to be nested in an Undux <Container>. To fix this error, be sure to render the component in the <Container>...</Container> component that you got back from calling createConnectedStore().`)
+          throw Error(
+            `[Undux] Component "${
+              props.displayName
+            }" does not seem to be nested in an Undux <Container>. To fix this error, be sure to render the component in the <Container>...</Container> component that you got back from calling createConnectedStore().`
+          )
         }
         return props.children(store)
       }}
     </Context.Consumer>
+  )
 
   function withStore<
-    Props extends {store: Store<State>},
-    PropsWithoutStore = Diff<Props, {store: Store<State>}>
+    Props extends { store: Store<State> },
+    PropsWithoutStore = Diff<Props, { store: Store<State> }>
   >(
     Component: React.ComponentType<Props>
   ): React.ComponentType<PropsWithoutStore> {
     let displayName = getDisplayName(Component)
-    let f: React.StatelessComponent<PropsWithoutStore> = props =>
+    let f: React.StatelessComponent<PropsWithoutStore> = props => (
       <Consumer displayName={displayName}>
         {storeSnapshot => <Component store={storeSnapshot} {...props as any} />}
       </Consumer>
+    )
     f.displayName = `withStore(${displayName})`
     return f
   }
@@ -102,7 +115,7 @@ export function createConnectedStore<State extends object>(
 }
 
 function isInitialized<State extends object>(
-  store: StoreSnapshot<State> | {__MISSING_PROVIDER__: true}
+  store: StoreSnapshot<State> | { __MISSING_PROVIDER__: true }
 ) {
   return !('__MISSING_PROVIDER__' in store)
 }

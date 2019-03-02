@@ -3,11 +3,12 @@ import { StoreDefinition } from '..'
 export function withReduxDevtools<State extends object>(
   store: StoreDefinition<State>
 ): StoreDefinition<State> {
-
   let devtools = window.__REDUX_DEVTOOLS_EXTENSION__
 
   if (!devtools) {
-    console.error('Undux withReduxDevtools plugin: Cannot find Redux Devtools browser extension. Is it installed?')
+    console.error(
+      'Undux withReduxDevtools plugin: Cannot find Redux Devtools browser extension. Is it installed?'
+    )
     return store
   }
 
