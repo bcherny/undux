@@ -1,6 +1,7 @@
 (require as any)('jsdom-global')()
 
 import './cyclical-dependencies'
+import './emitter'
 import './immutable'
 import './react/createConnectedStore'
 import './react/createConnectedStore-context'

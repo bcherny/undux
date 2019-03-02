@@ -4438,6 +4438,11 @@ run-queue@^1.0.0, run-queue@^1.0.3:
   dependencies:
     aproba "^1.1.1"
 
+rxjs-observable@^0.0.7:
+  version "0.0.7"
+  resolved "https://registry.yarnpkg.com/rxjs-observable/-/rxjs-observable-0.0.7.tgz#12d37a52e60f1ed0660838fdc44a94eb23c373ba"
+  integrity sha512-aB3nxdX34jbr+83d2b/OERp/96EKSfx0hns06Tt5Gji49AxIPL/D+RV4+jjolPWW3fxArEi3phOEDx9l+RiCLA==
+
 rxjs@^6.3.3, rxjs@^6.4.0:
   version "6.4.0"
   resolved "https://registry.yarnpkg.com/rxjs/-/rxjs-6.4.0.tgz#f3bb0fe7bda7fb69deac0c16f17b50b0b8790504"
@@ -5135,11 +5140,6 @@ type-check@~0.3.2:
   integrity sha1-WITKtRLPHTVeP7eE8wgEsrUg23I=
   dependencies:
     prelude-ls "~1.1.2"
-
-typed-rx-emitter@1.2.0:
-  version "1.2.0"
-  resolved "https://registry.yarnpkg.com/typed-rx-emitter/-/typed-rx-emitter-1.2.0.tgz#369d274c955e430a03e778e3f92299747e200448"
-  integrity sha512-Ptc7hiRWKLfSJ9P/CLkQxqFgAV+wfkTJRroDIRhPl54do9da+Ps3G0XA0uZPBkTBiaZ8yB1QlOsk3le6TNhdhw==
 
 typedarray@^0.0.6:
   version "0.0.6"

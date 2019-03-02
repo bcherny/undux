@@ -1,6 +1,7 @@
 import test from 'ava'
 import * as React from 'react'
 import { Simulate } from 'react-dom/test-utils'
+import { debounceTime, distinctUntilChanged, filter, map, pairwise } from 'rxjs/operators'
 import { Effects, Store } from '../../src'
 import { createConnectedStore } from '../../src/react/createConnectedStore'
 import { withElement } from '../testUtils'
@@ -87,6 +88,52 @@ test('it should support effects', t => {
   )
 
   withElement(A, _ => Simulate.click(_.querySelector('button')!))
+})
+
+test.cb('it should support effects with rx opererators', t => {
+  t.plan(2)
+   type State = {
+    a: number
+    b: number
+  }
+  let store: Store<{ a: number; b: number }>
+  let withEffects: Effects<State> = s => {
+    store = s
+    s.on('a')
+      .pipe(
+        distinctUntilChanged(),
+        filter(_ => _ > 2),
+        pairwise(),
+        map(([a]) => a * 6),
+        debounceTime(0)
+      )
+      .subscribe(store.set('b'))
+    return s
+  }
+   let { Container, withStore } = createConnectedStore(
+    { a: 1, b: 1 },
+    withEffects
+  )
+   let C = withStore(({ store }) => (
+    <button onClick={() => store.set('a')(store.get('a') + 1)}>
+      {store.get('a')}
+    </button>
+  ))
+  let A = () => (
+    <Container>
+      <C />
+    </Container>
+  )
+   withElement(A, _ => {
+    Simulate.click(_.querySelector('button')!)
+    t.is(store.get('b'), 1)
+    Simulate.click(_.querySelector('button')!)
+    Simulate.click(_.querySelector('button')!)
+    setTimeout(() => {
+      t.is(store.get('b'), 18)
+      t.end()
+    }, 0)
+  })
 })
 
 test('it should support multiple instances of a store', t => {
