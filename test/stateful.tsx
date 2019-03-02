@@ -1,4 +1,4 @@
-import { test } from 'ava'
+import test from 'ava'
 import * as React from 'react'
 import { Simulate } from 'react-dom/test-utils'
 import { connect, connectAs, createStore, Store, StoreSnapshot } from '../src'

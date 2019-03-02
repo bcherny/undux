@@ -1,4 +1,4 @@
-import { test } from 'ava'
+import test from 'ava'
 import * as Immutable from 'immutable'
 import { isImmutable, keys, mapValues, some } from '../src/utils'
 

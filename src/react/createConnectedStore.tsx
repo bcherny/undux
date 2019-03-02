@@ -87,7 +87,7 @@ export function createConnectedStore<State extends object>(
     let displayName = getDisplayName(Component)
     let f: React.StatelessComponent<PropsWithoutStore> = props =>
       <Consumer displayName={displayName}>
-        {storeSnapshot => <Component store={storeSnapshot} {...props} />}
+        {storeSnapshot => <Component store={storeSnapshot} {...props as any} />}
       </Consumer>
     f.displayName = `withStore(${displayName})`
     return f

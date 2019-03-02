@@ -107,7 +107,7 @@ export function createConnectedStoreAs<States extends {
     let displayName = getDisplayName(Component)
     let f: React.StatelessComponent<PropsWithoutStore> = props =>
       <Consumer displayName={displayName}>
-        {stores => <Component {...stores} {...props} />}
+        {stores => <Component {...stores} {...props as any} />}
       </Consumer>
     f.displayName = `withStores(${displayName})`
     return f

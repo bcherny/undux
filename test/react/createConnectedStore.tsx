@@ -1,4 +1,4 @@
-import { test } from 'ava'
+import test from 'ava'
 import * as React from 'react'
 import { Simulate } from 'react-dom/test-utils'
 import { Effects, Store } from '../../src'
@@ -261,7 +261,7 @@ test('it should support custom effects', t => {
   )
 })
 
-test('it should eagerly throw at runtime when using a consumer without a container', t => {
+test('it should eagerly throw at runtime when using a consumer without a container (createConnectedStore)', t => {
   let {withStore} = createConnectedStore({ a: 1 })
   let A = withStore(() => <div />)
   t.throws(() => withElement(A, _ => {}), /does not seem to be nested/)

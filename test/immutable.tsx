@@ -1,4 +1,4 @@
-import { test } from 'ava'
+import test from 'ava'
 import * as I from 'immutable'
 import * as React from 'react'
 import { Simulate } from 'react-dom/test-utils'

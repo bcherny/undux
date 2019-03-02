@@ -49,7 +49,7 @@ export function connectAs<
           || Object.keys(props).some(_ => (props as any)[_] !== (this.props as any)[_])
       }
       render() {
-        return <Component {...this.props} {...this.state.stores} />
+        return <Component {...this.props as any} {...this.state.stores} />
       }
     }
   }

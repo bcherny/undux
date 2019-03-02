@@ -4,7 +4,7 @@ import { Simulate } from 'react-dom/test-utils'
 import { createConnectedStore, createStore, Store } from '../../src'
 import { withElement } from '../testUtils'
 
-test('it should expose an internal Context API', t => {
+test('it should expose an internal Context API (createConnectedStore)', t => {
   let S = createConnectedStore({ a: 1 })
   let Context = (S as any)['__CONTEXT_DO_NOT_USE_OR_YOU_WILL_BE_FIRED'] as React.Context<Store<{a: number}>>
   let A = () => (
@@ -28,7 +28,7 @@ test('it should expose an internal Context API', t => {
   })
 })
 
-test('it should not be usable with a <Provider /> instead of a <Container />', t => {
+test('it should not be usable with a <Provider /> instead of a <Container /> (createConnectedStore)', t => {
   let S = createConnectedStore({ a: 1 })
   let Context = (S as any)['__CONTEXT_DO_NOT_USE_OR_YOU_WILL_BE_FIRED'] as React.Context<Store<{a: number}>>
   let A = () => (
@@ -52,7 +52,7 @@ test('it should not be usable with a <Provider /> instead of a <Container />', t
   })
 })
 
-test(`it should throw if you don't give it a Provider`, t => {
+test(`it should throw if you don't give it a Provider (createConnectedStore)`, t => {
   let S = createConnectedStore({ a: 1 })
   let Context = (S as any)['__CONTEXT_DO_NOT_USE_OR_YOU_WILL_BE_FIRED'] as React.Context<Store<{a: number}>>
   let A = () => (
