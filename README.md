@@ -18,10 +18,10 @@
 
 ```sh
 # Using Yarn:
-yarn add undux rxjs
+yarn add undux
 
 # Or, using NPM:
-npm install undux rxjs --save
+npm install undux --save
 ```
 
 ## Install (with RxJS v4)
@@ -169,6 +169,12 @@ store
     let users = await api.get({ since: date })
     store.set('users')(users)
   })
+```
+
+In order to keep its footprint small, Undux does not come with RxJS out of the box. However, Undux does come with a minimal implementation of parts of RxJS, which interoperates with RxJS operators. To use RxJS operators, you'll need to install RxJS first:
+
+```sh
+npm install rxjs --save
 ```
 
 ### Partial application
