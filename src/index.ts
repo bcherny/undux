@@ -33,9 +33,21 @@ export class StoreSnapshot<State extends object> implements Store<State> {
     private storeDefinition: StoreDefinition<State>
   ) { }
   get<K extends keyof State>(key: K) {
+    if (Array.isArray(key)) {
+      return key.reduce((acc, key) => {
+        acc[key] = this.get(key)
+        return acc
+      }, {})
+    }
     return this.state[key]
   }
   set<K extends keyof State>(key: K) {
+    if (!Array.isArray(key) && typeof key === "object") {
+      for (const k in key) {
+        this.storeDefinition.set(k)(key[k])
+      }
+      return this.state
+    }
     return this.storeDefinition.set(key)
   }
   setFrom_EXPERIMENTAL(f: (store: Store<State>) => void): void {
