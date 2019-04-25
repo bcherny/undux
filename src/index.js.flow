@@ -12,7 +12,7 @@ type Lifted<State, T> = {
   value: T
 }
 
-type Exactly<T> = T
+export type Exactly<T> = T
 
 export type Options = {
   isDevMode: boolean
@@ -58,7 +58,7 @@ export type Effects<State: Object> = (store: StoreDefinition<State>) => StoreDef
  */
 export type Plugin<State: Object> = (store: StoreDefinition<State>) => StoreDefinition<State>
 
-type ToStore = <State>(s: State) => Store<State>
+export type ToStore = <State>(s: State) => Store<State>
 type ToStoreDefinition = <State>(s: State) => StoreDefinition<State>
 export type EffectsAs<States: {
   [alias: string]: any
@@ -99,7 +99,7 @@ export type ContainerProps<State: Object> = {|
 
 export type Connect<State: Object> = {|
   Container: React.ComponentType<ContainerProps<State>>,
-  useStore(): Store<State>,
+  useStore: () => Store<State>,
   withStore: <S: Store<State>, Props: {store: S}>(
     Component: React.ComponentType<Props>
   ) => Class<React.Component<$Diff<Props, {store: S}>>>
@@ -124,8 +124,8 @@ export type ConnectAs<States: {
   [alias: string]: any
 }> = {|
   Container: React.ComponentType<ContainerPropsAs<States>>,
-  useStores(): $ObjMap<States, ToStore>,
-  withStores: <Props: $ObjMap<States, ToStore>>(
+  useStores: () => $ObjMap<States, ToStore>,
+  withStores: <Props: Object>( // TODO: $ObjMap<States, ToStore> (wtf flow?)
     Component: React.ComponentType<Props>
   ) => React.ComponentType<$Diff<Props, $ObjMap<States, ToStore>>>
 |}
