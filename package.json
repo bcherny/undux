@@ -37,7 +37,7 @@
     "ava": "^1.2.1",
     "awesome-typescript-loader": "^5.2.1",
     "concurrently": "^4.1.0",
-    "flow-bin": "^0.94.0",
+    "flow-bin": "^0.113.0",
     "immutable": "^4.0.0-rc.12",
     "jsdom": "^13.2.0",
     "jsdom-global": "^3.0.2",
