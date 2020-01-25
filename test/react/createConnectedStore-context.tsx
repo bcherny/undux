@@ -8,9 +8,11 @@ test('it should expose a hooks API (createConnectedStore)', t => {
   let S = createConnectedStore({ a: 1 })
   let A = () => {
     let store = S.useStore()
-    return <button onClick={() => store.set('a')(store.get('a') + 1)}>
-      {store.get('a')}
-    </button>
+    return (
+      <button onClick={() => store.set('a')(store.get('a') + 1)}>
+        {store.get('a')}
+      </button>
+    )
   }
   let B = () => (
     <S.Container>
@@ -24,11 +26,13 @@ test('it should expose a hooks API (createConnectedStore)', t => {
   })
 })
 
-test(`it should throw if you don't give it a Provider (createConnectedStore)`, t => {
+test("it should throw if you don't give it a Provider (createConnectedStore)", t => {
   let S = createConnectedStore({ a: 1 })
   let A = () => {
     let store = S.useStore()
     return <>{store.get('a')}</>
   }
-  t.throws(() => withElement(A, _ => {}), {message: /store.get is not a function/})
+  t.throws(() => withElement(A, _ => {}), {
+    message: /store.get is not a function/
+  })
 })

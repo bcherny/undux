@@ -1,7 +1,13 @@
 import test from 'ava'
 import * as React from 'react'
 import { Simulate } from 'react-dom/test-utils'
-import { debounceTime, distinctUntilChanged, filter, map, pairwise } from 'rxjs/operators'
+import {
+  debounceTime,
+  distinctUntilChanged,
+  filter,
+  map,
+  pairwise
+} from 'rxjs/operators'
 import { Effects, Store } from '../../src'
 import { createConnectedStore } from '../../src/react/createConnectedStore'
 import { withElement } from '../testUtils'
@@ -92,7 +98,7 @@ test('it should support effects', t => {
 
 test.cb('it should support effects with rx opererators', t => {
   t.plan(2)
-   type State = {
+  type State = {
     a: number
     b: number
   }
@@ -110,11 +116,11 @@ test.cb('it should support effects with rx opererators', t => {
       .subscribe(store.set('b'))
     return s
   }
-   let { Container, withStore } = createConnectedStore(
+  let { Container, withStore } = createConnectedStore(
     { a: 1, b: 1 },
     withEffects
   )
-   let C = withStore(({ store }) => (
+  let C = withStore(({ store }) => (
     <button onClick={() => store.set('a')(store.get('a') + 1)}>
       {store.get('a')}
     </button>
@@ -124,7 +130,7 @@ test.cb('it should support effects with rx opererators', t => {
       <C />
     </Container>
   )
-   withElement(A, _ => {
+  withElement(A, _ => {
     Simulate.click(_.querySelector('button')!)
     t.is(store.get('b'), 1)
     Simulate.click(_.querySelector('button')!)
@@ -203,7 +209,7 @@ test('it should support multiple instances of a store in one tree, with disjoint
   let Test = createConnectedStore({ isA: true })
   let { Container, withStore } = createConnectedStore({ a: 1 })
   let C = withStore(({ store }) => (
-    <button id='C' onClick={() => store.set('a')(store.get('a') + 1)}>
+    <button id="C" onClick={() => store.set('a')(store.get('a') + 1)}>
       {store.get('a')}
     </button>
   ))
@@ -221,7 +227,7 @@ test('it should support multiple instances of a store in one tree, with disjoint
   let D = Test.withStore(({ store }) => (
     <>
       {store.get('isA') ? <A /> : <B />}
-      <button id='D' onClick={() => store.set('isA')(!store.get('isA'))} />
+      <button id="D" onClick={() => store.set('isA')(!store.get('isA'))} />
     </>
   ))
   let E = () => (
@@ -354,7 +360,9 @@ test('it should support custom effects', t => {
 test('it should eagerly throw at runtime when using a consumer without a container (createConnectedStore)', t => {
   let { withStore } = createConnectedStore({ a: 1 })
   let A = withStore(() => <div />)
-  t.throws(() => withElement(A, _ => {}), {message: /does not seem to be nested/})
+  t.throws(() => withElement(A, _ => {}), {
+    message: /does not seem to be nested/
+  })
 })
 
 test('it should re-render if a used model property changed', t => {
@@ -433,20 +441,20 @@ test('it should update even when unused fields change (get)', t => {
     store: Store<{ a: number; b: string }>
   }
   let A = S.withStore(
-    class extends React.Component<Props> {
+    class Test extends React.Component<Props> {
       render() {
         renderCount++
         return (
           <>
             {this.props.store.get('a')}
             <button
-              id='a'
+              id="a"
               onClick={() =>
                 this.props.store.set('a')(this.props.store.get('a') + 1)
               }
             />
             <button
-              id='b'
+              id="b"
               onClick={() =>
                 this.props.store.set('a')(this.props.store.get('a') - 1)
               }
@@ -508,7 +516,7 @@ test('it should update even when unused fields change (get in lifecycle)', t => 
     store: Store<{ a: number; b: string }>
   }
   let A = S.withStore(
-    class extends React.Component<Props> {
+    class Test extends React.Component<Props> {
       shouldComponentUpdate(p: Props) {
         return p.store.get('b') !== this.props.store.get('b') || true
       }
@@ -559,7 +567,7 @@ test('it should update even when unused fields change (getState in lifecycle 1)'
     store: Store<{ a: number; b: string }>
   }
   let A = S.withStore(
-    class extends React.Component<Props> {
+    class Test extends React.Component<Props> {
       shouldComponentUpdate(p: Props) {
         return p.store.getState().b !== this.props.store.get('b') || true
       }
@@ -601,7 +609,7 @@ test('[stateful] it should update even when unused fields change (getState in li
     store: Store<{ a: number; b: string }>
   }
   let A = S.withStore(
-    class extends React.Component<Props> {
+    class Test extends React.Component<Props> {
       shouldComponentUpdate(p: Props) {
         return p.store.get('b') !== this.props.store.getState().b || true
       }
@@ -643,7 +651,7 @@ test('[stateful] it should update only when subscribed fields change (get in con
     store: Store<{ a: number; b: string }>
   }
   let A = S.withStore(
-    class extends React.Component<Props> {
+    class Test extends React.Component<Props> {
       constructor(p: Props) {
         super(p)
         let _ = this.props.store.get('b') // Trigger read
@@ -687,7 +695,7 @@ test('it should update when subscribed fields change (set in constructor)', t =>
     store: Store<{ a: number }>
   }
   let A = S.withStore(
-    class extends React.Component<Props> {
+    class Test extends React.Component<Props> {
       constructor(p: Props) {
         super(p)
         this.props.store.set('a')(1)
@@ -726,20 +734,20 @@ test('[stateful] it should update when any field changes (getState)', t => {
     store: Store<{ a: number; b: string }>
   }
   let A = S.withStore(
-    class extends React.Component<Props> {
+    class Test extends React.Component<Props> {
       render() {
         renderCount++
         return (
           <>
             {this.props.store.getState().a}
             <button
-              id='a'
+              id="a"
               onClick={() =>
                 this.props.store.set('a')(this.props.store.get('a') + 1)
               }
             />
             <button
-              id='b'
+              id="b"
               onClick={() =>
                 this.props.store.set('a')(this.props.store.get('a') - 1)
               }
@@ -793,7 +801,7 @@ test("it should get the most up-to-date version of a field, even if Undux doesn'
     store: Store<{ a: number }>
   }
   let A = S.withStore(
-    class extends React.Component<Props> {
+    class Test extends React.Component<Props> {
       constructor(p: Props) {
         super(p)
         this.props.store.set('a')(1)
@@ -804,7 +812,7 @@ test("it should get the most up-to-date version of a field, even if Undux doesn'
     }
   )
   let B = S.withStore(
-    class extends React.Component<Props & { onClick(a: number): void }> {
+    class Test extends React.Component<Props & { onClick(a: number): void }> {
       onClick = () => this.props.onClick(this.props.store.get('a'))
       render() {
         return (
@@ -836,7 +844,7 @@ test('it should return the same value when call .get multiple times for one snap
     store: Store<{ a: number }>
   }
   let A = S.withStore(
-    class extends React.Component<Props> {
+    class Test extends React.Component<Props> {
       constructor(p: Props) {
         super(p)
         this.props.store.set('a')(1)
@@ -847,7 +855,7 @@ test('it should return the same value when call .get multiple times for one snap
     }
   )
   let B = S.withStore(
-    class extends React.Component<Props & { onClick(a: number): void }> {
+    class Test extends React.Component<Props & { onClick(a: number): void }> {
       onClick = () => {
         this.props.onClick(this.props.store.get('a'))
         this.props.onClick(this.props.store.get('a'))
@@ -907,7 +915,7 @@ test('it should return the same value when call .get multiple times for one snap
     </button>
   ))
   let A = S.withStore(
-    class extends React.Component<{ store: Store<{ a: string }> }> {
+    class Test extends React.Component<{ store: Store<{ a: string }> }> {
       shouldComponentUpdate(props: { store: Store<{ a: string }> }) {
         return props.store.get('a') !== this.props.store.get('a')
       }
@@ -927,7 +935,7 @@ test('it should return the same value when call .get multiple times for one snap
   )
   let store: Store<{ a: string }>
   let Leak = S.withStore(props => {
-    store = (props as any).store['storeDefinition']
+    store = (props as any).store.storeDefinition
     return null
   })
   let C = () => (
@@ -984,7 +992,7 @@ test('it should fail for async updates by default', t => {
 
   let store: Store<State>
   let Leak = S.withStore(props => {
-    store = (props as any).store['storeDefinition']
+    store = (props as any).store.storeDefinition
     return null
   })
 
@@ -1036,7 +1044,7 @@ test('it should work for async updates using setFrom_EXPERIMENTAL', t => {
 
   let store: Store<State>
   let Leak = S.withStore(props => {
-    store = (props as any).store['storeDefinition']
+    store = (props as any).store.storeDefinition
     return null
   })
 
@@ -1094,7 +1102,7 @@ test('setFrom_EXPERIMENTAL should compose', t => {
 
   let store: Store<State>
   let Leak = S.withStore(props => {
-    store = (props as any).store['storeDefinition']
+    store = (props as any).store.storeDefinition
     return null
   })
 
@@ -1140,7 +1148,7 @@ test('setFrom_EXPERIMENTAL should chain', t => {
 
   let store: Store<State>
   let Leak = S.withStore(props => {
-    store = (props as any).store['storeDefinition']
+    store = (props as any).store.storeDefinition
     return null
   })
 

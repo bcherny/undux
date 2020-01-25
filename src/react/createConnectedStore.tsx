@@ -55,13 +55,15 @@ export function createConnectedStore<State extends object>(
         })
       )
     }
+
     componentWillUnmount() {
       this.subscription.unsubscribe()
       // Let the state get GC'd.
       // TODO: Find a more elegant way to do this.
-      ; (this.storeDefinition as any).storeSnapshot = null
-      ; (this as any).storeDefinition = null
+      ;(this.storeDefinition as any).storeSnapshot = null
+      ;(this as any).storeDefinition = null
     }
+
     render() {
       return (
         <Context.Provider value={this.state.storeSnapshot}>
@@ -79,9 +81,7 @@ export function createConnectedStore<State extends object>(
       {store => {
         if (!isInitialized(store)) {
           throw Error(
-            `[Undux] Component "${
-              props.displayName
-            }" does not seem to be nested in an Undux <Container>. To fix this error, be sure to render the component in the <Container>...</Container> component that you got back from calling createConnectedStore().`
+            `[Undux] Component "${props.displayName}" does not seem to be nested in an Undux <Container>. To fix this error, be sure to render the component in the <Container>...</Container> component that you got back from calling createConnectedStore().`
           )
         }
         return props.children(store)
@@ -98,7 +98,9 @@ export function createConnectedStore<State extends object>(
     let displayName = getDisplayName(Component)
     let f: React.StatelessComponent<PropsWithoutStore> = props => (
       <Consumer displayName={displayName}>
-        {storeSnapshot => <Component store={storeSnapshot} {...props as any} />}
+        {storeSnapshot => (
+          <Component store={storeSnapshot} {...(props as any)} />
+        )}
       </Consumer>
     )
     f.displayName = `withStore(${displayName})`

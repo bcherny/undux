@@ -10,17 +10,17 @@ interface State<Messages extends object> {
   observers: Map<keyof Messages | ALL, Observer<any>[]>
 }
 
-const CYCLE_ERROR_MESSAGE = '[undux] Error: Cyclical dependency detected. '
-  + 'This may cause a stack overflow unless you fix it. \n'
-  + 'The culprit is the following sequence of .set calls, '
-  + 'called from one or more of your Undux Effects: '
+const CYCLE_ERROR_MESSAGE =
+  '[undux] Error: Cyclical dependency detected. ' +
+  'This may cause a stack overflow unless you fix it. \n' +
+  'The culprit is the following sequence of .set calls, ' +
+  'called from one or more of your Undux Effects: '
 
 export class Emitter<Messages extends object> {
-
   private state: State<Messages> = {
-    callChain: new Set,
-    observables: new Map,
-    observers: new Map
+    callChain: new Set(),
+    observables: new Map(),
+    observers: new Map()
   }
 
   constructor(private isDevMode = false) {}
@@ -32,7 +32,10 @@ export class Emitter<Messages extends object> {
     if (this.isDevMode) {
       if (this.state.callChain.has(key)) {
         console.error(
-          CYCLE_ERROR_MESSAGE + Array.from(this.state.callChain).concat(key).join(' -> ')
+          CYCLE_ERROR_MESSAGE +
+            Array.from(this.state.callChain)
+              .concat(key)
+              .join(' -> ')
         )
         return this
       } else {

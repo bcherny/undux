@@ -8,9 +8,11 @@ test('it should expose a hooks API (createConnectedStoreAs)', t => {
   let S = createConnectedStoreAs({ a: { b: 1 } })
   let A = () => {
     let stores = S.useStores()
-    return <button onClick={() => stores.a.set('b')(stores.a.get('b') + 1)}>
-      {stores.a.get('b')}
-    </button>
+    return (
+      <button onClick={() => stores.a.set('b')(stores.a.get('b') + 1)}>
+        {stores.a.get('b')}
+      </button>
+    )
   }
   let B = () => (
     <S.Container>
@@ -24,14 +26,13 @@ test('it should expose a hooks API (createConnectedStoreAs)', t => {
   })
 })
 
-test(`it should throw if you don't give it a Provider (createConnectedStoreAs)`, t => {
+test("it should throw if you don't give it a Provider (createConnectedStoreAs)", t => {
   let S = createConnectedStoreAs({ a: { b: 1 } })
   let A = () => {
     let stores = S.useStores()
     return <>{stores.a.get('b')}</>
   }
-  t.throws(
-    () => withElement(A, _ => {}),
-    {message: /Cannot read property \'get\' of undefined/}
-  )
+  t.throws(() => withElement(A, _ => {}), {
+    message: /Cannot read property 'get' of undefined/
+  })
 })

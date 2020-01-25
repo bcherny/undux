@@ -39,9 +39,7 @@ export function withReduxDevtools<State extends object>(
           case 'JUMP_TO_ACTION':
           case 'JUMP_TO_STATE':
             jumpToState(JSON.parse(message.state))
-            return
         }
-        return
     }
   })
 

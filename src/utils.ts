@@ -19,9 +19,10 @@ export type Immutable = {
 }
 
 export function isImmutable(a: any): a is Immutable {
-  return !!a && typeof a === 'object' && (
-    '@@__IMMUTABLE_ITERABLE__@@' in a
-    || '@@__IMMUTABLE_RECORD__@@' in a
+  return (
+    !!a &&
+    typeof a === 'object' &&
+    ('@@__IMMUTABLE_ITERABLE__@@' in a || '@@__IMMUTABLE_RECORD__@@' in a)
   )
 }
 
@@ -37,14 +38,17 @@ export function keys<O extends object>(o: O): (keyof O)[] {
 export function mapValues<O extends object, K extends keyof O, T>(
   o: O,
   f: (value: O[K], key: K) => T
-): {[K in keyof O]: T} {
-  let result: {[K in keyof O]: T} = {} as any
-  keys(o).forEach(k =>
-    result[k] = f(o[k] as any, k as any) // TODO: Improve this
+): { [K in keyof O]: T } {
+  let result: { [K in keyof O]: T } = {} as any
+  keys(o).forEach(
+    k => (result[k] = f(o[k] as any, k as any)) // TODO: Improve this
   )
   return result
 }
 
-export function some<O extends object>(o: O, f: <K extends keyof O>(v: O[K], k: K) => boolean): boolean {
+export function some<O extends object>(
+  o: O,
+  f: <K extends keyof O>(v: O[K], k: K) => boolean
+): boolean {
   return keys(o).some(k => f(o[k], k))
 }

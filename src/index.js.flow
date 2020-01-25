@@ -1,22 +1,22 @@
 // @flow
 
-import type React from 'React';
-import type {Observable} from 'rxjs';
-export type Undux<State: Object> = $ObjMap<State, Lift<State>>;
+import type React from 'React'
+import type { Observable } from 'rxjs'
+export type Undux<State: Object> = $ObjMap<State, Lift<State>>
 
-type Lift<State: Object> = <V>(value: V) => Lifted<State, V>;
+type Lift<State: Object> = <V>(value: V) => Lifted<State, V>
 
 type Lifted<State, T> = {
   key: $Keys<State>,
   previousValue: T,
-  value: T,
-};
+  value: T
+}
 
-export type Exactly<T> = T;
+export type Exactly<T> = T
 
 export type Options = {
-  isDevMode: boolean,
-};
+  isDevMode: boolean
+}
 
 export interface Store<State: Object> {
   get<K: $Keys<State>>(key: K): $ElementType<State, K>;
@@ -48,122 +48,121 @@ declare export class StoreDefinition<State: Object> implements Store<State> {
 
 declare export function createStore<State: Object>(
   initialState: State,
-  options?: Options,
-): StoreDefinition<Exactly<State>>;
+  options?: Options
+): StoreDefinition<Exactly<State>>
 
 export type Effects<State: Object> = (
-  store: StoreDefinition<State>,
-) => StoreDefinition<State>;
+  store: StoreDefinition<State>
+) => StoreDefinition<State>
 
 /**
  * @deprecated Use `Effects` instead.
  */
 export type Plugin<State: Object> = (
-  store: StoreDefinition<State>,
-) => StoreDefinition<State>;
+  store: StoreDefinition<State>
+) => StoreDefinition<State>
 
-export type ToStore = <State>(s: State) => Store<State>;
-type ToStoreDefinition = <State>(s: State) => StoreDefinition<State>;
+export type ToStore = <State>(s: State) => Store<State>
+type ToStoreDefinition = <State>(s: State) => StoreDefinition<State>
 export type EffectsAs<
   States: {
-    [alias: string]: any,
-  },
+    [alias: string]: any
+  }
 > = (
-  stores: $ObjMap<States, ToStoreDefinition>,
-) => $ObjMap<States, ToStoreDefinition>;
+  stores: $ObjMap<States, ToStoreDefinition>
+) => $ObjMap<States, ToStoreDefinition>
 
 declare export function withLogger<State: Object>(
-  store: StoreDefinition<State>,
-): StoreDefinition<State>;
+  store: StoreDefinition<State>
+): StoreDefinition<State>
 
 declare export function withReduxDevtools<State: Object>(
-  store: StoreDefinition<State>,
-): StoreDefinition<State>;
+  store: StoreDefinition<State>
+): StoreDefinition<State>
 
 declare export function connect<State: Object>(
-  store: StoreDefinition<State>,
-): <S: Store<State>, Props: {store: S, ...}>(
-  Component: React.ComponentType<Props>,
-) => Class<React.Component<$Diff<Props, {store: S, ...}>>>;
+  store: StoreDefinition<State>
+): <S: Store<State>, Props: { store: S, ... }>(
+  Component: React.ComponentType<Props>
+) => Class<React.Component<$Diff<Props, { store: S, ... }>>>
 
 // connectAs
 
-declare export function connectAs<Stores: {[alias: string]: Store<any>, ...}>(
-  stores: Stores,
+declare export function connectAs<Stores: { [alias: string]: Store<any>, ... }>(
+  stores: Stores
 ): <Props: Object>(
-  Component: React.ComponentType<Props>,
-) => Class<React.Component<$Diff<Props, Stores>>>;
+  Component: React.ComponentType<Props>
+) => Class<React.Component<$Diff<Props, Stores>>>
 
 // createConnectedStore
 
 export type ContainerProps<State: Object> = {|
   children: React.Node,
   effects?: Effects<State>,
-  initialState?: State,
-|};
+  initialState?: State
+|}
 
 export type WithStore<
   ComponentType: React.ComponentType<Object>
 > = React.ComponentType<
-  $Diff<React.ElementConfig<ComponentType>, {store: any}>
->;
+  $Diff<React.ElementConfig<ComponentType>, { store: any }>
+>
 
 export type Connect<State: Object> = {|
   Container: React.ComponentType<ContainerProps<State>>,
   useStore: () => Store<State>,
-  withStore: <S: Store<State>, Props: {store: S, ...}>(
-    Component: React.ComponentType<Props>,
-  ) => Class<React.Component<$Diff<Props, {store: S, ...}>>>,
-|};
+  withStore: <S: Store<State>, Props: { store: S, ... }>(
+    Component: React.ComponentType<Props>
+  ) => Class<React.Component<$Diff<Props, { store: S, ... }>>>
+|}
 
 declare export function createConnectedStore<State: Object>(
   initialState: State,
-  effects?: Effects<State>,
-): Connect<State>;
+  effects?: Effects<State>
+): Connect<State>
 
 // createConnectedStoreAs
 
 export type ContainerPropsAs<
   States: {
-    [alias: string]: any,
-  },
+    [alias: string]: any
+  }
 > = {|
   children: React.Node,
   effects?: EffectsAs<States>,
-  initialStates?: States,
-|};
+  initialStates?: States
+|}
 
-export type ToAny = <State>(s: State) => any;
+export type ToAny = <State>(s: State) => any
 
 export type WithStores<
   ComponentType: React.ComponentType<Object>,
   States: {
-    [alias: string]: any,
-  },
+    [alias: string]: any
+  }
 > = React.ComponentType<
-  $Diff<
-    React.ElementConfig<ComponentType>,
-    $ObjMap<States, ToAny>
-  >
->;
+  $Diff<React.ElementConfig<ComponentType>, $ObjMap<States, ToAny>>
+>
 
 export type ConnectAs<
   States: {
-    [alias: string]: any,
-  },
+    [alias: string]: any
+  }
 > = {|
   Container: React.ComponentType<ContainerPropsAs<States>>,
   useStores: () => $ObjMap<States, ToStore>,
   withStores: <ComponentType: React.ComponentType<Object>>(
-    Component: ComponentType,
-  ) => React.ComponentType<$Diff<React.ElementConfig<ComponentType>, $ObjMap<States, ToAny>>>,
-|};
+    Component: ComponentType
+  ) => React.ComponentType<
+    $Diff<React.ElementConfig<ComponentType>, $ObjMap<States, ToAny>>
+  >
+|}
 
 declare export function createConnectedStoreAs<
   States: {
-    [alias: string]: any,
-  },
+    [alias: string]: any
+  }
 >(
   initialStates: States,
-  effects?: EffectsAs<States>,
-): ConnectAs<Exactly<States>>;
+  effects?: EffectsAs<States>
+): ConnectAs<Exactly<States>>

@@ -27,9 +27,7 @@ export function connectAs<
         stores: mapValues(
           stores,
           _ =>
-            _.getCurrentSnapshot() as ReturnType<
-              (typeof _)['getCurrentSnapshot']
-            >
+            _.getCurrentSnapshot() as ReturnType<typeof _['getCurrentSnapshot']>
         ),
         subscriptions: keys(stores).map(k =>
           stores[k].onAll().subscribe(({ previousValue, value }) => {
@@ -44,9 +42,11 @@ export function connectAs<
           })
         )
       }
+
       componentWillUnmount() {
         this.state.subscriptions.forEach(_ => _.unsubscribe())
       }
+
       shouldComponentUpdate(props: Diff<Props, Stores>, state: State) {
         return (
           some(state.stores, (s, k) => s !== this.state.stores[k]) ||
@@ -55,8 +55,9 @@ export function connectAs<
           )
         )
       }
+
       render() {
-        return <Component {...this.props as any} {...this.state.stores} />
+        return <Component {...(this.props as any)} {...this.state.stores} />
       }
     }
   }

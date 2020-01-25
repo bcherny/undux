@@ -31,7 +31,7 @@ export class StoreSnapshot<State extends object> implements Store<State> {
   constructor(
     private state: State,
     private storeDefinition: StoreDefinition<State>
-  ) { }
+  ) {}
   get<K extends keyof State>(key: K) {
     return this.state[key]
   }
@@ -71,7 +71,6 @@ export class StoreDefinition<State extends object> implements Store<State> {
     readonly [K in keyof State]: (value: State[K]) => void
   }
   constructor(state: State, options: Options) {
-
     // Initialize emitters
     this.alls = new Emitter(options.isDevMode)
     this.emitter = new Emitter(options.isDevMode)
@@ -80,17 +79,15 @@ export class StoreDefinition<State extends object> implements Store<State> {
     this.storeSnapshot = new StoreSnapshot(state, this)
 
     // Cache setters
-    this.setters = mapValues(state, (v, key) =>
-      (value: typeof v) => {
-        let previousValue = this.storeSnapshot.get(key)
-        this.storeSnapshot = new StoreSnapshot(
-          Object.assign({}, this.storeSnapshot.getState(), { [key]: value }),
-          this
-        )
-        this.emitter.emit(key, value)
-        this.alls.emit(key, { key, previousValue, value })
-      }
-    )
+    this.setters = mapValues(state, (v, key) => (value: typeof v) => {
+      let previousValue = this.storeSnapshot.get(key)
+      this.storeSnapshot = new StoreSnapshot(
+        Object.assign({}, this.storeSnapshot.getState(), { [key]: value }),
+        this
+      )
+      this.emitter.emit(key, value)
+      this.alls.emit(key, { key, previousValue, value })
+    })
   }
   on<K extends keyof State>(key: K): Observable<State[K]> {
     return this.emitter.on(key)
@@ -128,19 +125,24 @@ export function createStore<State extends object>(
   return new StoreDefinition<State>(initialState, options)
 }
 
-export type Effects<State extends object> =
-  (store: StoreDefinition<State>) => StoreDefinition<State>
+export type Effects<State extends object> = (
+  store: StoreDefinition<State>
+) => StoreDefinition<State>
 
-export type EffectsAs<States extends {
-  [alias: string]: any
-}> = (stores: {[K in keyof States]: StoreDefinition<States[K]>}) =>
-  {[K in keyof States]: StoreDefinition<States[K]>}
+export type EffectsAs<
+  States extends {
+    [alias: string]: any
+  }
+> = (
+  stores: { [K in keyof States]: StoreDefinition<States[K]> }
+) => { [K in keyof States]: StoreDefinition<States[K]> }
 
 /**
  * @deprecated Use `Effects` instead.
  */
-export type Plugin<State extends object> =
-(store: StoreDefinition<State>) => StoreDefinition<State>
+export type Plugin<State extends object> = (
+  store: StoreDefinition<State>
+) => StoreDefinition<State>
 
 export * from './plugins/withLogger'
 export * from './plugins/withReduxDevtools'
