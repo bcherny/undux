@@ -32,6 +32,6 @@ test(`it should throw if you don't give it a Provider (createConnectedStoreAs)`,
   }
   t.throws(
     () => withElement(A, _ => {}),
-    /Cannot read property \'get\' of undefined/
+    {message: /Cannot read property \'get\' of undefined/}
   )
 })

@@ -209,5 +209,5 @@ test('it should support custom effects for multiple stores', t => {
 test('it should eagerly throw at runtime when using a consumer without a container (createConnectedStoreAs)', t => {
   let { withStores } = createConnectedStoreAs({ A: { a: 1 } })
   let A = withStores(() => <div />)
-  t.throws(() => withElement(A, _ => {}), /does not seem to be nested/)
+  t.throws(() => withElement(A, _ => {}), {message: /does not seem to be nested/})
 })

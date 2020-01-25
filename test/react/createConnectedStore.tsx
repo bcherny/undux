@@ -203,7 +203,7 @@ test('it should support multiple instances of a store in one tree, with disjoint
   let Test = createConnectedStore({ isA: true })
   let { Container, withStore } = createConnectedStore({ a: 1 })
   let C = withStore(({ store }) => (
-    <button id="C" onClick={() => store.set('a')(store.get('a') + 1)}>
+    <button id='C' onClick={() => store.set('a')(store.get('a') + 1)}>
       {store.get('a')}
     </button>
   ))
@@ -221,7 +221,7 @@ test('it should support multiple instances of a store in one tree, with disjoint
   let D = Test.withStore(({ store }) => (
     <>
       {store.get('isA') ? <A /> : <B />}
-      <button id="D" onClick={() => store.set('isA')(!store.get('isA'))} />
+      <button id='D' onClick={() => store.set('isA')(!store.get('isA'))} />
     </>
   ))
   let E = () => (
@@ -354,7 +354,7 @@ test('it should support custom effects', t => {
 test('it should eagerly throw at runtime when using a consumer without a container (createConnectedStore)', t => {
   let { withStore } = createConnectedStore({ a: 1 })
   let A = withStore(() => <div />)
-  t.throws(() => withElement(A, _ => {}), /does not seem to be nested/)
+  t.throws(() => withElement(A, _ => {}), {message: /does not seem to be nested/})
 })
 
 test('it should re-render if a used model property changed', t => {
@@ -440,13 +440,13 @@ test('it should update even when unused fields change (get)', t => {
           <>
             {this.props.store.get('a')}
             <button
-              id="a"
+              id='a'
               onClick={() =>
                 this.props.store.set('a')(this.props.store.get('a') + 1)
               }
             />
             <button
-              id="b"
+              id='b'
               onClick={() =>
                 this.props.store.set('a')(this.props.store.get('a') - 1)
               }
@@ -733,13 +733,13 @@ test('[stateful] it should update when any field changes (getState)', t => {
           <>
             {this.props.store.getState().a}
             <button
-              id="a"
+              id='a'
               onClick={() =>
                 this.props.store.set('a')(this.props.store.get('a') + 1)
               }
             />
             <button
-              id="b"
+              id='b'
               onClick={() =>
                 this.props.store.set('a')(this.props.store.get('a') - 1)
               }

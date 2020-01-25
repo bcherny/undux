@@ -136,7 +136,6 @@ test('[stateful] it should support lifecycle methods', t => {
 
   let renderCount = 0
   let updateCount = 0
-  let willReceivePropsCount = 0
   let store = createStore<State>({
     isTrue: true,
     users: []
@@ -148,9 +147,6 @@ test('[stateful] it should support lifecycle methods', t => {
       }
       componentDidUpdate() {
         updateCount++
-      }
-      componentWillReceiveProps() {
-        willReceivePropsCount++
       }
       render() {
         renderCount++
@@ -175,7 +171,6 @@ test('[stateful] it should support lifecycle methods', t => {
     t.regex(_.innerHTML, /FRESH/)
     t.is(renderCount, 2)
     t.is(updateCount, 1)
-    t.is(willReceivePropsCount, 4)
   })
 })
 

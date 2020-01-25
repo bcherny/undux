@@ -59,12 +59,13 @@ export function createConnectedStoreAs<
       // Apply effects?
       let fx = props.effects || effects
       if (fx) {
-        fx(stores)
+        fx(stores as any) // TODO
       }
 
       this.state = {
-        storeDefinitions: stores,
-        storeSnapshots: mapValues(stores, _ => _.getCurrentSnapshot()),
+        storeDefinitions: stores as any, // TODO
+        // TODO
+        storeSnapshots: mapValues(stores, _ => _.getCurrentSnapshot()) as any,
         subscriptions: mapValues(stores, (_, k) =>
           _.onAll().subscribe(() =>
             this.setState(state => ({
