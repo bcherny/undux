@@ -1,6 +1,6 @@
 {
   "name": "undux",
-  "version": "5.1.0",
+  "version": "5.1.1",
   "description": "Dead simple state management for React",
   "main": "dist/src/index.js",
   "main:esnext": "dist.esnext/index.js",
