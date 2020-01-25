@@ -147,3 +147,6 @@ export type Plugin<State extends object> = (
 export * from './plugins/withLogger'
 export * from './plugins/withReduxDevtools'
 export * from './react'
+
+export { CreateConnectedStore } from './react/createConnectedStore'
+export { CreateConnectedStoreAs } from './react/createConnectedStoreAs'

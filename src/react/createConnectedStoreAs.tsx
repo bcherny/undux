@@ -9,7 +9,7 @@ import {
 } from '..'
 import { Diff, getDisplayName, mapValues } from '../utils'
 
-export type ConnectAs<
+export type CreateConnectedStoreAs<
   States extends {
     [alias: string]: any
   }
@@ -36,7 +36,10 @@ export function createConnectedStoreAs<
   States extends {
     [alias: string]: any
   }
->(initialStates: States, effects?: EffectsAs<States>): ConnectAs<States> {
+>(
+  initialStates: States,
+  effects?: EffectsAs<States>
+): CreateConnectedStoreAs<States> {
   let Context = React.createContext({ __MISSING_PROVIDER__: true } as any)
 
   type ContainerState = {

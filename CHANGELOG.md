@@ -1,5 +1,10 @@
 # Changelog
 
+## 5.1.0
+
+- Renamed `Connect` type to `CreateConnectedStore`, and added it to top-level exports
+- Renamed `ConnectAs` type to `CreateConnectedStoreAs`, and added it to top-level exports
+
 ## 5.0.0
 
 - Deprecated `createStore` and `connect` in favor of new top-level `createConnectedStore` method [3909ed9](https://github.com/bcherny/undux/commit/3909ed9e580e37a8989af908706bd5fe3d35879e)

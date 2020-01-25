@@ -3,7 +3,7 @@ import { Subscription } from 'rxjs'
 import { createStore, Effects, Store, StoreDefinition, StoreSnapshot } from '..'
 import { Diff, getDisplayName } from '../utils'
 
-export type Connect<State extends object> = {
+export type CreateConnectedStore<State extends object> = {
   Container: React.ComponentType<ContainerProps<State>>
   useStore(): Store<State>
   withStore: <Props extends { store: Store<State> }>(
@@ -19,7 +19,7 @@ export type ContainerProps<State extends object> = {
 export function createConnectedStore<State extends object>(
   initialState: State,
   effects?: Effects<State>
-): Connect<State> {
+): CreateConnectedStore<State> {
   let Context = React.createContext({ __MISSING_PROVIDER__: true } as any)
 
   type ContainerState = {
