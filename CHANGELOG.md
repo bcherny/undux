@@ -1,5 +1,9 @@
 # Changelog
 
+## 5.2.0
+
+- Moved ES Module export from dist.esnext/index.js to dist.esm/index.js [90fb013](https://github.com/bcherny/undux/commit/90fb013de69685090e464a7f98dce66498f333d3)
+
 ## 5.1.0
 
 - Renamed `Connect` type to `CreateConnectedStore`, and added it to top-level exports
