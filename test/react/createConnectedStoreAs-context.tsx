@@ -33,6 +33,6 @@ test("it should throw if you don't give it a Provider (createConnectedStoreAs)",
     return <>{stores.a.get('b')}</>
   }
   t.throws(() => withElement(A, _ => {}), {
-    message: /Cannot read property 'get' of undefined/
+    message: 'Cannot read properties of undefined (reading \'get\')'
   })
 })
