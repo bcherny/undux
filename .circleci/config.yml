@@ -6,9 +6,12 @@ version: 2
 jobs:
   build:
     docker:
-      - image: circleci/node:12.14
+      - image: cimg/node:14.21
 
     steps:
+      - run:
+          name: Node version
+          command: node -v
       - checkout
       - restore_cache:
           keys:
