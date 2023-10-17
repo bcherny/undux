@@ -18,18 +18,21 @@ export function connectAs<
       stores: {
         [K in keyof Stores]: ReturnType<Stores[K]['getCurrentSnapshot']>
       }
-      subscriptions: Subscription[]
     }
 
     return class extends React.Component<Diff<Props, Stores>, State> {
       static displayName = `withStore(${getDisplayName(Component)})`
+      subscriptions: Subscription[] = []
       state = {
         stores: mapValues(
           stores,
           _ =>
             _.getCurrentSnapshot() as ReturnType<typeof _['getCurrentSnapshot']>
-        ),
-        subscriptions: keys(stores).map(k =>
+        )
+      }
+
+      componentDidMount(): void {
+        this.subscriptions = keys(stores).map(k =>
           stores[k].onAll().subscribe(({ previousValue, value }) => {
             if (equals(previousValue, value)) {
               return false
@@ -44,7 +47,8 @@ export function connectAs<
       }
 
       componentWillUnmount() {
-        this.state.subscriptions.forEach(_ => _.unsubscribe())
+        this.subscriptions.forEach(_ => _.unsubscribe())
+        this.subscriptions = []
       }
 
       shouldComponentUpdate(props: Diff<Props, Stores>, state: State) {

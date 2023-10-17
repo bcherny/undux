@@ -43,15 +43,16 @@ export function createConnectedStoreAs<
   let Context = React.createContext({ __MISSING_PROVIDER__: true } as any)
 
   type ContainerState = {
-    storeDefinitions: { [K in keyof States]: StoreDefinition<States[K]> | null }
     storeSnapshots: { [K in keyof States]: StoreSnapshot<States[K]> | null }
-    subscriptions: { [K in keyof States]: Subscription }
   }
 
   class Container extends React.Component<
     ContainerPropsAs<States>,
     ContainerState
   > {
+    storeDefinitions: { [K in keyof States]: StoreDefinition<States[K]> }
+    subscriptions: { [K in keyof States]: Subscription } | null
+
     constructor(props: ContainerPropsAs<States>) {
       super(props)
 
@@ -65,37 +66,36 @@ export function createConnectedStoreAs<
         fx(stores as any) // TODO
       }
 
+      this.storeDefinitions = stores as any
+      this.subscriptions = this._createSubscriptions()
       this.state = {
-        storeDefinitions: stores as any, // TODO
         // TODO
-        storeSnapshots: mapValues(stores, _ => _.getCurrentSnapshot()) as any,
-        subscriptions: mapValues(stores, (_, k) =>
-          _.onAll().subscribe(() =>
-            this.setState(state => ({
-              storeSnapshots: Object.assign({}, state.storeSnapshots, {
-                [k]: _.getCurrentSnapshot()
-              })
-            }))
-          )
+        storeSnapshots: mapValues(stores, _ => _.getCurrentSnapshot()) as any
+      }
+    }
+
+    _createSubscriptions = () =>
+      mapValues(this.storeDefinitions, (_, k) =>
+        _.onAll().subscribe(() =>
+          this.setState(state => ({
+            storeSnapshots: Object.assign({}, state.storeSnapshots, {
+              [k]: _.getCurrentSnapshot()
+            })
+          }))
         )
+      ) as any
+
+    componentDidMount(): void {
+      if (this.subscriptions == null) {
+        this.subscriptions = this._createSubscriptions()
       }
     }
 
     componentWillUnmount() {
-      mapValues(this.state.subscriptions, _ => _.unsubscribe())
-      // Let the state get GC'd.
-      // TODO: Find a more elegant way to do this.
-      if (this.state.storeSnapshots) {
+      if (this.subscriptions != null) {
+        mapValues(this.subscriptions, _ => _.unsubscribe())
+        this.subscriptions = null
       }
-      mapValues(this.state.storeSnapshots, _ => ((_ as any).state = null))
-      mapValues(
-        this.state.storeSnapshots,
-        _ => ((_ as any).storeDefinition = null)
-      )
-      mapValues(
-        this.state.storeDefinitions,
-        _ => ((_ as any).storeSnapshot = null)
-      )
     }
 
     render() {

@@ -30,7 +30,7 @@ export function createConnectedStore<State extends object>(
     ContainerProps<State>,
     ContainerState
   > {
-    subscription: Subscription
+    subscription: Subscription | null = null
     storeDefinition: StoreDefinition<State>
     constructor(props: ContainerProps<State>) {
       super(props)
@@ -45,23 +45,30 @@ export function createConnectedStore<State extends object>(
         fx(this.storeDefinition)
       }
 
+      this.subscription = this._createSubscription()
       this.state = {
         storeSnapshot: this.storeDefinition.getCurrentSnapshot()
       }
+    }
 
-      this.subscription = this.storeDefinition.onAll().subscribe(() =>
+    _createSubscription = () =>
+      this.storeDefinition.onAll().subscribe(() =>
         this.setState({
           storeSnapshot: this.storeDefinition.getCurrentSnapshot()
         })
       )
+
+    componentDidMount(): void {
+      if (this.subscription == null) {
+        this.subscription = this._createSubscription()
+      }
     }
 
     componentWillUnmount() {
-      this.subscription.unsubscribe()
-      // Let the state get GC'd.
-      // TODO: Find a more elegant way to do this.
-      ;(this.storeDefinition as any).storeSnapshot = null
-      ;(this as any).storeDefinition = null
+      if (this.subscription != null) {
+        this.subscription.unsubscribe()
+        this.subscription = null
+      }
     }
 
     render() {
