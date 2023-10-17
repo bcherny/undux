@@ -1,6 +1,6 @@
-import { Observable } from 'rxjs'
-import { Emitter } from './emitter'
-import { mapValues } from './utils'
+import {Observable} from 'rxjs'
+import {Emitter} from './emitter'
+import {mapValues} from './utils'
 
 export type Undux<State extends object> = {
   [K in keyof State]: {
@@ -30,7 +30,7 @@ export interface Store<State extends object> {
 export class StoreSnapshot<State extends object> implements Store<State> {
   constructor(
     private state: State,
-    private storeDefinition: StoreDefinition<State>
+    private storeDefinition: StoreDefinition<State>,
   ) {}
   get<K extends keyof State>(key: K) {
     return this.state[key]
@@ -57,7 +57,7 @@ export type Options = {
 }
 
 let DEFAULT_OPTIONS: Readonly<Options> = {
-  isDevMode: false
+  isDevMode: false,
 }
 
 /**
@@ -82,11 +82,11 @@ export class StoreDefinition<State extends object> implements Store<State> {
     this.setters = mapValues(state, (v, key) => (value: typeof v) => {
       let previousValue = this.storeSnapshot.get(key)
       this.storeSnapshot = new StoreSnapshot(
-        Object.assign({}, this.storeSnapshot.getState(), { [key]: value }),
-        this
+        Object.assign({}, this.storeSnapshot.getState(), {[key]: value}),
+        this,
       )
       this.emitter.emit(key, value)
-      this.alls.emit(key, { key, previousValue, value })
+      this.alls.emit(key, {key, previousValue, value})
     })
   }
   on<K extends keyof State>(key: K): Observable<State[K]> {
@@ -120,33 +120,33 @@ export class StoreDefinition<State extends object> implements Store<State> {
  */
 export function createStore<State extends object>(
   initialState: State,
-  options: Options = DEFAULT_OPTIONS
+  options: Options = DEFAULT_OPTIONS,
 ): StoreDefinition<State> {
   return new StoreDefinition<State>(initialState, options)
 }
 
 export type Effects<State extends object> = (
-  store: StoreDefinition<State>
+  store: StoreDefinition<State>,
 ) => StoreDefinition<State>
 
 export type EffectsAs<
   States extends {
     [alias: string]: any
-  }
-> = (
-  stores: { [K in keyof States]: StoreDefinition<States[K]> }
-) => { [K in keyof States]: StoreDefinition<States[K]> }
+  },
+> = (stores: {[K in keyof States]: StoreDefinition<States[K]>}) => {
+  [K in keyof States]: StoreDefinition<States[K]>
+}
 
 /**
  * @deprecated Use `Effects` instead.
  */
 export type Plugin<State extends object> = (
-  store: StoreDefinition<State>
+  store: StoreDefinition<State>,
 ) => StoreDefinition<State>
 
 export * from './plugins/withLogger'
 export * from './plugins/withReduxDevtools'
 export * from './react'
 
-export { CreateConnectedStore } from './react/createConnectedStore'
-export { CreateConnectedStoreAs } from './react/createConnectedStoreAs'
+export {CreateConnectedStore} from './react/createConnectedStore'
+export {CreateConnectedStoreAs} from './react/createConnectedStoreAs'

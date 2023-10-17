@@ -1,4 +1,4 @@
-const UglifyJsPlugin = require('uglifyjs-webpack-plugin')
+const TerserPlugin = require('terser-webpack-plugin')
 
 module.exports = {
   mode: 'production',
@@ -17,16 +17,12 @@ module.exports = {
   module: {
     rules: [{
       test: /\.tsx?$/,
-      loader: 'awesome-typescript-loader'
+      loader: 'ts-loader'
     }]
   },
   optimization: {
     minimizer: [
-      new UglifyJsPlugin({
-        cache: true,
-        parallel: true,
-        sourceMap: false,
-      }),
+      new TerserPlugin(),
     ],
   }
 }

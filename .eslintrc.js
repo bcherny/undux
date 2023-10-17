@@ -6,7 +6,7 @@ module.exports = {
   extends: [
     'plugin:react/recommended',
     'prettier',
-    'standard'
+    'plugin:prettier/recommended'
   ],
   parser: '@typescript-eslint/parser',
   parserOptions: {
@@ -17,7 +17,6 @@ module.exports = {
     sourceType: 'module'
   },
   plugins: [
-    'prettier',
     'react',
     '@typescript-eslint'
   ],
@@ -28,9 +27,11 @@ module.exports = {
   },
   rules: {
     'camelcase': 'off',
+    'comma-dangle': 'off',
     'lines-between-class-members': 'off',
     'no-unused-vars': 'off',
     'no-useless-constructor': 'off',
+    'object-curly-spacing': 'off',
     'prefer-const': 'off',
     'prettier/prettier': 'error',
     'space-before-function-paren': 'off'

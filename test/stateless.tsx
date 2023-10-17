@@ -18,7 +18,7 @@ type StoreProps = {
   store: Store<State>
 }
 
-let MyDumbComponent: React.StatelessComponent<StoreProps> = ({ store }) =>
+let MyDumbComponent: React.FunctionComponent<StoreProps> = ({ store }) =>
   <div>
     {store.get('isTrue') ? 'True' : 'False'}
     <button onClick={() => store.set('isTrue')(!store.get('isTrue'))}>Update</button>

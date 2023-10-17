@@ -1,5 +1,5 @@
-import { Observable as ObservableType } from 'rxjs'
-import { Observable, Observer } from 'rxjs-observable'
+import {Observable as ObservableType} from 'rxjs'
+import {Observable, Observer} from 'rxjs-observable'
 
 export type ALL = '__ALL__'
 const ALL: ALL = '__ALL__'
@@ -20,7 +20,7 @@ export class Emitter<Messages extends object> {
   private state: State<Messages> = {
     callChain: new Set(),
     observables: new Map(),
-    observers: new Map()
+    observers: new Map(),
   }
 
   constructor(private isDevMode = false) {}
@@ -33,9 +33,7 @@ export class Emitter<Messages extends object> {
       if (this.state.callChain.has(key)) {
         console.error(
           CYCLE_ERROR_MESSAGE +
-            Array.from(this.state.callChain)
-              .concat(key)
-              .join(' -> ')
+            Array.from(this.state.callChain).concat(key).join(' -> '),
         )
         return this
       } else {
@@ -66,7 +64,7 @@ export class Emitter<Messages extends object> {
     return this.createChannel(ALL) as any
   }
 
-  ///////////////////// privates /////////////////////
+  /// ////////////////// privates /////////////////////
 
   private createChannel<K extends keyof Messages>(key: K | ALL) {
     if (!this.state.observers.has(key)) {
@@ -75,17 +73,19 @@ export class Emitter<Messages extends object> {
     if (!this.state.observables.has(key)) {
       this.state.observables.set(key, [])
     }
-    const observable = new Observable<Messages[K]>(_ => {
-      this.state.observers.get(key)!.push(_)
-      return () => this.deleteChannel(key, observable)
-    })
+    const observable: Observable<Messages[K]> = new Observable<Messages[K]>(
+      (_) => {
+        this.state.observers.get(key)!.push(_)
+        return () => this.deleteChannel(key, observable)
+      },
+    )
     this.state.observables.get(key)!.push(observable)
     return observable
   }
 
   private deleteChannel<K extends keyof Messages>(
     key: K | ALL,
-    observable: Observable<Messages[K]>
+    observable: Observable<Messages[K]>,
   ) {
     if (!this.state.observables.has(key)) {
       return
@@ -104,9 +104,9 @@ export class Emitter<Messages extends object> {
 
   private emitOnChannel<K extends keyof Messages>(
     key: K | ALL,
-    value: Messages[K]
+    value: Messages[K],
   ) {
-    this.state.observers.get(key)!.forEach(_ => _.next(value))
+    this.state.observers.get(key)!.forEach((_) => _.next(value))
   }
 
   private hasChannel<K extends keyof Messages>(key: K | ALL): boolean {

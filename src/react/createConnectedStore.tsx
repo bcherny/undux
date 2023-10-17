@@ -1,26 +1,27 @@
 import * as React from 'react'
-import { Subscription } from 'rxjs'
-import { createStore, Effects, Store, StoreDefinition, StoreSnapshot } from '..'
-import { Diff, getDisplayName } from '../utils'
+import {Subscription} from 'rxjs'
+import {createStore, Effects, Store, StoreDefinition, StoreSnapshot} from '..'
+import {Diff, getDisplayName} from '../utils'
 
 export type CreateConnectedStore<State extends object> = {
   Container: React.ComponentType<ContainerProps<State>>
   useStore(): Store<State>
-  withStore: <Props extends { store: Store<State> }>(
-    Component: React.ComponentType<Props>
-  ) => React.ComponentType<Diff<Props, { store: Store<State> }>>
+  withStore: <Props extends {store: Store<State>}>(
+    Component: React.ComponentType<Props>,
+  ) => React.ComponentType<Diff<Props, {store: Store<State>}>>
 }
 
 export type ContainerProps<State extends object> = {
+  children: React.ReactNode
   effects?: Effects<State>
   initialState?: State
 }
 
 export function createConnectedStore<State extends object>(
   initialState: State,
-  effects?: Effects<State>
+  effects?: Effects<State>,
 ): CreateConnectedStore<State> {
-  let Context = React.createContext({ __MISSING_PROVIDER__: true } as any)
+  let Context = React.createContext({__MISSING_PROVIDER__: true} as any)
 
   type ContainerState = {
     storeSnapshot: StoreSnapshot<State>
@@ -46,13 +47,13 @@ export function createConnectedStore<State extends object>(
       }
 
       this.state = {
-        storeSnapshot: this.storeDefinition.getCurrentSnapshot()
+        storeSnapshot: this.storeDefinition.getCurrentSnapshot(),
       }
 
       this.subscription = this.storeDefinition.onAll().subscribe(() =>
         this.setState({
-          storeSnapshot: this.storeDefinition.getCurrentSnapshot()
-        })
+          storeSnapshot: this.storeDefinition.getCurrentSnapshot(),
+        }),
       )
     }
 
@@ -78,10 +79,10 @@ export function createConnectedStore<State extends object>(
     displayName: string
   }) => (
     <Context.Consumer>
-      {store => {
+      {(store) => {
         if (!isInitialized(store)) {
           throw Error(
-            `[Undux] Component "${props.displayName}" does not seem to be nested in an Undux <Container>. To fix this error, be sure to render the component in the <Container>...</Container> component that you got back from calling createConnectedStore().`
+            `[Undux] Component "${props.displayName}" does not seem to be nested in an Undux <Container>. To fix this error, be sure to render the component in the <Container>...</Container> component that you got back from calling createConnectedStore().`,
           )
         }
         return props.children(store)
@@ -90,15 +91,15 @@ export function createConnectedStore<State extends object>(
   )
 
   function withStore<
-    Props extends { store: Store<State> },
-    PropsWithoutStore = Diff<Props, { store: Store<State> }>
+    Props extends {store: Store<State>},
+    PropsWithoutStore = Diff<Props, {store: Store<State>}>,
   >(
-    Component: React.ComponentType<Props>
+    Component: React.ComponentType<Props>,
   ): React.ComponentType<PropsWithoutStore> {
     let displayName = getDisplayName(Component)
-    let f: React.StatelessComponent<PropsWithoutStore> = props => (
+    let f: React.FunctionComponent<PropsWithoutStore> = (props) => (
       <Consumer displayName={displayName}>
-        {storeSnapshot => (
+        {(storeSnapshot) => (
           <Component store={storeSnapshot} {...(props as any)} />
         )}
       </Consumer>
@@ -112,12 +113,12 @@ export function createConnectedStore<State extends object>(
     useStore() {
       return React.useContext(Context)
     },
-    withStore
+    withStore,
   }
 }
 
 function isInitialized<State extends object>(
-  store: StoreSnapshot<State> | { __MISSING_PROVIDER__: true }
+  store: StoreSnapshot<State> | {__MISSING_PROVIDER__: true},
 ) {
   return !('__MISSING_PROVIDER__' in store)
 }

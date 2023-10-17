@@ -3,19 +3,19 @@ import {
   connect,
   createStore,
   withLogger,
-  withReduxDevtools
+  withReduxDevtools,
 } from '../../dist/src'
-import type { Effects, Store } from '../../dist/src'
+import type {Effects, Store} from '../../dist/src'
 import * as React from 'react'
 
 type State = {
   a: boolean,
-  b: string[]
+  b: string[],
 }
 
 let initialState: State = {
   a: true,
-  b: []
+  b: [],
 }
 
 let store = createStore(initialState)

@@ -1,20 +1,20 @@
 import test from 'ava'
 import * as React from 'react'
-import { Simulate } from 'react-dom/test-utils'
+import {Simulate} from 'react-dom/test-utils'
 import {
   debounceTime,
   distinctUntilChanged,
   filter,
   map,
-  pairwise
+  pairwise,
 } from 'rxjs/operators'
-import { Effects, Store } from '../../src'
-import { createConnectedStore } from '../../src/react/createConnectedStore'
-import { withElement } from '../testUtils'
+import {Effects, Store} from '../../src'
+import {createConnectedStore} from '../../src/react/createConnectedStore'
+import {withElement} from '../testUtils'
 
-test('it should render', t => {
-  let { Container, withStore } = createConnectedStore({ a: 1 })
-  let B = withStore(({ store }) => (
+test('it should render', (t) => {
+  let {Container, withStore} = createConnectedStore({a: 1})
+  let B = withStore(({store}) => (
     <button onClick={() => store.set('a')(store.get('a') + 1)}>
       {store.get('a')}
     </button>
@@ -25,19 +25,19 @@ test('it should render', t => {
     </Container>
   )
 
-  withElement(A, a => {
+  withElement(A, (a) => {
     t.is(a.querySelector('button')!.innerHTML, '1')
     Simulate.click(a.querySelector('button')!)
     t.is(a.querySelector('button')!.innerHTML, '2')
   })
 })
 
-test('it should update (with extra props)', t => {
-  let { Container, withStore } = createConnectedStore({ a: 1 })
+test('it should update (with extra props)', (t) => {
+  let {Container, withStore} = createConnectedStore({a: 1})
   type Props = {
     extra: string
     onChange(): void
-    store: Store<{ a: number }>
+    store: Store<{a: number}>
   }
   let B = withStore((props: Props) => (
     <>
@@ -47,9 +47,9 @@ test('it should update (with extra props)', t => {
   ))
   class A extends React.Component {
     state = {
-      extra: 'a'
+      extra: 'a',
     }
-    onChange = () => this.setState({ extra: 'b' })
+    onChange = () => this.setState({extra: 'b'})
     render() {
       return (
         <Container>
@@ -59,30 +59,30 @@ test('it should update (with extra props)', t => {
     }
   }
 
-  withElement(A, a => {
+  withElement(A, (a) => {
     t.is(a.querySelector('button')!.innerHTML, 'a')
     Simulate.click(a.querySelector('button')!)
     t.is(a.querySelector('button')!.innerHTML, 'b')
   })
 })
 
-test('it should support effects', t => {
+test('it should support effects', (t) => {
   t.plan(1)
 
   type State = {
     a: number
   }
 
-  let withEffects: Effects<State> = store => {
-    store.on('a').subscribe(a => {
+  let withEffects: Effects<State> = (store) => {
+    store.on('a').subscribe((a) => {
       t.is(a, 2)
     })
     return store
   }
 
-  let { Container, withStore } = createConnectedStore({ a: 1 }, withEffects)
+  let {Container, withStore} = createConnectedStore({a: 1}, withEffects)
 
-  let C = withStore(({ store }) => (
+  let C = withStore(({store}) => (
     <button onClick={() => store.set('a')(store.get('a') + 1)}>
       {store.get('a')}
     </button>
@@ -93,58 +93,57 @@ test('it should support effects', t => {
     </Container>
   )
 
-  withElement(A, _ => Simulate.click(_.querySelector('button')!))
+  withElement(A, (_) => Simulate.click(_.querySelector('button')!))
 })
 
-test.cb('it should support effects with rx opererators', t => {
+test('it should support effects with rx opererators', async (t) => {
   t.plan(2)
-  type State = {
-    a: number
-    b: number
-  }
-  let store: Store<{ a: number; b: number }>
-  let withEffects: Effects<State> = s => {
-    store = s
-    s.on('a')
-      .pipe(
-        distinctUntilChanged(),
-        filter(_ => _ > 2),
-        pairwise(),
-        map(([a]) => a * 6),
-        debounceTime(0)
-      )
-      .subscribe(store.set('b'))
-    return s
-  }
-  let { Container, withStore } = createConnectedStore(
-    { a: 1, b: 1 },
-    withEffects
-  )
-  let C = withStore(({ store }) => (
-    <button onClick={() => store.set('a')(store.get('a') + 1)}>
-      {store.get('a')}
-    </button>
-  ))
-  let A = () => (
-    <Container>
-      <C />
-    </Container>
-  )
-  withElement(A, _ => {
-    Simulate.click(_.querySelector('button')!)
-    t.is(store.get('b'), 1)
-    Simulate.click(_.querySelector('button')!)
-    Simulate.click(_.querySelector('button')!)
-    setTimeout(() => {
-      t.is(store.get('b'), 18)
-      t.end()
-    }, 0)
+  return new Promise((resolve) => {
+    type State = {
+      a: number
+      b: number
+    }
+    let store: Store<{a: number; b: number}>
+    let withEffects: Effects<State> = (s) => {
+      store = s
+      s.on('a')
+        .pipe(
+          distinctUntilChanged(),
+          filter((_) => _ > 2),
+          pairwise(),
+          map(([a]) => a * 6),
+          debounceTime(0),
+        )
+        .subscribe(store.set('b'))
+      return s
+    }
+    let {Container, withStore} = createConnectedStore({a: 1, b: 1}, withEffects)
+    let C = withStore(({store}) => (
+      <button onClick={() => store.set('a')(store.get('a') + 1)}>
+        {store.get('a')}
+      </button>
+    ))
+    let A = () => (
+      <Container>
+        <C />
+      </Container>
+    )
+    withElement(A, (_) => {
+      Simulate.click(_.querySelector('button')!)
+      t.is(store.get('b'), 1)
+      Simulate.click(_.querySelector('button')!)
+      Simulate.click(_.querySelector('button')!)
+      setTimeout(() => {
+        t.is(store.get('b'), 18)
+        resolve()
+      }, 0)
+    })
   })
 })
 
-test('it should support multiple instances of a store', t => {
-  let { Container, withStore } = createConnectedStore({ a: 1 })
-  let C = withStore(({ store }) => (
+test('it should support multiple instances of a store', (t) => {
+  let {Container, withStore} = createConnectedStore({a: 1})
+  let C = withStore(({store}) => (
     <button onClick={() => store.set('a')(store.get('a') + 1)}>
       {store.get('a')}
     </button>
@@ -160,8 +159,8 @@ test('it should support multiple instances of a store', t => {
     </Container>
   )
 
-  withElement(A, a =>
-    withElement(B, b => {
+  withElement(A, (a) =>
+    withElement(B, (b) => {
       t.is(a.querySelector('button')!.innerHTML, '1')
       t.is(b.querySelector('button')!.innerHTML, '1')
       Simulate.click(a.querySelector('button')!)
@@ -170,13 +169,13 @@ test('it should support multiple instances of a store', t => {
       Simulate.click(b.querySelector('button')!)
       t.is(a.querySelector('button')!.innerHTML, '2')
       t.is(b.querySelector('button')!.innerHTML, '2')
-    })
+    }),
   )
 })
 
-test('it should support multiple instances of a store, with disjoint lifecycles', t => {
-  let { Container, withStore } = createConnectedStore({ a: 1 })
-  let C = withStore(({ store }) => (
+test('it should support multiple instances of a store, with disjoint lifecycles', (t) => {
+  let {Container, withStore} = createConnectedStore({a: 1})
+  let C = withStore(({store}) => (
     <button onClick={() => store.set('a')(store.get('a') + 1)}>
       {store.get('a')}
     </button>
@@ -192,23 +191,23 @@ test('it should support multiple instances of a store, with disjoint lifecycles'
     </Container>
   )
 
-  withElement(A, a => {
+  withElement(A, (a) => {
     t.is(a.querySelector('button')!.innerHTML, '1')
     Simulate.click(a.querySelector('button')!)
     t.is(a.querySelector('button')!.innerHTML, '2')
   })
 
-  withElement(B, b => {
+  withElement(B, (b) => {
     t.is(b.querySelector('button')!.innerHTML, '1')
     Simulate.click(b.querySelector('button')!)
     t.is(b.querySelector('button')!.innerHTML, '2')
   })
 })
 
-test('it should support multiple instances of a store in one tree, with disjoint lifecycles', t => {
-  let Test = createConnectedStore({ isA: true })
-  let { Container, withStore } = createConnectedStore({ a: 1 })
-  let C = withStore(({ store }) => (
+test('it should support multiple instances of a store in one tree, with disjoint lifecycles', (t) => {
+  let Test = createConnectedStore({isA: true})
+  let {Container, withStore} = createConnectedStore({a: 1})
+  let C = withStore(({store}) => (
     <button id="C" onClick={() => store.set('a')(store.get('a') + 1)}>
       {store.get('a')}
     </button>
@@ -224,7 +223,7 @@ test('it should support multiple instances of a store in one tree, with disjoint
     </Container>
   )
 
-  let D = Test.withStore(({ store }) => (
+  let D = Test.withStore(({store}) => (
     <>
       {store.get('isA') ? <A /> : <B />}
       <button id="D" onClick={() => store.set('isA')(!store.get('isA'))} />
@@ -236,7 +235,7 @@ test('it should support multiple instances of a store in one tree, with disjoint
     </Test.Container>
   )
 
-  withElement(E, e => {
+  withElement(E, (e) => {
     t.is(e.querySelector('#C')!.innerHTML, '1')
     Simulate.click(e.querySelector('#C')!)
     t.is(e.querySelector('#C')!.innerHTML, '2')
@@ -255,15 +254,15 @@ test('it should support multiple instances of a store in one tree, with disjoint
   })
 })
 
-test('it should support interleaved stores', t => {
-  let A = createConnectedStore({ a: 1 })
-  let B = createConnectedStore({ b: 1 })
-  let C = A.withStore(({ store }) => (
+test('it should support interleaved stores', (t) => {
+  let A = createConnectedStore({a: 1})
+  let B = createConnectedStore({b: 1})
+  let C = A.withStore(({store}) => (
     <button onClick={() => store.set('a')(store.get('a') + 1)}>
       {store.get('a')}
     </button>
   ))
-  let D = B.withStore(({ store }) => (
+  let D = B.withStore(({store}) => (
     <button onClick={() => store.set('b')(store.get('b') + 1)}>
       {store.get('b')}
     </button>
@@ -278,7 +277,7 @@ test('it should support interleaved stores', t => {
     </A.Container>
   )
 
-  withElement(X, x => {
+  withElement(X, (x) => {
     assertButtons(x, 1, 1, 1)
     Simulate.click(x.querySelectorAll('button')[0])
     assertButtons(x, 2, 1, 2)
@@ -295,15 +294,15 @@ test('it should support interleaved stores', t => {
   }
 })
 
-test('it should support custom initialState', t => {
-  let { Container, withStore } = createConnectedStore({ a: 1 })
-  let C = withStore(({ store }) => (
+test('it should support custom initialState', (t) => {
+  let {Container, withStore} = createConnectedStore({a: 1})
+  let C = withStore(({store}) => (
     <button onClick={() => store.set('a')(store.get('a') + 1)}>
       {store.get('a')}
     </button>
   ))
   let A = () => (
-    <Container initialState={{ a: 101 }}>
+    <Container initialState={{a: 101}}>
       <C />
     </Container>
   )
@@ -313,8 +312,8 @@ test('it should support custom initialState', t => {
     </Container>
   )
 
-  withElement(A, a =>
-    withElement(B, b => {
+  withElement(A, (a) =>
+    withElement(B, (b) => {
       t.is(a.querySelector('button')!.innerHTML, '101')
       t.is(b.querySelector('button')!.innerHTML, '1')
       Simulate.click(a.querySelector('button')!)
@@ -323,27 +322,27 @@ test('it should support custom initialState', t => {
       Simulate.click(b.querySelector('button')!)
       t.is(a.querySelector('button')!.innerHTML, '102')
       t.is(b.querySelector('button')!.innerHTML, '2')
-    })
+    }),
   )
 })
 
-test('it should support custom effects', t => {
+test('it should support custom effects', (t) => {
   t.plan(1)
 
   type State = {
     a: number
   }
 
-  let { Container, withStore } = createConnectedStore({ a: 1 })
+  let {Container, withStore} = createConnectedStore({a: 1})
 
-  let withEffects: Effects<State> = store => {
-    store.on('a').subscribe(a => {
+  let withEffects: Effects<State> = (store) => {
+    store.on('a').subscribe((a) => {
       t.is(a, 2)
     })
     return store
   }
 
-  let C = withStore(({ store }) => (
+  let C = withStore(({store}) => (
     <button onClick={() => store.set('a')(store.get('a') + 1)}>
       {store.get('a')}
     </button>
@@ -354,31 +353,31 @@ test('it should support custom effects', t => {
     </Container>
   )
 
-  withElement(A, _ => Simulate.click(_.querySelector('button')!))
+  withElement(A, (_) => Simulate.click(_.querySelector('button')!))
 })
 
-test('it should eagerly throw at runtime when using a consumer without a container (createConnectedStore)', t => {
-  let { withStore } = createConnectedStore({ a: 1 })
+test('it should eagerly throw at runtime when using a consumer without a container (createConnectedStore)', (t) => {
+  let {withStore} = createConnectedStore({a: 1})
   let A = withStore(() => <div />)
-  t.throws(() => withElement(A, _ => {}), {
-    message: /does not seem to be nested/
+  t.throws(() => withElement(A, (_) => {}), {
+    message: /does not seem to be nested/,
   })
 })
 
-test('it should re-render if a used model property changed', t => {
+test('it should re-render if a used model property changed', (t) => {
   let renderCount = 0
-  let store: Store<{ a: number; b: number }>
+  let store: Store<{a: number; b: number}>
   let S = createConnectedStore(
     {
       a: 1,
-      b: 1
+      b: 1,
     },
-    s => {
+    (s) => {
       store = s
       return s
-    }
+    },
   )
-  let A = S.withStore(({ store }) => {
+  let A = S.withStore(({store}) => {
     renderCount++
     return <>{store.get('a')}</>
   })
@@ -388,27 +387,27 @@ test('it should re-render if a used model property changed', t => {
     </S.Container>
   )
 
-  withElement(B, _ => {
+  withElement(B, (_) => {
     store.set('a')(2)
     store.set('a')(3)
     t.is(renderCount, 3)
   })
 })
 
-test('it should re-render if an unused model property changed', t => {
+test('it should re-render if an unused model property changed', (t) => {
   let renderCount = 0
-  let store: Store<{ a: number; b: number }>
+  let store: Store<{a: number; b: number}>
   let S = createConnectedStore(
     {
       a: 1,
-      b: 1
+      b: 1,
     },
-    s => {
+    (s) => {
       store = s
       return s
-    }
+    },
   )
-  let A = S.withStore(({ store }) => {
+  let A = S.withStore(({store}) => {
     renderCount++
     return <>{store.get('a')}</>
   })
@@ -417,28 +416,28 @@ test('it should re-render if an unused model property changed', t => {
       <A />
     </S.Container>
   )
-  withElement(B, _ => {
+  withElement(B, (_) => {
     store.set('b')(2)
     store.set('b')(3)
     t.is(renderCount, 3)
   })
 })
 
-test('it should update even when unused fields change (get)', t => {
-  let store: Store<{ a: number; b: string }>
+test('it should update even when unused fields change (get)', (t) => {
+  let store: Store<{a: number; b: string}>
   let S = createConnectedStore(
     {
       a: 0,
-      b: 'foo'
+      b: 'foo',
     },
-    s => {
+    (s) => {
       store = s
       return s
-    }
+    },
   )
   let renderCount = 0
   type Props = {
-    store: Store<{ a: number; b: string }>
+    store: Store<{a: number; b: string}>
   }
   let A = S.withStore(
     class Test extends React.Component<Props> {
@@ -467,53 +466,53 @@ test('it should update even when unused fields change (get)', t => {
           </>
         )
       }
-    }
+    },
   )
   let B = () => (
     <S.Container>
       <A />
     </S.Container>
   )
-  withElement(B, _ => {
+  withElement(B, (_) => {
     store.set('b')('bar') // No render
     t.is(
       _.innerHTML,
-      '0<button id="a"></button><button id="b"></button><span></span>'
+      '0<button id="a"></button><button id="b"></button><span></span>',
     )
     Simulate.click(_.querySelector('#a')!) // Render
     t.is(
       _.innerHTML,
-      '1<button id="a"></button><button id="b"></button><div>bar</div>'
+      '1<button id="a"></button><button id="b"></button><div>bar</div>',
     )
     Simulate.click(_.querySelector('#b')!) // Render
     t.is(
       _.innerHTML,
-      '0<button id="a"></button><button id="b"></button><span></span>'
+      '0<button id="a"></button><button id="b"></button><span></span>',
     )
     store.set('b')('baz') // Render
     t.is(
       _.innerHTML,
-      '0<button id="a"></button><button id="b"></button><span></span>'
+      '0<button id="a"></button><button id="b"></button><span></span>',
     )
     t.is(renderCount, 5)
   })
 })
 
-test('it should update even when unused fields change (get in lifecycle)', t => {
-  let store: Store<{ a: number; b: string }>
+test('it should update even when unused fields change (get in lifecycle)', (t) => {
+  let store: Store<{a: number; b: string}>
   let S = createConnectedStore(
     {
       a: 0,
-      b: 'foo'
+      b: 'foo',
     },
-    s => {
+    (s) => {
       store = s
       return s
-    }
+    },
   )
   let renderCount = 0
   type Props = {
-    store: Store<{ a: number; b: string }>
+    store: Store<{a: number; b: string}>
   }
   let A = S.withStore(
     class Test extends React.Component<Props> {
@@ -533,14 +532,14 @@ test('it should update even when unused fields change (get in lifecycle)', t => 
           </>
         )
       }
-    }
+    },
   )
   let B = () => (
     <S.Container>
       <A />
     </S.Container>
   )
-  withElement(B, _ => {
+  withElement(B, (_) => {
     store.set('b')('bar') // No render
     t.is(_.innerHTML, '0<span></span>')
     store.set('a')(1) // Render, and trigger shouldComponentUpdate
@@ -550,21 +549,21 @@ test('it should update even when unused fields change (get in lifecycle)', t => 
   })
 })
 
-test('it should update even when unused fields change (getState in lifecycle 1)', t => {
-  let store: Store<{ a: number; b: string }>
+test('it should update even when unused fields change (getState in lifecycle 1)', (t) => {
+  let store: Store<{a: number; b: string}>
   let S = createConnectedStore(
     {
       a: 0,
-      b: 'foo'
+      b: 'foo',
     },
-    s => {
+    (s) => {
       store = s
       return s
-    }
+    },
   )
   let renderCount = 0
   type Props = {
-    store: Store<{ a: number; b: string }>
+    store: Store<{a: number; b: string}>
   }
   let A = S.withStore(
     class Test extends React.Component<Props> {
@@ -575,14 +574,14 @@ test('it should update even when unused fields change (getState in lifecycle 1)'
         renderCount++
         return this.props.store.get('a')
       }
-    }
+    },
   )
   let B = () => (
     <S.Container>
       <A />
     </S.Container>
   )
-  withElement(B, _ => {
+  withElement(B, (_) => {
     store.set('b')('bar') // No render
     t.is(_.innerHTML, '0')
     store.set('a')(1) // Render, and trigger shouldComponentUpdate
@@ -592,21 +591,21 @@ test('it should update even when unused fields change (getState in lifecycle 1)'
   })
 })
 
-test('[stateful] it should update even when unused fields change (getState in lifecycle 2)', t => {
-  let store: Store<{ a: number; b: string }>
+test('[stateful] it should update even when unused fields change (getState in lifecycle 2)', (t) => {
+  let store: Store<{a: number; b: string}>
   let S = createConnectedStore(
     {
       a: 0,
-      b: 'foo'
+      b: 'foo',
     },
-    s => {
+    (s) => {
       store = s
       return s
-    }
+    },
   )
   let renderCount = 0
   type Props = {
-    store: Store<{ a: number; b: string }>
+    store: Store<{a: number; b: string}>
   }
   let A = S.withStore(
     class Test extends React.Component<Props> {
@@ -617,14 +616,14 @@ test('[stateful] it should update even when unused fields change (getState in li
         renderCount++
         return this.props.store.get('a')
       }
-    }
+    },
   )
   let B = () => (
     <S.Container>
       <A />
     </S.Container>
   )
-  withElement(B, _ => {
+  withElement(B, (_) => {
     store.set('b')('bar') // No render
     t.is(_.innerHTML, '0')
     store.set('a')(1) // Render, and trigger shouldComponentUpdate
@@ -634,21 +633,21 @@ test('[stateful] it should update even when unused fields change (getState in li
   })
 })
 
-test('[stateful] it should update only when subscribed fields change (get in constructor)', t => {
-  let store: Store<{ a: number; b: string }>
+test('[stateful] it should update only when subscribed fields change (get in constructor)', (t) => {
+  let store: Store<{a: number; b: string}>
   let S = createConnectedStore(
     {
       a: 0,
-      b: 'foo'
+      b: 'foo',
     },
-    s => {
+    (s) => {
       store = s
       return s
-    }
+    },
   )
   let renderCount = 0
   type Props = {
-    store: Store<{ a: number; b: string }>
+    store: Store<{a: number; b: string}>
   }
   let A = S.withStore(
     class Test extends React.Component<Props> {
@@ -669,14 +668,14 @@ test('[stateful] it should update only when subscribed fields change (get in con
           </>
         )
       }
-    }
+    },
   )
   let B = () => (
     <S.Container>
       <A />
     </S.Container>
   )
-  withElement(B, _ => {
+  withElement(B, (_) => {
     store.set('b')('bar') // Render
     t.is(_.innerHTML, '0<span></span>')
     store.set('a')(1) // Render
@@ -686,13 +685,13 @@ test('[stateful] it should update only when subscribed fields change (get in con
   })
 })
 
-test('it should update when subscribed fields change (set in constructor)', t => {
+test('it should update when subscribed fields change (set in constructor)', (t) => {
   let S = createConnectedStore({
-    a: 0
+    a: 0,
   })
   let renderCount = 0
   type Props = {
-    store: Store<{ a: number }>
+    store: Store<{a: number}>
   }
   let A = S.withStore(
     class Test extends React.Component<Props> {
@@ -704,34 +703,34 @@ test('it should update when subscribed fields change (set in constructor)', t =>
         renderCount++
         return <>{this.props.store.get('a')}</>
       }
-    }
+    },
   )
   let B = () => (
     <S.Container>
       <A />
     </S.Container>
   )
-  withElement(B, _ => {
+  withElement(B, (_) => {
     t.is(_.innerHTML, '1')
     t.is(renderCount, 2)
   })
 })
 
-test('[stateful] it should update when any field changes (getState)', t => {
-  let store: Store<{ a: number; b: string }>
+test('[stateful] it should update when any field changes (getState)', (t) => {
+  let store: Store<{a: number; b: string}>
   let S = createConnectedStore(
     {
       a: 0,
-      b: 'foo'
+      b: 'foo',
     },
-    s => {
+    (s) => {
       store = s
       return s
-    }
+    },
   )
   let renderCount = 0
   type Props = {
-    store: Store<{ a: number; b: string }>
+    store: Store<{a: number; b: string}>
   }
   let A = S.withStore(
     class Test extends React.Component<Props> {
@@ -760,45 +759,45 @@ test('[stateful] it should update when any field changes (getState)', t => {
           </>
         )
       }
-    }
+    },
   )
   let B = () => (
     <S.Container>
       <A />
     </S.Container>
   )
-  withElement(B, _ => {
+  withElement(B, (_) => {
     store.set('b')('bar') // Render (this is the deoptimization when you use .getState)
     t.is(
       _.innerHTML,
-      '0<button id="a"></button><button id="b"></button><span></span>'
+      '0<button id="a"></button><button id="b"></button><span></span>',
     )
     Simulate.click(_.querySelector('#a')!) // Render
     t.is(
       _.innerHTML,
-      '1<button id="a"></button><button id="b"></button><div>bar</div>'
+      '1<button id="a"></button><button id="b"></button><div>bar</div>',
     )
     Simulate.click(_.querySelector('#b')!) // Render
     t.is(
       _.innerHTML,
-      '0<button id="a"></button><button id="b"></button><span></span>'
+      '0<button id="a"></button><button id="b"></button><span></span>',
     )
     store.set('b')('baz') // Render
     t.is(
       _.innerHTML,
-      '0<button id="a"></button><button id="b"></button><span></span>'
+      '0<button id="a"></button><button id="b"></button><span></span>',
     )
     t.is(renderCount, 5)
   })
 })
 
-test("it should get the most up-to-date version of a field, even if Undux doesn't know the component depends on it", t => {
+test("it should get the most up-to-date version of a field, even if Undux doesn't know the component depends on it", (t) => {
   t.plan(2)
   let S = createConnectedStore({
-    a: 0
+    a: 0,
   })
   type Props = {
-    store: Store<{ a: number }>
+    store: Store<{a: number}>
   }
   let A = S.withStore(
     class Test extends React.Component<Props> {
@@ -809,10 +808,10 @@ test("it should get the most up-to-date version of a field, even if Undux doesn'
       render() {
         return <>{this.props.store.get('a')}</>
       }
-    }
+    },
   )
   let B = S.withStore(
-    class Test extends React.Component<Props & { onClick(a: number): void }> {
+    class Test extends React.Component<Props & {onClick(a: number): void}> {
       onClick = () => this.props.onClick(this.props.store.get('a'))
       render() {
         return (
@@ -822,26 +821,26 @@ test("it should get the most up-to-date version of a field, even if Undux doesn'
           </>
         )
       }
-    }
+    },
   )
   let C = () => (
     <S.Container>
-      <B onClick={a => t.is(a, 1)} />
+      <B onClick={(a) => t.is(a, 1)} />
     </S.Container>
   )
-  withElement(C, _ => {
+  withElement(C, (_) => {
     t.is(_.innerHTML, '<button></button>1')
     Simulate.click(_.querySelector('button')!)
   })
 })
 
-test('it should return the same value when call .get multiple times for one snapshot', t => {
+test('it should return the same value when call .get multiple times for one snapshot', (t) => {
   t.plan(4)
   let S = createConnectedStore({
-    a: 0
+    a: 0,
   })
   type Props = {
-    store: Store<{ a: number }>
+    store: Store<{a: number}>
   }
   let A = S.withStore(
     class Test extends React.Component<Props> {
@@ -852,10 +851,10 @@ test('it should return the same value when call .get multiple times for one snap
       render() {
         return <>{this.props.store.get('a')}</>
       }
-    }
+    },
   )
   let B = S.withStore(
-    class Test extends React.Component<Props & { onClick(a: number): void }> {
+    class Test extends React.Component<Props & {onClick(a: number): void}> {
       onClick = () => {
         this.props.onClick(this.props.store.get('a'))
         this.props.onClick(this.props.store.get('a'))
@@ -869,13 +868,13 @@ test('it should return the same value when call .get multiple times for one snap
           </>
         )
       }
-    }
+    },
   )
   let call = 0
   let C = () => (
     <S.Container>
       <B
-        onClick={a => {
+        onClick={(a) => {
           switch (call) {
             case 0:
               return t.is(a, 1)
@@ -889,34 +888,34 @@ test('it should return the same value when call .get multiple times for one snap
       />
     </S.Container>
   )
-  withElement(C, _ => {
+  withElement(C, (_) => {
     t.is(_.innerHTML, '<button></button>1')
     Simulate.click(_.querySelector('button')!)
   })
 })
 
-test('it should return the same value when call .get multiple times for one snapshot, even when using shouldComponentUpdate', t => {
+test('it should return the same value when call .get multiple times for one snapshot, even when using shouldComponentUpdate', (t) => {
   let S = createConnectedStore({
-    a: 'a'
+    a: 'a',
   })
-  let X = S.withStore(props => (
+  let X = S.withStore((props) => (
     <button onClick={() => props.store.set('a')('x')}>
       {props.store.get('a')}
     </button>
   ))
-  let Y = S.withStore(props => (
+  let Y = S.withStore((props) => (
     <button onClick={() => props.store.set('a')('y')}>
       {props.store.get('a')}
     </button>
   ))
-  let Z = S.withStore(props => (
+  let Z = S.withStore((props) => (
     <button onClick={() => props.store.set('a')('z')}>
       {props.store.get('a')}
     </button>
   ))
   let A = S.withStore(
-    class Test extends React.Component<{ store: Store<{ a: string }> }> {
-      shouldComponentUpdate(props: { store: Store<{ a: string }> }) {
+    class Test extends React.Component<{store: Store<{a: string}>}> {
+      shouldComponentUpdate(props: {store: Store<{a: string}>}) {
         return props.store.get('a') !== this.props.store.get('a')
       }
       render() {
@@ -931,10 +930,10 @@ test('it should return the same value when call .get multiple times for one snap
             return <>{this.props.store.get('a')}</>
         }
       }
-    }
+    },
   )
-  let store: Store<{ a: string }>
-  let Leak = S.withStore(props => {
+  let store: Store<{a: string}>
+  let Leak = S.withStore((props) => {
     store = (props as any).store.storeDefinition
     return null
   })
@@ -944,7 +943,7 @@ test('it should return the same value when call .get multiple times for one snap
       <A />
     </S.Container>
   )
-  withElement(C, _ => {
+  withElement(C, (_) => {
     t.is(_.innerHTML, '<button>a</button>')
     t.is(store.get('a'), 'a')
     Simulate.click(_.querySelector('button')!)
@@ -959,11 +958,11 @@ test('it should return the same value when call .get multiple times for one snap
   })
 })
 
-test('it should fail for async updates by default', t => {
+test('it should fail for async updates by default', (t) => {
   type State = {
     as: number[]
   }
-  let S = createConnectedStore<State>({ as: [] })
+  let S = createConnectedStore<State>({as: []})
   let index = 0
 
   type Props = {
@@ -991,7 +990,7 @@ test('it should fail for async updates by default', t => {
   }
 
   let store: Store<State>
-  let Leak = S.withStore(props => {
+  let Leak = S.withStore((props) => {
     store = (props as any).store.storeDefinition
     return null
   })
@@ -1004,16 +1003,16 @@ test('it should fail for async updates by default', t => {
       </S.Container>
     )
   }
-  withElement(C, _ => {
+  withElement(C, (_) => {
     t.deepEqual(store.get('as'), [2])
   })
 })
 
-test('it should work for async updates using setFrom_EXPERIMENTAL', t => {
+test('it should work for async updates using setFrom_EXPERIMENTAL', (t) => {
   type State = {
     as: number[]
   }
-  let S = createConnectedStore<State>({ as: [] })
+  let S = createConnectedStore<State>({as: []})
   let index = 0
 
   type Props = {
@@ -1021,7 +1020,7 @@ test('it should work for async updates using setFrom_EXPERIMENTAL', t => {
   }
   class A extends React.Component<Props> {
     componentDidMount() {
-      this.props.store.setFrom_EXPERIMENTAL(store => {
+      this.props.store.setFrom_EXPERIMENTAL((store) => {
         let as = store.get('as')
         store.set('as')([...as, index++])
       })
@@ -1043,7 +1042,7 @@ test('it should work for async updates using setFrom_EXPERIMENTAL', t => {
   }
 
   let store: Store<State>
-  let Leak = S.withStore(props => {
+  let Leak = S.withStore((props) => {
     store = (props as any).store.storeDefinition
     return null
   })
@@ -1056,16 +1055,16 @@ test('it should work for async updates using setFrom_EXPERIMENTAL', t => {
       </S.Container>
     )
   }
-  withElement(C, _ => {
+  withElement(C, (_) => {
     t.deepEqual(store.get('as'), [0, 1, 2])
   })
 })
 
-test('setFrom_EXPERIMENTAL should compose', t => {
+test('setFrom_EXPERIMENTAL should compose', (t) => {
   type State = {
     as: number[]
   }
-  let S = createConnectedStore<State>({ as: [] })
+  let S = createConnectedStore<State>({as: []})
   let index = 0
 
   type Props = {
@@ -1073,12 +1072,12 @@ test('setFrom_EXPERIMENTAL should compose', t => {
   }
   class A extends React.Component<Props> {
     componentDidMount() {
-      this.props.store.setFrom_EXPERIMENTAL(store => {
+      this.props.store.setFrom_EXPERIMENTAL((store) => {
         let as = store.get('as')
         store.set('as')([...as, index++])
 
         // One more time
-        store.setFrom_EXPERIMENTAL(store => {
+        store.setFrom_EXPERIMENTAL((store) => {
           let as = store.get('as')
           store.set('as')([...as, index++])
         })
@@ -1101,7 +1100,7 @@ test('setFrom_EXPERIMENTAL should compose', t => {
   }
 
   let store: Store<State>
-  let Leak = S.withStore(props => {
+  let Leak = S.withStore((props) => {
     store = (props as any).store.storeDefinition
     return null
   })
@@ -1114,30 +1113,30 @@ test('setFrom_EXPERIMENTAL should compose', t => {
       </S.Container>
     )
   }
-  withElement(C, _ => {
+  withElement(C, (_) => {
     t.deepEqual(store.get('as'), [0, 1, 2, 3, 4, 5])
   })
 })
 
-test('setFrom_EXPERIMENTAL should chain', t => {
+test('setFrom_EXPERIMENTAL should chain', (t) => {
   type State = {
     as: number
   }
-  let S = createConnectedStore<State>({ as: 0 })
+  let S = createConnectedStore<State>({as: 0})
 
   type Props = {
     store: Store<State>
   }
   class A extends React.Component<Props> {
     componentDidMount() {
-      this.props.store.setFrom_EXPERIMENTAL(store =>
-        store.set('as')(store.get('as') + 1)
+      this.props.store.setFrom_EXPERIMENTAL((store) =>
+        store.set('as')(store.get('as') + 1),
       )
-      this.props.store.setFrom_EXPERIMENTAL(store =>
-        store.set('as')(store.get('as') + 1)
+      this.props.store.setFrom_EXPERIMENTAL((store) =>
+        store.set('as')(store.get('as') + 1),
       )
-      this.props.store.setFrom_EXPERIMENTAL(store =>
-        store.set('as')(store.get('as') + 1)
+      this.props.store.setFrom_EXPERIMENTAL((store) =>
+        store.set('as')(store.get('as') + 1),
       )
     }
     render() {
@@ -1147,7 +1146,7 @@ test('setFrom_EXPERIMENTAL should chain', t => {
   let A1 = S.withStore(A)
 
   let store: Store<State>
-  let Leak = S.withStore(props => {
+  let Leak = S.withStore((props) => {
     store = (props as any).store.storeDefinition
     return null
   })
@@ -1160,7 +1159,7 @@ test('setFrom_EXPERIMENTAL should chain', t => {
       </S.Container>
     )
   }
-  withElement(C, _ => {
+  withElement(C, (_) => {
     t.deepEqual(store.get('as'), 3)
   })
 })
