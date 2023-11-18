@@ -9,6 +9,16 @@ import {
 } from '..'
 import { Diff, getDisplayName, mapValues } from '../utils'
 
+export type ContainerPropsAs<
+  States extends {
+    [alias: string]: any
+  }
+> = {
+  children: React.ReactNode
+  effects?: EffectsAs<States>
+  initialStates?: States
+}
+
 export type CreateConnectedStoreAs<
   States extends {
     [alias: string]: any
@@ -21,15 +31,6 @@ export type CreateConnectedStoreAs<
   ) => React.ComponentType<
     Diff<Props, { [K in keyof States]: Store<States[K]> }>
   >
-}
-
-export type ContainerPropsAs<
-  States extends {
-    [alias: string]: any
-  }
-> = {
-  effects?: EffectsAs<States>
-  initialStates?: States
 }
 
 export function createConnectedStoreAs<
@@ -85,8 +86,6 @@ export function createConnectedStoreAs<
       mapValues(this.state.subscriptions, _ => _.unsubscribe())
       // Let the state get GC'd.
       // TODO: Find a more elegant way to do this.
-      if (this.state.storeSnapshots) {
-      }
       mapValues(this.state.storeSnapshots, _ => ((_ as any).state = null))
       mapValues(
         this.state.storeSnapshots,
@@ -110,7 +109,7 @@ export function createConnectedStoreAs<
   let Consumer = (props: {
     children: (
       stores: { [K in keyof States]: StoreSnapshot<States[K]> }
-    ) => JSX.Element
+    ) => React.ReactNode
     displayName: string
   }) => (
     <Context.Consumer>

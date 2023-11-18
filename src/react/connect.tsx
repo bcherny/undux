@@ -1,3 +1,4 @@
+import * as React from 'react'
 import { connectAs, Store, StoreDefinition } from '../'
 import { Diff } from '../utils'
 

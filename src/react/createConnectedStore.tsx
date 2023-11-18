@@ -3,17 +3,18 @@ import { Subscription } from 'rxjs'
 import { createStore, Effects, Store, StoreDefinition, StoreSnapshot } from '..'
 import { Diff, getDisplayName } from '../utils'
 
+export type ContainerProps<State extends object> = {
+  children: React.ReactNode
+  effects?: Effects<State>
+  initialState?: State
+}
+
 export type CreateConnectedStore<State extends object> = {
   Container: React.ComponentType<ContainerProps<State>>
   useStore(): Store<State>
   withStore: <Props extends { store: Store<State> }>(
     Component: React.ComponentType<Props>
   ) => React.ComponentType<Diff<Props, { store: Store<State> }>>
-}
-
-export type ContainerProps<State extends object> = {
-  effects?: Effects<State>
-  initialState?: State
 }
 
 export function createConnectedStore<State extends object>(
@@ -74,7 +75,7 @@ export function createConnectedStore<State extends object>(
   }
 
   let Consumer = (props: {
-    children: (store: StoreSnapshot<State>) => JSX.Element
+    children: (store: StoreSnapshot<State>) => React.ReactNode
     displayName: string
   }) => (
     <Context.Consumer>

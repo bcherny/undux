@@ -5,7 +5,6 @@ module.exports = {
   },
   extends: [
     'plugin:react/recommended',
-    'prettier',
     'standard'
   ],
   parser: '@typescript-eslint/parser',
@@ -17,7 +16,6 @@ module.exports = {
     sourceType: 'module'
   },
   plugins: [
-    'prettier',
     'react',
     '@typescript-eslint'
   ],
@@ -32,7 +30,6 @@ module.exports = {
     'no-unused-vars': 'off',
     'no-useless-constructor': 'off',
     'prefer-const': 'off',
-    'prettier/prettier': 'error',
     'space-before-function-paren': 'off'
   }
 }
