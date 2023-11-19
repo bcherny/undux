@@ -7,12 +7,12 @@ import { Diff, equals, getDisplayName, keys, mapValues, some } from '../utils'
  * @deprecated Use `createConnectedStoreAs` instead.
  */
 export function connectAs<
-  Stores extends { [alias: string]: StoreDefinition<any> }
+  Stores extends { [alias: string]: StoreDefinition<any> },
 >(stores: Stores) {
-  return function<Props extends object>(
+  return function <Props extends object>(
     Component: React.ComponentType<
       { [K in keyof Stores]: ReturnType<Stores[K]['toStore']> } & Props
-    >
+    >,
   ): React.ComponentClass<Diff<Props, Stores>> {
     type State = {
       stores: {
@@ -26,32 +26,34 @@ export function connectAs<
       state = {
         stores: mapValues(
           stores,
-          _ =>
-            _.getCurrentSnapshot() as ReturnType<typeof _['getCurrentSnapshot']>
+          (_) =>
+            _.getCurrentSnapshot() as ReturnType<
+              (typeof _)['getCurrentSnapshot']
+            >,
         ),
-        subscriptions: keys(stores).map(k =>
+        subscriptions: keys(stores).map((k) =>
           stores[k].onAll().subscribe(({ previousValue, value }) => {
             if (equals(previousValue, value)) {
               return false
             }
-            this.setState(state => ({
+            this.setState((state) => ({
               stores: Object.assign({}, state.stores as any, {
-                [k]: stores[k].getCurrentSnapshot()
-              })
+                [k]: stores[k].getCurrentSnapshot(),
+              }),
             }))
-          })
-        )
+          }),
+        ),
       }
 
       componentWillUnmount() {
-        this.state.subscriptions.forEach(_ => _.unsubscribe())
+        this.state.subscriptions.forEach((_) => _.unsubscribe())
       }
 
       shouldComponentUpdate(props: Diff<Props, Stores>, state: State) {
         return (
           some(state.stores, (s, k) => s !== this.state.stores[k]) ||
           Object.keys(props).some(
-            _ => (props as any)[_] !== (this.props as any)[_]
+            (_) => (props as any)[_] !== (this.props as any)[_],
           )
         )
       }

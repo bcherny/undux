@@ -1,38 +1,42 @@
+import 'global-jsdom/register'
 import test from 'ava'
 import * as React from 'react'
-import { Simulate } from 'react-dom/test-utils'
 import {
   debounceTime,
   distinctUntilChanged,
   filter,
   map,
-  pairwise
+  pairwise,
 } from 'rxjs/operators'
 import { Effects, Store } from '../../src'
 import { createConnectedStore } from '../../src/react/createConnectedStore'
-import { withElement } from '../testUtils'
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 
-test('it should render', t => {
+function setTimeoutPromise(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms))
+}
+
+test.afterEach(cleanup)
+
+test.serial('it should render', t => {
   let { Container, withStore } = createConnectedStore({ a: 1 })
   let B = withStore(({ store }) => (
     <button onClick={() => store.set('a')(store.get('a') + 1)}>
       {store.get('a')}
     </button>
   ))
-  let A = () => (
+  render(
     <Container>
       <B />
-    </Container>
+    </Container>,
   )
 
-  withElement(A, a => {
-    t.is(a.querySelector('button')!.innerHTML, '1')
-    Simulate.click(a.querySelector('button')!)
-    t.is(a.querySelector('button')!.innerHTML, '2')
-  })
+  t.is(screen.getByRole('button').innerHTML, '1')
+  fireEvent.click(screen.getByRole('button'))
+  t.is(screen.getByRole('button').innerHTML, '2')
 })
 
-test('it should update (with extra props)', t => {
+test.serial('it should update (with extra props)', t => {
   let { Container, withStore } = createConnectedStore({ a: 1 })
   type Props = {
     extra: string
@@ -47,7 +51,7 @@ test('it should update (with extra props)', t => {
   ))
   class A extends React.Component {
     state = {
-      extra: 'a'
+      extra: 'a',
     }
     onChange = () => this.setState({ extra: 'b' })
     render() {
@@ -59,22 +63,21 @@ test('it should update (with extra props)', t => {
     }
   }
 
-  withElement(A, a => {
-    t.is(a.querySelector('button')!.innerHTML, 'a')
-    Simulate.click(a.querySelector('button')!)
-    t.is(a.querySelector('button')!.innerHTML, 'b')
-  })
+  render(<A />)
+  t.is(screen.getByRole('button').innerHTML, 'a')
+  fireEvent.click(screen.getByRole('button'))
+  t.is(screen.getByRole('button').innerHTML, 'b')
 })
 
-test('it should support effects', t => {
+test.serial('it should support effects', t => {
   t.plan(1)
 
   type State = {
     a: number
   }
 
-  let withEffects: Effects<State> = store => {
-    store.on('a').subscribe(a => {
+  let withEffects: Effects<State> = (store) => {
+    store.on('a').subscribe((a) => {
       t.is(a, 2)
     })
     return store
@@ -87,129 +90,120 @@ test('it should support effects', t => {
       {store.get('a')}
     </button>
   ))
-  let A = () => (
+  render(
     <Container>
       <C />
-    </Container>
+    </Container>,
   )
 
-  withElement(A, _ => Simulate.click(_.querySelector('button')!))
+  fireEvent.click(screen.getByRole('button'))
 })
 
-test.cb('it should support effects with rx opererators', t => {
+test.serial('it should support effects with rx opererators', async t => {
   t.plan(2)
   type State = {
     a: number
     b: number
   }
   let store: Store<{ a: number; b: number }>
-  let withEffects: Effects<State> = s => {
+  let withEffects: Effects<State> = (s) => {
     store = s
     s.on('a')
       .pipe(
         distinctUntilChanged(),
-        filter(_ => _ > 2),
+        filter((_) => _ > 2),
         pairwise(),
         map(([a]) => a * 6),
-        debounceTime(0)
+        debounceTime(0),
       )
       .subscribe(store.set('b'))
     return s
   }
   let { Container, withStore } = createConnectedStore(
     { a: 1, b: 1 },
-    withEffects
+    withEffects,
   )
   let C = withStore(({ store }) => (
     <button onClick={() => store.set('a')(store.get('a') + 1)}>
       {store.get('a')}
     </button>
   ))
-  let A = () => (
+
+  render(
     <Container>
       <C />
-    </Container>
+    </Container>,
   )
-  withElement(A, _ => {
-    Simulate.click(_.querySelector('button')!)
-    t.is(store.get('b'), 1)
-    Simulate.click(_.querySelector('button')!)
-    Simulate.click(_.querySelector('button')!)
-    setTimeout(() => {
-      t.is(store.get('b'), 18)
-      t.end()
-    }, 0)
-  })
+
+  fireEvent.click(screen.getByRole('button'))
+  t.is(store!.get('b'), 1)
+  fireEvent.click(screen.getByRole('button'))
+  fireEvent.click(screen.getByRole('button'))
+  await setTimeoutPromise(0)
+  t.is(store!.get('b'), 18)
 })
 
-test('it should support multiple instances of a store', t => {
+test.serial('it should support multiple instances of a store', t => {
   let { Container, withStore } = createConnectedStore({ a: 1 })
   let C = withStore(({ store }) => (
     <button onClick={() => store.set('a')(store.get('a') + 1)}>
       {store.get('a')}
     </button>
   ))
-  let A = () => (
+
+  const {unmount: unmount0} = render(
     <Container>
       <C />
-    </Container>
+    </Container>,
   )
-  let B = () => (
+  const {unmount: unmount1} = render(
     <Container>
       <C />
-    </Container>
+    </Container>,
   )
 
-  withElement(A, a =>
-    withElement(B, b => {
-      t.is(a.querySelector('button')!.innerHTML, '1')
-      t.is(b.querySelector('button')!.innerHTML, '1')
-      Simulate.click(a.querySelector('button')!)
-      t.is(a.querySelector('button')!.innerHTML, '2')
-      t.is(b.querySelector('button')!.innerHTML, '1')
-      Simulate.click(b.querySelector('button')!)
-      t.is(a.querySelector('button')!.innerHTML, '2')
-      t.is(b.querySelector('button')!.innerHTML, '2')
-    })
-  )
+  t.is(screen.getAllByRole('button')[0].innerHTML, '1')
+  t.is(screen.getAllByRole('button')[1].innerHTML, '1')
+  fireEvent.click(screen.getAllByRole('button')[0])
+  t.is(screen.getAllByRole('button')[0].innerHTML, '2')
+  t.is(screen.getAllByRole('button')[1].innerHTML, '1')
+  fireEvent.click(screen.getAllByRole('button')[1])
+  t.is(screen.getAllByRole('button')[0].innerHTML, '2')
+  t.is(screen.getAllByRole('button')[1].innerHTML, '2')
 })
 
-test('it should support multiple instances of a store, with disjoint lifecycles', t => {
+test.serial('it should support multiple instances of a store, with disjoint lifecycles', t => {
   let { Container, withStore } = createConnectedStore({ a: 1 })
   let C = withStore(({ store }) => (
     <button onClick={() => store.set('a')(store.get('a') + 1)}>
       {store.get('a')}
     </button>
   ))
-  let A = () => (
+
+  render(
     <Container>
       <C />
-    </Container>
+    </Container>,
   )
-  let B = () => (
+  t.is(screen.getAllByRole('button')[0].innerHTML, '1')
+  fireEvent.click(screen.getAllByRole('button')[0])
+  t.is(screen.getAllByRole('button')[0].innerHTML, '2')
+
+  render(
     <Container>
       <C />
-    </Container>
+    </Container>,
   )
-
-  withElement(A, a => {
-    t.is(a.querySelector('button')!.innerHTML, '1')
-    Simulate.click(a.querySelector('button')!)
-    t.is(a.querySelector('button')!.innerHTML, '2')
-  })
-
-  withElement(B, b => {
-    t.is(b.querySelector('button')!.innerHTML, '1')
-    Simulate.click(b.querySelector('button')!)
-    t.is(b.querySelector('button')!.innerHTML, '2')
-  })
+  t.is(screen.getAllByRole('button')[1].innerHTML, '1')
+  fireEvent.click(screen.getAllByRole('button')[1])
+  t.is(screen.getAllByRole('button')[1].innerHTML, '2')
 })
 
-test('it should support multiple instances of a store in one tree, with disjoint lifecycles', t => {
+test.serial('it should support multiple instances of a store in one tree, with disjoint lifecycles', t => {
   let Test = createConnectedStore({ isA: true })
   let { Container, withStore } = createConnectedStore({ a: 1 })
   let C = withStore(({ store }) => (
-    <button id="C" onClick={() => store.set('a')(store.get('a') + 1)}>
+    <button data-testid="C" onClick={() => store.set('a')(store.get('a') + 1)}>
       {store.get('a')}
     </button>
   ))
@@ -227,35 +221,37 @@ test('it should support multiple instances of a store in one tree, with disjoint
   let D = Test.withStore(({ store }) => (
     <>
       {store.get('isA') ? <A /> : <B />}
-      <button id="D" onClick={() => store.set('isA')(!store.get('isA'))} />
+      <button
+        data-testid="D"
+        onClick={() => store.set('isA')(!store.get('isA'))}
+      />
     </>
   ))
-  let E = () => (
+
+  render(
     <Test.Container>
       <D />
-    </Test.Container>
+    </Test.Container>,
   )
 
-  withElement(E, e => {
-    t.is(e.querySelector('#C')!.innerHTML, '1')
-    Simulate.click(e.querySelector('#C')!)
-    t.is(e.querySelector('#C')!.innerHTML, '2')
+  t.is(screen.getByTestId('C').innerHTML, '1')
+  fireEvent.click(screen.getByTestId('C'))
+  t.is(screen.getByTestId('C').innerHTML, '2')
 
-    // Swap subtree
-    Simulate.click(e.querySelector('#D')!)
-    t.is(e.querySelector('#C')!.innerHTML, '1')
-    Simulate.click(e.querySelector('#C')!)
-    t.is(e.querySelector('#C')!.innerHTML, '2')
+  // Swap subtree
+  fireEvent.click(screen.getByTestId('D'))
+  t.is(screen.getByTestId('C').innerHTML, '1')
+  fireEvent.click(screen.getByTestId('C'))
+  t.is(screen.getByTestId('C').innerHTML, '2')
 
-    // Swap subtree
-    Simulate.click(e.querySelector('#D')!)
-    t.is(e.querySelector('#C')!.innerHTML, '1')
-    Simulate.click(e.querySelector('#C')!)
-    t.is(e.querySelector('#C')!.innerHTML, '2')
-  })
+  // Swap subtree
+  fireEvent.click(screen.getByTestId('D'))
+  t.is(screen.getByTestId('C').innerHTML, '1')
+  fireEvent.click(screen.getByTestId('C'))
+  t.is(screen.getByTestId('C').innerHTML, '2')
 })
 
-test('it should support interleaved stores', t => {
+test.serial('it should support interleaved stores', t => {
   let A = createConnectedStore({ a: 1 })
   let B = createConnectedStore({ b: 1 })
   let C = A.withStore(({ store }) => (
@@ -268,66 +264,69 @@ test('it should support interleaved stores', t => {
       {store.get('b')}
     </button>
   ))
-  let X = () => (
+
+  render(
     <A.Container>
       <C />
       <B.Container>
         <D />
         <C />
       </B.Container>
-    </A.Container>
+    </A.Container>,
   )
 
-  withElement(X, x => {
-    assertButtons(x, 1, 1, 1)
-    Simulate.click(x.querySelectorAll('button')[0])
-    assertButtons(x, 2, 1, 2)
-    Simulate.click(x.querySelectorAll('button')[1])
-    assertButtons(x, 2, 2, 2)
-    Simulate.click(x.querySelectorAll('button')[2])
-    assertButtons(x, 3, 2, 3)
-  })
+  t.is(screen.getAllByRole('button')[0].innerHTML, '1')
+  t.is(screen.getAllByRole('button')[1].innerHTML, '1')
+  t.is(screen.getAllByRole('button')[2].innerHTML, '1')
 
-  function assertButtons(x: Element, one: number, two: number, three: number) {
-    t.is(x.querySelectorAll('button')[0].innerHTML, one.toString())
-    t.is(x.querySelectorAll('button')[1].innerHTML, two.toString())
-    t.is(x.querySelectorAll('button')[2].innerHTML, three.toString())
-  }
+  fireEvent.click(screen.getAllByRole('button')[0])
+  t.is(screen.getAllByRole('button')[0].innerHTML, '2')
+  t.is(screen.getAllByRole('button')[1].innerHTML, '1')
+  t.is(screen.getAllByRole('button')[2].innerHTML, '2')
+
+  fireEvent.click(screen.getAllByRole('button')[1])
+  t.is(screen.getAllByRole('button')[0].innerHTML, '2')
+  t.is(screen.getAllByRole('button')[1].innerHTML, '2')
+  t.is(screen.getAllByRole('button')[2].innerHTML, '2')
+
+  fireEvent.click(screen.getAllByRole('button')[2])
+  t.is(screen.getAllByRole('button')[0].innerHTML, '3')
+  t.is(screen.getAllByRole('button')[1].innerHTML, '2')
+  t.is(screen.getAllByRole('button')[2].innerHTML, '3')
 })
 
-test('it should support custom initialState', t => {
+test.serial('it should support custom initialState', t => {
   let { Container, withStore } = createConnectedStore({ a: 1 })
   let C = withStore(({ store }) => (
     <button onClick={() => store.set('a')(store.get('a') + 1)}>
       {store.get('a')}
     </button>
   ))
-  let A = () => (
+
+  render(
     <Container initialState={{ a: 101 }}>
       <C />
-    </Container>
+    </Container>,
   )
-  let B = () => (
+  render(
     <Container>
       <C />
-    </Container>
+    </Container>,
   )
 
-  withElement(A, a =>
-    withElement(B, b => {
-      t.is(a.querySelector('button')!.innerHTML, '101')
-      t.is(b.querySelector('button')!.innerHTML, '1')
-      Simulate.click(a.querySelector('button')!)
-      t.is(a.querySelector('button')!.innerHTML, '102')
-      t.is(b.querySelector('button')!.innerHTML, '1')
-      Simulate.click(b.querySelector('button')!)
-      t.is(a.querySelector('button')!.innerHTML, '102')
-      t.is(b.querySelector('button')!.innerHTML, '2')
-    })
-  )
+  t.is(screen.getAllByRole('button')[0].innerHTML, '101')
+  t.is(screen.getAllByRole('button')[1].innerHTML, '1')
+
+  fireEvent.click(screen.getAllByRole('button')[0])
+  t.is(screen.getAllByRole('button')[0].innerHTML, '102')
+  t.is(screen.getAllByRole('button')[1].innerHTML, '1')
+
+  fireEvent.click(screen.getAllByRole('button')[1])
+  t.is(screen.getAllByRole('button')[0].innerHTML, '102')
+  t.is(screen.getAllByRole('button')[1].innerHTML, '2')
 })
 
-test('it should support custom effects', t => {
+test.serial('it should support custom effects', t => {
   t.plan(1)
 
   type State = {
@@ -336,8 +335,8 @@ test('it should support custom effects', t => {
 
   let { Container, withStore } = createConnectedStore({ a: 1 })
 
-  let withEffects: Effects<State> = store => {
-    store.on('a').subscribe(a => {
+  let withEffects: Effects<State> = (store) => {
+    store.on('a').subscribe((a) => {
       t.is(a, 2)
     })
     return store
@@ -348,93 +347,91 @@ test('it should support custom effects', t => {
       {store.get('a')}
     </button>
   ))
-  let A = () => (
+
+  render(
     <Container effects={withEffects}>
       <C />
-    </Container>
+    </Container>,
   )
-
-  withElement(A, _ => Simulate.click(_.querySelector('button')!))
+  fireEvent.click(screen.getByRole('button'))
 })
 
-test('it should eagerly throw at runtime when using a consumer without a container (createConnectedStore)', t => {
+test.serial('it should eagerly throw at runtime when using a consumer without a container (createConnectedStore)', t => {
   let { withStore } = createConnectedStore({ a: 1 })
   let A = withStore(() => <div />)
-  t.throws(() => withElement(A, _ => {}), {
-    message: /does not seem to be nested/
+  t.throws(() => render(<A />), {
+    message: /does not seem to be nested/,
   })
 })
 
-test('it should re-render if a used model property changed', t => {
+test.serial('it should re-render if a used model property changed', t => {
   let renderCount = 0
   let store: Store<{ a: number; b: number }>
   let S = createConnectedStore(
     {
       a: 1,
-      b: 1
+      b: 1,
     },
-    s => {
+    (s) => {
       store = s
       return s
-    }
+    },
   )
   let A = S.withStore(({ store }) => {
     renderCount++
     return <>{store.get('a')}</>
   })
-  let B = () => (
+
+  render(
     <S.Container>
       <A />
-    </S.Container>
+    </S.Container>,
   )
 
-  withElement(B, _ => {
-    store.set('a')(2)
-    store.set('a')(3)
-    t.is(renderCount, 3)
-  })
+  act(() => act(() => store!.set('a')(2)))
+  act(() => act(() => store!.set('a')(3)))
+  t.is(renderCount, 3)
 })
 
-test('it should re-render if an unused model property changed', t => {
+test.serial('it should re-render if an unused model property changed', t => {
   let renderCount = 0
   let store: Store<{ a: number; b: number }>
   let S = createConnectedStore(
     {
       a: 1,
-      b: 1
+      b: 1,
     },
-    s => {
+    (s) => {
       store = s
       return s
-    }
+    },
   )
   let A = S.withStore(({ store }) => {
     renderCount++
     return <>{store.get('a')}</>
   })
-  let B = () => (
+
+  render(
     <S.Container>
       <A />
-    </S.Container>
+    </S.Container>,
   )
-  withElement(B, _ => {
-    store.set('b')(2)
-    store.set('b')(3)
-    t.is(renderCount, 3)
-  })
+  act(() => store!.set('b')(2))
+  act(() => store!.set('b')(3))
+  t.is(renderCount, 3)
 })
 
-test('it should update even when unused fields change (get)', t => {
+test.serial('it should update even when unused fields change (get)', t => {
   let store: Store<{ a: number; b: string }>
   let S = createConnectedStore(
     {
       a: 0,
-      b: 'foo'
+      b: 'foo',
     },
-    s => {
+    (s) => {
       store = s
       return s
-    }
+    },
   )
   let renderCount = 0
   type Props = {
@@ -448,13 +445,13 @@ test('it should update even when unused fields change (get)', t => {
           <>
             {this.props.store.get('a')}
             <button
-              id="a"
+              data-testid="a"
               onClick={() =>
                 this.props.store.set('a')(this.props.store.get('a') + 1)
               }
             />
             <button
-              id="b"
+              data-testid="b"
               onClick={() =>
                 this.props.store.set('a')(this.props.store.get('a') - 1)
               }
@@ -467,49 +464,53 @@ test('it should update even when unused fields change (get)', t => {
           </>
         )
       }
-    }
+    },
   )
-  let B = () => (
+  render(
     <S.Container>
-      <A />
-    </S.Container>
+      <div data-testid="A">
+        <A />
+      </div>
+    </S.Container>,
   )
-  withElement(B, _ => {
-    store.set('b')('bar') // No render
-    t.is(
-      _.innerHTML,
-      '0<button id="a"></button><button id="b"></button><span></span>'
-    )
-    Simulate.click(_.querySelector('#a')!) // Render
-    t.is(
-      _.innerHTML,
-      '1<button id="a"></button><button id="b"></button><div>bar</div>'
-    )
-    Simulate.click(_.querySelector('#b')!) // Render
-    t.is(
-      _.innerHTML,
-      '0<button id="a"></button><button id="b"></button><span></span>'
-    )
-    store.set('b')('baz') // Render
-    t.is(
-      _.innerHTML,
-      '0<button id="a"></button><button id="b"></button><span></span>'
-    )
-    t.is(renderCount, 5)
-  })
+
+  act(() => store!.set('b')('bar')) // No render
+  t.is(
+    screen.getByTestId('A').innerHTML,
+    '0<button id="a"></button><button id="b"></button><span></span>',
+  )
+
+  fireEvent.click(screen.getByTestId('a')) // Render
+  t.is(
+    screen.getByTestId('A').innerHTML,
+    '1<button id="a"></button><button id="b"></button><div>bar</div>',
+  )
+
+  fireEvent.click(screen.getByTestId('b')) // Render
+  t.is(
+    screen.getByTestId('A').innerHTML,
+    '0<button id="a"></button><button id="b"></button><span></span>',
+  )
+
+  act(() => store!.set('b')('baz')) // Render
+  t.is(
+    screen.getByTestId('A').innerHTML,
+    '0<button id="a"></button><button id="b"></button><span></span>',
+  )
+  t.is(renderCount, 5)
 })
 
-test('it should update even when unused fields change (get in lifecycle)', t => {
+test.serial('it should update even when unused fields change (get in lifecycle)', t => {
   let store: Store<{ a: number; b: string }>
   let S = createConnectedStore(
     {
       a: 0,
-      b: 'foo'
+      b: 'foo',
     },
-    s => {
+    (s) => {
       store = s
       return s
-    }
+    },
   )
   let renderCount = 0
   type Props = {
@@ -533,34 +534,35 @@ test('it should update even when unused fields change (get in lifecycle)', t => 
           </>
         )
       }
-    }
+    },
   )
-  let B = () => (
+
+  render(
     <S.Container>
-      <A />
-    </S.Container>
+      <div data-testid="A">
+        <A />
+      </div>
+    </S.Container>,
   )
-  withElement(B, _ => {
-    store.set('b')('bar') // No render
-    t.is(_.innerHTML, '0<span></span>')
-    store.set('a')(1) // Render, and trigger shouldComponentUpdate
-    store.set('b')('a') // Render
-    store.set('b')('b') // Render
-    t.is(renderCount, 5)
-  })
+  act(() => store!.set('b')('bar')) // No render
+  t.is(screen.getByTestId('A').innerHTML, '0<span></span>')
+  act(() => store!.set('a')(1)) // Render, and trigger shouldComponentUpdate
+  act(() => store!.set('b')('a')) // Render
+  act(() => store!.set('b')('b')) // Render
+  t.is(renderCount, 5)
 })
 
-test('it should update even when unused fields change (getState in lifecycle 1)', t => {
+test.serial('it should update even when unused fields change (getState in lifecycle 1)', t => {
   let store: Store<{ a: number; b: string }>
   let S = createConnectedStore(
     {
       a: 0,
-      b: 'foo'
+      b: 'foo',
     },
-    s => {
+    (s) => {
       store = s
       return s
-    }
+    },
   )
   let renderCount = 0
   type Props = {
@@ -575,34 +577,35 @@ test('it should update even when unused fields change (getState in lifecycle 1)'
         renderCount++
         return this.props.store.get('a')
       }
-    }
+    },
   )
-  let B = () => (
+
+  render(
     <S.Container>
-      <A />
-    </S.Container>
+      <div data-testid="A">
+        <A />
+      </div>
+    </S.Container>,
   )
-  withElement(B, _ => {
-    store.set('b')('bar') // No render
-    t.is(_.innerHTML, '0')
-    store.set('a')(1) // Render, and trigger shouldComponentUpdate
-    store.set('b')('a') // Render
-    store.set('b')('b') // Render
-    t.is(renderCount, 5)
-  })
+  act(() => store!.set('b')('bar')) // No render
+  t.is(screen.getByTestId('A').innerHTML, '0')
+  act(() => store!.set('a')(1)) // Render, and trigger shouldComponentUpdate
+  act(() => store!.set('b')('a')) // Render
+  act(() => store!.set('b')('b')) // Render
+  t.is(renderCount, 5)
 })
 
-test('[stateful] it should update even when unused fields change (getState in lifecycle 2)', t => {
+test.serial('[stateful] it should update even when unused fields change (getState in lifecycle 2)', t => {
   let store: Store<{ a: number; b: string }>
   let S = createConnectedStore(
     {
       a: 0,
-      b: 'foo'
+      b: 'foo',
     },
-    s => {
+    (s) => {
       store = s
       return s
-    }
+    },
   )
   let renderCount = 0
   type Props = {
@@ -617,34 +620,35 @@ test('[stateful] it should update even when unused fields change (getState in li
         renderCount++
         return this.props.store.get('a')
       }
-    }
+    },
   )
-  let B = () => (
+
+  render(
     <S.Container>
-      <A />
-    </S.Container>
+      <div data-testid="A">
+        <A />
+      </div>
+    </S.Container>,
   )
-  withElement(B, _ => {
-    store.set('b')('bar') // No render
-    t.is(_.innerHTML, '0')
-    store.set('a')(1) // Render, and trigger shouldComponentUpdate
-    store.set('b')('a') // Render
-    store.set('b')('b') // Render
-    t.is(renderCount, 5)
-  })
+  act(() => store!.set('b')('bar')) // No render
+  t.is(screen.getByTestId('A').innerHTML, '0')
+  act(() => store!.set('a')(1)) // Render, and trigger shouldComponentUpdate
+  act(() => store!.set('b')('a')) // Render
+  act(() => store!.set('b')('b')) // Render
+  t.is(renderCount, 5)
 })
 
-test('[stateful] it should update only when subscribed fields change (get in constructor)', t => {
+test.serial('[stateful] it should update only when subscribed fields change (get in constructor)', t => {
   let store: Store<{ a: number; b: string }>
   let S = createConnectedStore(
     {
       a: 0,
-      b: 'foo'
+      b: 'foo',
     },
-    s => {
+    (s) => {
       store = s
       return s
-    }
+    },
   )
   let renderCount = 0
   type Props = {
@@ -669,26 +673,28 @@ test('[stateful] it should update only when subscribed fields change (get in con
           </>
         )
       }
-    }
+    },
   )
-  let B = () => (
+
+  render(
     <S.Container>
-      <A />
-    </S.Container>
+      <div data-testid="A">
+        <A />
+      </div>
+    </S.Container>,
   )
-  withElement(B, _ => {
-    store.set('b')('bar') // Render
-    t.is(_.innerHTML, '0<span></span>')
-    store.set('a')(1) // Render
-    store.set('b')('a') // Render
-    store.set('b')('b') // Render
-    t.is(renderCount, 5)
-  })
+
+  act(() => store!.set('b')('bar')) // Render
+  t.is(screen.getByTestId('A').innerHTML, '0<span></span>')
+  act(() => store!.set('a')(1)) // Render
+  act(() => store!.set('b')('a')) // Render
+  act(() => store!.set('b')('b')) // Render
+  t.is(renderCount, 5)
 })
 
-test('it should update when subscribed fields change (set in constructor)', t => {
+test.serial('it should update when subscribed fields change (set in constructor)', t => {
   let S = createConnectedStore({
-    a: 0
+    a: 0,
   })
   let renderCount = 0
   type Props = {
@@ -704,30 +710,31 @@ test('it should update when subscribed fields change (set in constructor)', t =>
         renderCount++
         return <>{this.props.store.get('a')}</>
       }
-    }
+    },
   )
-  let B = () => (
+
+  render(
     <S.Container>
-      <A />
-    </S.Container>
+      <div data-testid="A">
+        <A />
+      </div>
+    </S.Container>,
   )
-  withElement(B, _ => {
-    t.is(_.innerHTML, '1')
-    t.is(renderCount, 2)
-  })
+  t.is(screen.getByTestId('A').innerHTML, '1')
+  t.is(renderCount, 2)
 })
 
-test('[stateful] it should update when any field changes (getState)', t => {
+test.serial('[stateful] it should update when any field changes (getState)', t => {
   let store: Store<{ a: number; b: string }>
   let S = createConnectedStore(
     {
       a: 0,
-      b: 'foo'
+      b: 'foo',
     },
-    s => {
+    (s) => {
       store = s
       return s
-    }
+    },
   )
   let renderCount = 0
   type Props = {
@@ -741,13 +748,13 @@ test('[stateful] it should update when any field changes (getState)', t => {
           <>
             {this.props.store.getState().a}
             <button
-              id="a"
+              data-testid="a"
               onClick={() =>
                 this.props.store.set('a')(this.props.store.get('a') + 1)
               }
             />
             <button
-              id="b"
+              data-testid="b"
               onClick={() =>
                 this.props.store.set('a')(this.props.store.get('a') - 1)
               }
@@ -760,42 +767,47 @@ test('[stateful] it should update when any field changes (getState)', t => {
           </>
         )
       }
-    }
+    },
   )
-  let B = () => (
+
+  render(
     <S.Container>
-      <A />
-    </S.Container>
+      <div data-testid="A">
+        <A />
+      </div>
+    </S.Container>,
   )
-  withElement(B, _ => {
-    store.set('b')('bar') // Render (this is the deoptimization when you use .getState)
-    t.is(
-      _.innerHTML,
-      '0<button id="a"></button><button id="b"></button><span></span>'
-    )
-    Simulate.click(_.querySelector('#a')!) // Render
-    t.is(
-      _.innerHTML,
-      '1<button id="a"></button><button id="b"></button><div>bar</div>'
-    )
-    Simulate.click(_.querySelector('#b')!) // Render
-    t.is(
-      _.innerHTML,
-      '0<button id="a"></button><button id="b"></button><span></span>'
-    )
-    store.set('b')('baz') // Render
-    t.is(
-      _.innerHTML,
-      '0<button id="a"></button><button id="b"></button><span></span>'
-    )
-    t.is(renderCount, 5)
-  })
+  act(() => store!.set('b')('bar')) // Render (this is the deoptimization when you use .getState)
+
+  t.is(
+    screen.getByTestId('A').innerHTML,
+    '0<button id="a"></button><button id="b"></button><span></span>',
+  )
+
+  fireEvent.click(screen.getByTestId('a')) // Render
+  t.is(
+    screen.getByTestId('A').innerHTML,
+    '1<button id="a"></button><button id="b"></button><div>bar</div>',
+  )
+
+  fireEvent.click(screen.getByTestId('b')) // Render
+  t.is(
+    screen.getByTestId('A').innerHTML,
+    '0<button id="a"></button><button id="b"></button><span></span>',
+  )
+
+  act(() => store!.set('b')('baz')) // Render
+  t.is(
+    screen.getByTestId('A').innerHTML,
+    '0<button id="a"></button><button id="b"></button><span></span>',
+  )
+  t.is(renderCount, 5)
 })
 
-test("it should get the most up-to-date version of a field, even if Undux doesn't know the component depends on it", t => {
+test.serial("it should get the most up-to-date version of a field, even if Undux doesn't know the component depends on it", t => {
   t.plan(2)
   let S = createConnectedStore({
-    a: 0
+    a: 0,
   })
   type Props = {
     store: Store<{ a: number }>
@@ -809,7 +821,7 @@ test("it should get the most up-to-date version of a field, even if Undux doesn'
       render() {
         return <>{this.props.store.get('a')}</>
       }
-    }
+    },
   )
   let B = S.withStore(
     class Test extends React.Component<Props & { onClick(a: number): void }> {
@@ -822,23 +834,24 @@ test("it should get the most up-to-date version of a field, even if Undux doesn'
           </>
         )
       }
-    }
+    },
   )
-  let C = () => (
+
+  render(
     <S.Container>
-      <B onClick={a => t.is(a, 1)} />
-    </S.Container>
+      <div data-testid="B">
+        <B onClick={(a) => t.is(a, 1)} />
+      </div>
+    </S.Container>,
   )
-  withElement(C, _ => {
-    t.is(_.innerHTML, '<button></button>1')
-    Simulate.click(_.querySelector('button')!)
-  })
+  t.is(screen.getByTestId('B').innerHTML, '<button></button>1')
+  fireEvent.click(screen.getByRole('button'))
 })
 
-test('it should return the same value when call .get multiple times for one snapshot', t => {
+test.serial('it should return the same value when call .get multiple times for one snapshot', t => {
   t.plan(4)
   let S = createConnectedStore({
-    a: 0
+    a: 0,
   })
   type Props = {
     store: Store<{ a: number }>
@@ -852,7 +865,7 @@ test('it should return the same value when call .get multiple times for one snap
       render() {
         return <>{this.props.store.get('a')}</>
       }
-    }
+    },
   )
   let B = S.withStore(
     class Test extends React.Component<Props & { onClick(a: number): void }> {
@@ -869,47 +882,48 @@ test('it should return the same value when call .get multiple times for one snap
           </>
         )
       }
-    }
+    },
   )
   let call = 0
-  let C = () => (
+
+  render(
     <S.Container>
-      <B
-        onClick={a => {
-          switch (call) {
-            case 0:
-              return t.is(a, 1)
-            case 1:
-              return t.is(a, 1)
-            case 2:
-              return t.is(a, 1)
-          }
-          call++
-        }}
-      />
-    </S.Container>
+      <div data-testid="B">
+        <B
+          onClick={(a) => {
+            switch (call) {
+              case 0:
+                return t.is(a, 1)
+              case 1:
+                return t.is(a, 1)
+              case 2:
+                return t.is(a, 1)
+            }
+            call++
+          }}
+        />
+      </div>
+    </S.Container>,
   )
-  withElement(C, _ => {
-    t.is(_.innerHTML, '<button></button>1')
-    Simulate.click(_.querySelector('button')!)
-  })
+  t.is(screen.getByTestId('B').innerHTML, '<button></button>1')
+  fireEvent.click(screen.getByRole('button'))
 })
 
-test('it should return the same value when call .get multiple times for one snapshot, even when using shouldComponentUpdate', t => {
+test.serial('it should return the same value when call .get multiple times for one snapshot, even when using shouldComponentUpdate', t => {
   let S = createConnectedStore({
-    a: 'a'
+    a: 'a',
   })
-  let X = S.withStore(props => (
+  let X = S.withStore((props) => (
     <button onClick={() => props.store.set('a')('x')}>
       {props.store.get('a')}
     </button>
   ))
-  let Y = S.withStore(props => (
+  let Y = S.withStore((props) => (
     <button onClick={() => props.store.set('a')('y')}>
       {props.store.get('a')}
     </button>
   ))
-  let Z = S.withStore(props => (
+  let Z = S.withStore((props) => (
     <button onClick={() => props.store.set('a')('z')}>
       {props.store.get('a')}
     </button>
@@ -931,35 +945,39 @@ test('it should return the same value when call .get multiple times for one snap
             return <>{this.props.store.get('a')}</>
         }
       }
-    }
+    },
   )
   let store: Store<{ a: string }>
-  let Leak = S.withStore(props => {
+  let Leak = S.withStore((props) => {
     store = (props as any).store.storeDefinition
     return null
   })
-  let C = () => (
+
+  render(
     <S.Container>
       <Leak />
-      <A />
-    </S.Container>
+      <div data-testid="A">
+        <A />
+      </div>
+    </S.Container>,
   )
-  withElement(C, _ => {
-    t.is(_.innerHTML, '<button>a</button>')
-    t.is(store.get('a'), 'a')
-    Simulate.click(_.querySelector('button')!)
-    t.is(store.get('a'), 'x')
-    t.is(_.innerHTML, '<button>x</button>')
-    Simulate.click(_.querySelector('button')!)
-    t.is(store.get('a'), 'y')
-    t.is(_.innerHTML, '<button>y</button>')
-    Simulate.click(_.querySelector('button')!)
-    t.is(store.get('a'), 'z')
-    t.is(_.innerHTML, 'z')
-  })
+  t.is(store!.get('a'), 'a')
+  t.is(screen.getByTestId('A').innerHTML, '<button>a</button>')
+
+  fireEvent.click(screen.getByRole('button'))
+  t.is(store!.get('a'), 'x')
+  t.is(screen.getByTestId('A').innerHTML, '<button>x</button>')
+
+  fireEvent.click(screen.getByRole('button'))
+  t.is(store!.get('a'), 'y')
+  t.is(screen.getByTestId('A').innerHTML, '<button>y</button>')
+
+  fireEvent.click(screen.getByRole('button'))
+  t.is(store!.get('a'), 'z')
+  t.is(screen.getByTestId('A').innerHTML, '<button>z</button>')
 })
 
-test('it should fail for async updates by default', t => {
+test.serial('it should fail for async updates by default', t => {
   type State = {
     as: number[]
   }
@@ -991,25 +1009,21 @@ test('it should fail for async updates by default', t => {
   }
 
   let store: Store<State>
-  let Leak = S.withStore(props => {
+  let Leak = S.withStore((props) => {
     store = (props as any).store.storeDefinition
     return null
   })
 
-  function C() {
-    return (
-      <S.Container>
-        <Leak />
-        <B />
-      </S.Container>
-    )
-  }
-  withElement(C, _ => {
-    t.deepEqual(store.get('as'), [2])
-  })
+  render(
+    <S.Container>
+      <Leak />
+      <B />
+    </S.Container>,
+  )
+  t.deepEqual(store!.get('as'), [2])
 })
 
-test('it should work for async updates using setFrom_EXPERIMENTAL', t => {
+test.serial('it should work for async updates using setFrom_EXPERIMENTAL', t => {
   type State = {
     as: number[]
   }
@@ -1021,7 +1035,7 @@ test('it should work for async updates using setFrom_EXPERIMENTAL', t => {
   }
   class A extends React.Component<Props> {
     componentDidMount() {
-      this.props.store.setFrom_EXPERIMENTAL(store => {
+      this.props.store.setFrom_EXPERIMENTAL((store) => {
         let as = store.get('as')
         store.set('as')([...as, index++])
       })
@@ -1043,25 +1057,21 @@ test('it should work for async updates using setFrom_EXPERIMENTAL', t => {
   }
 
   let store: Store<State>
-  let Leak = S.withStore(props => {
+  let Leak = S.withStore((props) => {
     store = (props as any).store.storeDefinition
     return null
   })
 
-  function C() {
-    return (
-      <S.Container>
-        <Leak />
-        <B />
-      </S.Container>
-    )
-  }
-  withElement(C, _ => {
-    t.deepEqual(store.get('as'), [0, 1, 2])
-  })
+  render(
+    <S.Container>
+      <Leak />
+      <B />
+    </S.Container>,
+  )
+  t.deepEqual(store!.get('as'), [0, 1, 2])
 })
 
-test('setFrom_EXPERIMENTAL should compose', t => {
+test.serial('setFrom_EXPERIMENTAL should compose', t => {
   type State = {
     as: number[]
   }
@@ -1073,12 +1083,12 @@ test('setFrom_EXPERIMENTAL should compose', t => {
   }
   class A extends React.Component<Props> {
     componentDidMount() {
-      this.props.store.setFrom_EXPERIMENTAL(store => {
+      this.props.store.setFrom_EXPERIMENTAL((store) => {
         let as = store.get('as')
         store.set('as')([...as, index++])
 
         // One more time
-        store.setFrom_EXPERIMENTAL(store => {
+        store.setFrom_EXPERIMENTAL((store) => {
           let as = store.get('as')
           store.set('as')([...as, index++])
         })
@@ -1101,25 +1111,21 @@ test('setFrom_EXPERIMENTAL should compose', t => {
   }
 
   let store: Store<State>
-  let Leak = S.withStore(props => {
+  let Leak = S.withStore((props) => {
     store = (props as any).store.storeDefinition
     return null
   })
 
-  function C() {
-    return (
-      <S.Container>
-        <Leak />
-        <B />
-      </S.Container>
-    )
-  }
-  withElement(C, _ => {
-    t.deepEqual(store.get('as'), [0, 1, 2, 3, 4, 5])
-  })
+  render(
+    <S.Container>
+      <Leak />
+      <B />
+    </S.Container>,
+  )
+  t.deepEqual(store!.get('as'), [0, 1, 2, 3, 4, 5])
 })
 
-test('setFrom_EXPERIMENTAL should chain', t => {
+test.serial('setFrom_EXPERIMENTAL should chain', t => {
   type State = {
     as: number
   }
@@ -1130,14 +1136,14 @@ test('setFrom_EXPERIMENTAL should chain', t => {
   }
   class A extends React.Component<Props> {
     componentDidMount() {
-      this.props.store.setFrom_EXPERIMENTAL(store =>
-        store.set('as')(store.get('as') + 1)
+      this.props.store.setFrom_EXPERIMENTAL((store) =>
+        store.set('as')(store.get('as') + 1),
       )
-      this.props.store.setFrom_EXPERIMENTAL(store =>
-        store.set('as')(store.get('as') + 1)
+      this.props.store.setFrom_EXPERIMENTAL((store) =>
+        store.set('as')(store.get('as') + 1),
       )
-      this.props.store.setFrom_EXPERIMENTAL(store =>
-        store.set('as')(store.get('as') + 1)
+      this.props.store.setFrom_EXPERIMENTAL((store) =>
+        store.set('as')(store.get('as') + 1),
       )
     }
     render() {
@@ -1147,20 +1153,16 @@ test('setFrom_EXPERIMENTAL should chain', t => {
   let A1 = S.withStore(A)
 
   let store: Store<State>
-  let Leak = S.withStore(props => {
+  let Leak = S.withStore((props) => {
     store = (props as any).store.storeDefinition
     return null
   })
 
-  function C() {
-    return (
-      <S.Container>
-        <Leak />
-        <A1 />
-      </S.Container>
-    )
-  }
-  withElement(C, _ => {
-    t.deepEqual(store.get('as'), 3)
-  })
+  render(
+    <S.Container>
+      <Leak />
+      <A1 />
+    </S.Container>,
+  )
+  t.deepEqual(store!.get('as'), 3)
 })

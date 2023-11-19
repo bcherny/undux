@@ -10,22 +10,21 @@ interface AppStore {
 }
 
 const initialFruits = {
-  banana: 100
+  banana: 100,
 }
 
 const store = createStore<AppStore>({
-  fruits: I.Map(initialFruits)
+  fruits: I.Map(initialFruits),
 })
 
 const withStore = connect(store)
 
-test('[immutable] it should only re-render if something actually changed', t => {
+test('[immutable] it should only re-render if something actually changed', (t) => {
   let renderCount = 0
 
   const TestingComponent = withStore(({ store }) => {
     const fruits = store.get('fruits')
-    const updateBanana = () =>
-      store.set('fruits')(I.Map(initialFruits))
+    const updateBanana = () => store.set('fruits')(I.Map(initialFruits))
 
     renderCount++
     return (
@@ -36,7 +35,7 @@ test('[immutable] it should only re-render if something actually changed', t => 
     )
   })
 
-  withElement(TestingComponent, _ => {
+  withElement(TestingComponent, (_) => {
     Simulate.click(_.querySelector('button')!)
     Simulate.click(_.querySelector('button')!)
     Simulate.click(_.querySelector('button')!)

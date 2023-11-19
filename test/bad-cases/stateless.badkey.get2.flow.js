@@ -5,30 +5,30 @@ import * as React from 'react'
 
 type State = {
   isTrue: boolean,
-  users: string[]
+  users: string[],
 }
 
 let initialState: State = {
   isTrue: true,
-  users: []
+  users: [],
 }
 
-let withEffects: Effects<State> = store => {
-  store.on('users').subscribe(_ => _.slice(0, 1))
+let withEffects: Effects<State> = (store) => {
+  store.on('users').subscribe((_) => _.slice(0, 1))
   return store
 }
 
 let store = withEffects(withLogger(createStore(initialState)))
 
 type StoreProps = {
-  store: Store<State>
+  store: Store<State>,
 }
 
 /////////////////// A ///////////////////
 
 type Props = StoreProps & {
   foo: number,
-  bar: string
+  bar: string,
 }
 
 let A = connect(store)(({ foo, bar, store }: Props) => (

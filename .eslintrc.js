@@ -25,11 +25,16 @@ module.exports = {
     }
   },
   rules: {
-    'camelcase': 'off',
+    camelcase: 'off',
+    'comma-dangle': 'off',
+    'dot-notation': 'off',
     'lines-between-class-members': 'off',
+    'multiline-ternary': 'off',
     'no-unused-vars': 'off',
     'no-useless-constructor': 'off',
+    'object-curly-spacing': 'off',
     'prefer-const': 'off',
+    'react/display-name': 'off',
     'space-before-function-paren': 'off'
   }
 }

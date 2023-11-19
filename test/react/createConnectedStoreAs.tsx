@@ -5,10 +5,10 @@ import { EffectsAs } from '../../src'
 import { createConnectedStoreAs } from '../../src/react'
 import { withElement } from '../testUtils'
 
-test('it should support combining stores', t => {
+test('it should support combining stores', (t) => {
   let C = createConnectedStoreAs({
     A: { a: 1 },
-    B: { b: 1 }
+    B: { b: 1 },
   })
 
   let X = C.withStores(({ A, B }) => (
@@ -24,7 +24,7 @@ test('it should support combining stores', t => {
     </C.Container>
   )
 
-  withElement(Z, z => {
+  withElement(Z, (z) => {
     assertButtons(z, 1, 1)
     Simulate.click(z.querySelectorAll('button')[0])
     assertButtons(z, 2, 1)
@@ -40,7 +40,7 @@ test('it should support combining stores', t => {
   }
 })
 
-test('it should support effects for multiple stores', t => {
+test('it should support effects for multiple stores', (t) => {
   t.plan(2)
 
   type State = {
@@ -49,17 +49,17 @@ test('it should support effects for multiple stores', t => {
   }
 
   let withEffects: EffectsAs<State> = ({ A, B }) => {
-    A.on('a').subscribe(a => t.is(a, 2))
-    B.on('b').subscribe(b => t.is(b, 2))
+    A.on('a').subscribe((a) => t.is(a, 2))
+    B.on('b').subscribe((b) => t.is(b, 2))
     return { A, B }
   }
 
   let C = createConnectedStoreAs(
     {
       A: { a: 1 },
-      B: { b: 1 }
+      B: { b: 1 },
     },
-    withEffects
+    withEffects,
   )
 
   let X = C.withStores(({ A, B }) => (
@@ -75,16 +75,16 @@ test('it should support effects for multiple stores', t => {
     </C.Container>
   )
 
-  withElement(Z, z => {
+  withElement(Z, (z) => {
     Simulate.click(z.querySelectorAll('button')[0])
     Simulate.click(z.querySelectorAll('button')[1])
   })
 })
 
-test('it should support multiple instances of multiple stores', t => {
+test('it should support multiple instances of multiple stores', (t) => {
   let { Container, withStores } = createConnectedStoreAs({
     A: { a: 1 },
-    B: { b: 2 }
+    B: { b: 2 },
   })
   let C = withStores(({ A, B }) => (
     <>
@@ -103,8 +103,8 @@ test('it should support multiple instances of multiple stores', t => {
     </Container>
   )
 
-  withElement(A, a =>
-    withElement(B, b => {
+  withElement(A, (a) =>
+    withElement(B, (b) => {
       t.is(a.querySelectorAll('button')[0].innerHTML, '1')
       t.is(a.querySelectorAll('button')[1].innerHTML, '2')
       t.is(b.querySelectorAll('button')[0].innerHTML, '1')
@@ -124,14 +124,14 @@ test('it should support multiple instances of multiple stores', t => {
       t.is(a.querySelectorAll('button')[1].innerHTML, '2')
       t.is(b.querySelectorAll('button')[0].innerHTML, '2')
       t.is(b.querySelectorAll('button')[1].innerHTML, '3')
-    })
+    }),
   )
 })
 
-test('it should support custom initialStates for multiple stores', t => {
+test('it should support custom initialStates for multiple stores', (t) => {
   let C = createConnectedStoreAs({
     A: { a: 1 },
-    B: { b: 1 }
+    B: { b: 1 },
   })
 
   let X = C.withStores(({ A, B }) => (
@@ -143,7 +143,7 @@ test('it should support custom initialStates for multiple stores', t => {
 
   let initialStates = {
     A: { a: 3 },
-    B: { b: 4 }
+    B: { b: 4 },
   }
 
   let Z = () => (
@@ -152,7 +152,7 @@ test('it should support custom initialStates for multiple stores', t => {
     </C.Container>
   )
 
-  withElement(Z, z => {
+  withElement(Z, (z) => {
     assertButtons(z, 3, 4)
     Simulate.click(z.querySelectorAll('button')[0])
     assertButtons(z, 4, 4)
@@ -168,7 +168,7 @@ test('it should support custom initialStates for multiple stores', t => {
   }
 })
 
-test('it should support custom effects for multiple stores', t => {
+test('it should support custom effects for multiple stores', (t) => {
   t.plan(2)
 
   type State = {
@@ -178,7 +178,7 @@ test('it should support custom effects for multiple stores', t => {
 
   let C = createConnectedStoreAs<State>({
     A: { a: 1 },
-    B: { b: 1 }
+    B: { b: 1 },
   })
 
   let X = C.withStores(({ A, B }) => (
@@ -189,8 +189,8 @@ test('it should support custom effects for multiple stores', t => {
   ))
 
   let effects: EffectsAs<State> = ({ A, B }) => {
-    A.on('a').subscribe(a => t.is(a, 2))
-    B.on('b').subscribe(b => t.is(b, 2))
+    A.on('a').subscribe((a) => t.is(a, 2))
+    B.on('b').subscribe((b) => t.is(b, 2))
     return { A, B }
   }
 
@@ -200,16 +200,16 @@ test('it should support custom effects for multiple stores', t => {
     </C.Container>
   )
 
-  withElement(Z, z => {
+  withElement(Z, (z) => {
     Simulate.click(z.querySelectorAll('button')[0])
     Simulate.click(z.querySelectorAll('button')[1])
   })
 })
 
-test('it should eagerly throw at runtime when using a consumer without a container (createConnectedStoreAs)', t => {
+test('it should eagerly throw at runtime when using a consumer without a container (createConnectedStoreAs)', (t) => {
   let { withStores } = createConnectedStoreAs({ A: { a: 1 } })
   let A = withStores(() => <div />)
-  t.throws(() => withElement(A, _ => {}), {
-    message: /does not seem to be nested/
+  t.throws(() => withElement(A, (_) => {}), {
+    message: /does not seem to be nested/,
   })
 })

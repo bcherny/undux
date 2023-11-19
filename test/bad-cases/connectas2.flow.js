@@ -14,11 +14,11 @@ let storeB = createStore(initB)
 
 type Props = {|
   a: Store<A>,
-  b: Store<B>
+  b: Store<B>,
 |}
 
 let Component = (
-  { a, b, c }: Props // ERROR: Missing type
+  { a, b, c }: Props, // ERROR: Missing type
 ) => (
   <div>
     {a.get('a') * 4}
@@ -29,5 +29,5 @@ let Component = (
 
 let ConnectedComponent = connectAs({
   a: storeA,
-  b: storeB
+  b: storeB,
 })(Component)
