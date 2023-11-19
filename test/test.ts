@@ -2,6 +2,7 @@ import { afterEach, beforeEach, jest } from '@jest/globals'
 import '@testing-library/jest-dom'
 import './cyclical-dependencies'
 import './emitter'
+import './immutable'
 import './react/createConnectedStore'
 
 // Mock console.error so it doesn't spam the terminal
@@ -12,7 +13,6 @@ beforeEach(() => {
 })
 afterEach(() => f!.mockRestore())
 
-// import './immutable'
 // import './react/createConnectedStore-context'
 // import './react/createConnectedStoreAs'
 // import './react/createConnectedStoreAs-context'
