@@ -1,5 +1,3 @@
-import 'global-jsdom/register'
-import test from 'ava'
 import * as React from 'react'
 import {
   debounceTime,
@@ -10,15 +8,14 @@ import {
 } from 'rxjs/operators'
 import { Effects, Store } from '../../src'
 import { createConnectedStore } from '../../src/react/createConnectedStore'
-import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
+import { act, fireEvent, render, screen } from '@testing-library/react'
+import { expect, test } from '@jest/globals'
 
 function setTimeoutPromise(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
-test.afterEach(cleanup)
-
-test.serial('it should render', t => {
+test('it should render', () => {
   let { Container, withStore } = createConnectedStore({ a: 1 })
   let B = withStore(({ store }) => (
     <button onClick={() => store.set('a')(store.get('a') + 1)}>
@@ -31,12 +28,12 @@ test.serial('it should render', t => {
     </Container>,
   )
 
-  t.is(screen.getByRole('button').innerHTML, '1')
+  expect(screen.getByRole('button').innerHTML).toBe('1')
   fireEvent.click(screen.getByRole('button'))
-  t.is(screen.getByRole('button').innerHTML, '2')
+  expect(screen.getByRole('button').innerHTML).toBe('2')
 })
 
-test.serial('it should update (with extra props)', t => {
+test('it should update (with extra props)', () => {
   let { Container, withStore } = createConnectedStore({ a: 1 })
   type Props = {
     extra: string
@@ -64,21 +61,19 @@ test.serial('it should update (with extra props)', t => {
   }
 
   render(<A />)
-  t.is(screen.getByRole('button').innerHTML, 'a')
+  expect(screen.getByRole('button').innerHTML).toBe('a')
   fireEvent.click(screen.getByRole('button'))
-  t.is(screen.getByRole('button').innerHTML, 'b')
+  expect(screen.getByRole('button').innerHTML).toBe('b')
 })
 
-test.serial('it should support effects', t => {
-  t.plan(1)
-
+test('it should support effects', () => {
   type State = {
     a: number
   }
 
   let withEffects: Effects<State> = (store) => {
     store.on('a').subscribe((a) => {
-      t.is(a, 2)
+      expect(a).toBe(2)
     })
     return store
   }
@@ -99,8 +94,7 @@ test.serial('it should support effects', t => {
   fireEvent.click(screen.getByRole('button'))
 })
 
-test.serial('it should support effects with rx opererators', async t => {
-  t.plan(2)
+test('it should support effects with rx opererators', async () => {
   type State = {
     a: number
     b: number
@@ -136,14 +130,14 @@ test.serial('it should support effects with rx opererators', async t => {
   )
 
   fireEvent.click(screen.getByRole('button'))
-  t.is(store!.get('b'), 1)
+  expect(store!.get('b')).toBe(1)
   fireEvent.click(screen.getByRole('button'))
   fireEvent.click(screen.getByRole('button'))
   await setTimeoutPromise(0)
-  t.is(store!.get('b'), 18)
+  expect(store!.get('b')).toBe(18)
 })
 
-test.serial('it should support multiple instances of a store', t => {
+test('it should support multiple instances of a store', () => {
   let { Container, withStore } = createConnectedStore({ a: 1 })
   let C = withStore(({ store }) => (
     <button onClick={() => store.set('a')(store.get('a') + 1)}>
@@ -151,28 +145,28 @@ test.serial('it should support multiple instances of a store', t => {
     </button>
   ))
 
-  const {unmount: unmount0} = render(
+  const { unmount: unmount0 } = render(
     <Container>
       <C />
     </Container>,
   )
-  const {unmount: unmount1} = render(
+  const { unmount: unmount1 } = render(
     <Container>
       <C />
     </Container>,
   )
 
-  t.is(screen.getAllByRole('button')[0].innerHTML, '1')
-  t.is(screen.getAllByRole('button')[1].innerHTML, '1')
+  expect(screen.getAllByRole('button')[0].innerHTML).toBe('1')
+  expect(screen.getAllByRole('button')[1].innerHTML).toBe('1')
   fireEvent.click(screen.getAllByRole('button')[0])
-  t.is(screen.getAllByRole('button')[0].innerHTML, '2')
-  t.is(screen.getAllByRole('button')[1].innerHTML, '1')
+  expect(screen.getAllByRole('button')[0].innerHTML).toBe('2')
+  expect(screen.getAllByRole('button')[1].innerHTML).toBe('1')
   fireEvent.click(screen.getAllByRole('button')[1])
-  t.is(screen.getAllByRole('button')[0].innerHTML, '2')
-  t.is(screen.getAllByRole('button')[1].innerHTML, '2')
+  expect(screen.getAllByRole('button')[0].innerHTML).toBe('2')
+  expect(screen.getAllByRole('button')[1].innerHTML).toBe('2')
 })
 
-test.serial('it should support multiple instances of a store, with disjoint lifecycles', t => {
+test('it should support multiple instances of a store, with disjoint lifecycles', () => {
   let { Container, withStore } = createConnectedStore({ a: 1 })
   let C = withStore(({ store }) => (
     <button onClick={() => store.set('a')(store.get('a') + 1)}>
@@ -185,21 +179,21 @@ test.serial('it should support multiple instances of a store, with disjoint life
       <C />
     </Container>,
   )
-  t.is(screen.getAllByRole('button')[0].innerHTML, '1')
+  expect(screen.getAllByRole('button')[0].innerHTML).toBe('1')
   fireEvent.click(screen.getAllByRole('button')[0])
-  t.is(screen.getAllByRole('button')[0].innerHTML, '2')
+  expect(screen.getAllByRole('button')[0].innerHTML).toBe('2')
 
   render(
     <Container>
       <C />
     </Container>,
   )
-  t.is(screen.getAllByRole('button')[1].innerHTML, '1')
+  expect(screen.getAllByRole('button')[1].innerHTML).toBe('1')
   fireEvent.click(screen.getAllByRole('button')[1])
-  t.is(screen.getAllByRole('button')[1].innerHTML, '2')
+  expect(screen.getAllByRole('button')[1].innerHTML).toBe('2')
 })
 
-test.serial('it should support multiple instances of a store in one tree, with disjoint lifecycles', t => {
+test('it should support multiple instances of a store in one tree, with disjoint lifecycles', () => {
   let Test = createConnectedStore({ isA: true })
   let { Container, withStore } = createConnectedStore({ a: 1 })
   let C = withStore(({ store }) => (
@@ -234,24 +228,24 @@ test.serial('it should support multiple instances of a store in one tree, with d
     </Test.Container>,
   )
 
-  t.is(screen.getByTestId('C').innerHTML, '1')
+  expect(screen.getByTestId('C').innerHTML).toBe('1')
   fireEvent.click(screen.getByTestId('C'))
-  t.is(screen.getByTestId('C').innerHTML, '2')
+  expect(screen.getByTestId('C').innerHTML).toBe('2')
 
   // Swap subtree
   fireEvent.click(screen.getByTestId('D'))
-  t.is(screen.getByTestId('C').innerHTML, '1')
+  expect(screen.getByTestId('C').innerHTML).toBe('1')
   fireEvent.click(screen.getByTestId('C'))
-  t.is(screen.getByTestId('C').innerHTML, '2')
+  expect(screen.getByTestId('C').innerHTML).toBe('2')
 
   // Swap subtree
   fireEvent.click(screen.getByTestId('D'))
-  t.is(screen.getByTestId('C').innerHTML, '1')
+  expect(screen.getByTestId('C').innerHTML).toBe('1')
   fireEvent.click(screen.getByTestId('C'))
-  t.is(screen.getByTestId('C').innerHTML, '2')
+  expect(screen.getByTestId('C').innerHTML).toBe('2')
 })
 
-test.serial('it should support interleaved stores', t => {
+test('it should support interleaved stores', () => {
   let A = createConnectedStore({ a: 1 })
   let B = createConnectedStore({ b: 1 })
   let C = A.withStore(({ store }) => (
@@ -275,27 +269,27 @@ test.serial('it should support interleaved stores', t => {
     </A.Container>,
   )
 
-  t.is(screen.getAllByRole('button')[0].innerHTML, '1')
-  t.is(screen.getAllByRole('button')[1].innerHTML, '1')
-  t.is(screen.getAllByRole('button')[2].innerHTML, '1')
+  expect(screen.getAllByRole('button')[0].innerHTML).toBe('1')
+  expect(screen.getAllByRole('button')[1].innerHTML).toBe('1')
+  expect(screen.getAllByRole('button')[2].innerHTML).toBe('1')
 
   fireEvent.click(screen.getAllByRole('button')[0])
-  t.is(screen.getAllByRole('button')[0].innerHTML, '2')
-  t.is(screen.getAllByRole('button')[1].innerHTML, '1')
-  t.is(screen.getAllByRole('button')[2].innerHTML, '2')
+  expect(screen.getAllByRole('button')[0].innerHTML).toBe('2')
+  expect(screen.getAllByRole('button')[1].innerHTML).toBe('1')
+  expect(screen.getAllByRole('button')[2].innerHTML).toBe('2')
 
   fireEvent.click(screen.getAllByRole('button')[1])
-  t.is(screen.getAllByRole('button')[0].innerHTML, '2')
-  t.is(screen.getAllByRole('button')[1].innerHTML, '2')
-  t.is(screen.getAllByRole('button')[2].innerHTML, '2')
+  expect(screen.getAllByRole('button')[0].innerHTML).toBe('2')
+  expect(screen.getAllByRole('button')[1].innerHTML).toBe('2')
+  expect(screen.getAllByRole('button')[2].innerHTML).toBe('2')
 
   fireEvent.click(screen.getAllByRole('button')[2])
-  t.is(screen.getAllByRole('button')[0].innerHTML, '3')
-  t.is(screen.getAllByRole('button')[1].innerHTML, '2')
-  t.is(screen.getAllByRole('button')[2].innerHTML, '3')
+  expect(screen.getAllByRole('button')[0].innerHTML).toBe('3')
+  expect(screen.getAllByRole('button')[1].innerHTML).toBe('2')
+  expect(screen.getAllByRole('button')[2].innerHTML).toBe('3')
 })
 
-test.serial('it should support custom initialState', t => {
+test('it should support custom initialState', () => {
   let { Container, withStore } = createConnectedStore({ a: 1 })
   let C = withStore(({ store }) => (
     <button onClick={() => store.set('a')(store.get('a') + 1)}>
@@ -314,21 +308,19 @@ test.serial('it should support custom initialState', t => {
     </Container>,
   )
 
-  t.is(screen.getAllByRole('button')[0].innerHTML, '101')
-  t.is(screen.getAllByRole('button')[1].innerHTML, '1')
+  expect(screen.getAllByRole('button')[0].innerHTML).toBe('101')
+  expect(screen.getAllByRole('button')[1].innerHTML).toBe('1')
 
   fireEvent.click(screen.getAllByRole('button')[0])
-  t.is(screen.getAllByRole('button')[0].innerHTML, '102')
-  t.is(screen.getAllByRole('button')[1].innerHTML, '1')
+  expect(screen.getAllByRole('button')[0].innerHTML).toBe('102')
+  expect(screen.getAllByRole('button')[1].innerHTML).toBe('1')
 
   fireEvent.click(screen.getAllByRole('button')[1])
-  t.is(screen.getAllByRole('button')[0].innerHTML, '102')
-  t.is(screen.getAllByRole('button')[1].innerHTML, '2')
+  expect(screen.getAllByRole('button')[0].innerHTML).toBe('102')
+  expect(screen.getAllByRole('button')[1].innerHTML).toBe('2')
 })
 
-test.serial('it should support custom effects', t => {
-  t.plan(1)
-
+test('it should support custom effects', () => {
   type State = {
     a: number
   }
@@ -337,7 +329,7 @@ test.serial('it should support custom effects', t => {
 
   let withEffects: Effects<State> = (store) => {
     store.on('a').subscribe((a) => {
-      t.is(a, 2)
+      expect(a).toBe(2)
     })
     return store
   }
@@ -356,15 +348,13 @@ test.serial('it should support custom effects', t => {
   fireEvent.click(screen.getByRole('button'))
 })
 
-test.serial('it should eagerly throw at runtime when using a consumer without a container (createConnectedStore)', t => {
+test('it should eagerly throw at runtime when using a consumer without a container (createConnectedStore)', () => {
   let { withStore } = createConnectedStore({ a: 1 })
   let A = withStore(() => <div />)
-  t.throws(() => render(<A />), {
-    message: /does not seem to be nested/,
-  })
+  expect(() => render(<A />)).toThrow(/does not seem to be nested/)
 })
 
-test.serial('it should re-render if a used model property changed', t => {
+test('it should re-render if a used model property changed', () => {
   let renderCount = 0
   let store: Store<{ a: number; b: number }>
   let S = createConnectedStore(
@@ -388,12 +378,12 @@ test.serial('it should re-render if a used model property changed', t => {
     </S.Container>,
   )
 
-  act(() => act(() => store!.set('a')(2)))
-  act(() => act(() => store!.set('a')(3)))
-  t.is(renderCount, 3)
+  act(() => store!.set('a')(2))
+  act(() => store!.set('a')(3))
+  expect(renderCount).toBe(3)
 })
 
-test.serial('it should re-render if an unused model property changed', t => {
+test('it should re-render if an unused model property changed', () => {
   let renderCount = 0
   let store: Store<{ a: number; b: number }>
   let S = createConnectedStore(
@@ -418,10 +408,10 @@ test.serial('it should re-render if an unused model property changed', t => {
   )
   act(() => store!.set('b')(2))
   act(() => store!.set('b')(3))
-  t.is(renderCount, 3)
+  expect(renderCount).toBe(3)
 })
 
-test.serial('it should update even when unused fields change (get)', t => {
+test('it should update even when unused fields change (get)', () => {
   let store: Store<{ a: number; b: string }>
   let S = createConnectedStore(
     {
@@ -475,32 +465,28 @@ test.serial('it should update even when unused fields change (get)', t => {
   )
 
   act(() => store!.set('b')('bar')) // No render
-  t.is(
-    screen.getByTestId('A').innerHTML,
-    '0<button id="a"></button><button id="b"></button><span></span>',
+  expect(screen.getByTestId('A').innerHTML).toBe(
+    '0<button data-testid="a"></button><button data-testid="b"></button><span></span>',
   )
 
   fireEvent.click(screen.getByTestId('a')) // Render
-  t.is(
-    screen.getByTestId('A').innerHTML,
-    '1<button id="a"></button><button id="b"></button><div>bar</div>',
+  expect(screen.getByTestId('A').innerHTML).toBe(
+    '1<button data-testid="a"></button><button data-testid="b"></button><div>bar</div>',
   )
 
   fireEvent.click(screen.getByTestId('b')) // Render
-  t.is(
-    screen.getByTestId('A').innerHTML,
-    '0<button id="a"></button><button id="b"></button><span></span>',
+  expect(screen.getByTestId('A').innerHTML).toBe(
+    '0<button data-testid="a"></button><button data-testid="b"></button><span></span>',
   )
 
   act(() => store!.set('b')('baz')) // Render
-  t.is(
-    screen.getByTestId('A').innerHTML,
-    '0<button id="a"></button><button id="b"></button><span></span>',
+  expect(screen.getByTestId('A').innerHTML).toBe(
+    '0<button data-testid="a"></button><button data-testid="b"></button><span></span>',
   )
-  t.is(renderCount, 5)
+  expect(renderCount).toBe(5)
 })
 
-test.serial('it should update even when unused fields change (get in lifecycle)', t => {
+test('it should update even when unused fields change (get in lifecycle)', () => {
   let store: Store<{ a: number; b: string }>
   let S = createConnectedStore(
     {
@@ -545,14 +531,14 @@ test.serial('it should update even when unused fields change (get in lifecycle)'
     </S.Container>,
   )
   act(() => store!.set('b')('bar')) // No render
-  t.is(screen.getByTestId('A').innerHTML, '0<span></span>')
+  expect(screen.getByTestId('A').innerHTML).toBe('0<span></span>')
   act(() => store!.set('a')(1)) // Render, and trigger shouldComponentUpdate
   act(() => store!.set('b')('a')) // Render
   act(() => store!.set('b')('b')) // Render
-  t.is(renderCount, 5)
+  expect(renderCount).toBe(5)
 })
 
-test.serial('it should update even when unused fields change (getState in lifecycle 1)', t => {
+test('it should update even when unused fields change (getState in lifecycle 1)', () => {
   let store: Store<{ a: number; b: string }>
   let S = createConnectedStore(
     {
@@ -588,14 +574,14 @@ test.serial('it should update even when unused fields change (getState in lifecy
     </S.Container>,
   )
   act(() => store!.set('b')('bar')) // No render
-  t.is(screen.getByTestId('A').innerHTML, '0')
+  expect(screen.getByTestId('A').innerHTML).toBe('0')
   act(() => store!.set('a')(1)) // Render, and trigger shouldComponentUpdate
   act(() => store!.set('b')('a')) // Render
   act(() => store!.set('b')('b')) // Render
-  t.is(renderCount, 5)
+  expect(renderCount).toBe(5)
 })
 
-test.serial('[stateful] it should update even when unused fields change (getState in lifecycle 2)', t => {
+test('[stateful] it should update even when unused fields change (getState in lifecycle 2)', () => {
   let store: Store<{ a: number; b: string }>
   let S = createConnectedStore(
     {
@@ -631,14 +617,14 @@ test.serial('[stateful] it should update even when unused fields change (getStat
     </S.Container>,
   )
   act(() => store!.set('b')('bar')) // No render
-  t.is(screen.getByTestId('A').innerHTML, '0')
+  expect(screen.getByTestId('A').innerHTML).toBe('0')
   act(() => store!.set('a')(1)) // Render, and trigger shouldComponentUpdate
   act(() => store!.set('b')('a')) // Render
   act(() => store!.set('b')('b')) // Render
-  t.is(renderCount, 5)
+  expect(renderCount).toBe(5)
 })
 
-test.serial('[stateful] it should update only when subscribed fields change (get in constructor)', t => {
+test('[stateful] it should update only when subscribed fields change (get in constructor)', () => {
   let store: Store<{ a: number; b: string }>
   let S = createConnectedStore(
     {
@@ -685,14 +671,14 @@ test.serial('[stateful] it should update only when subscribed fields change (get
   )
 
   act(() => store!.set('b')('bar')) // Render
-  t.is(screen.getByTestId('A').innerHTML, '0<span></span>')
+  expect(screen.getByTestId('A').innerHTML).toBe('0<span></span>')
   act(() => store!.set('a')(1)) // Render
   act(() => store!.set('b')('a')) // Render
   act(() => store!.set('b')('b')) // Render
-  t.is(renderCount, 5)
+  expect(renderCount).toBe(5)
 })
 
-test.serial('it should update when subscribed fields change (set in constructor)', t => {
+test('it should update when subscribed fields change (set in constructor)', () => {
   let S = createConnectedStore({
     a: 0,
   })
@@ -720,11 +706,11 @@ test.serial('it should update when subscribed fields change (set in constructor)
       </div>
     </S.Container>,
   )
-  t.is(screen.getByTestId('A').innerHTML, '1')
-  t.is(renderCount, 2)
+  expect(screen.getByTestId('A').innerHTML).toBe('1')
+  expect(renderCount).toBe(2)
 })
 
-test.serial('[stateful] it should update when any field changes (getState)', t => {
+test('[stateful] it should update when any field changes (getState)', () => {
   let store: Store<{ a: number; b: string }>
   let S = createConnectedStore(
     {
@@ -779,33 +765,28 @@ test.serial('[stateful] it should update when any field changes (getState)', t =
   )
   act(() => store!.set('b')('bar')) // Render (this is the deoptimization when you use .getState)
 
-  t.is(
-    screen.getByTestId('A').innerHTML,
-    '0<button id="a"></button><button id="b"></button><span></span>',
+  expect(screen.getByTestId('A').innerHTML).toBe(
+    '0<button data-testid="a"></button><button data-testid="b"></button><span></span>',
   )
 
   fireEvent.click(screen.getByTestId('a')) // Render
-  t.is(
-    screen.getByTestId('A').innerHTML,
-    '1<button id="a"></button><button id="b"></button><div>bar</div>',
+  expect(screen.getByTestId('A').innerHTML).toBe(
+    '1<button data-testid="a"></button><button data-testid="b"></button><div>bar</div>',
   )
 
   fireEvent.click(screen.getByTestId('b')) // Render
-  t.is(
-    screen.getByTestId('A').innerHTML,
-    '0<button id="a"></button><button id="b"></button><span></span>',
+  expect(screen.getByTestId('A').innerHTML).toBe(
+    '0<button data-testid="a"></button><button data-testid="b"></button><span></span>',
   )
 
   act(() => store!.set('b')('baz')) // Render
-  t.is(
-    screen.getByTestId('A').innerHTML,
-    '0<button id="a"></button><button id="b"></button><span></span>',
+  expect(screen.getByTestId('A').innerHTML).toBe(
+    '0<button data-testid="a"></button><button data-testid="b"></button><span></span>',
   )
-  t.is(renderCount, 5)
+  expect(renderCount).toBe(5)
 })
 
-test.serial("it should get the most up-to-date version of a field, even if Undux doesn't know the component depends on it", t => {
-  t.plan(2)
+test("it should get the most up-to-date version of a field, even if Undux doesn't know the component depends on it", () => {
   let S = createConnectedStore({
     a: 0,
   })
@@ -840,16 +821,15 @@ test.serial("it should get the most up-to-date version of a field, even if Undux
   render(
     <S.Container>
       <div data-testid="B">
-        <B onClick={(a) => t.is(a, 1)} />
+        <B onClick={(a) => expect(a).toBe(1)} />
       </div>
     </S.Container>,
   )
-  t.is(screen.getByTestId('B').innerHTML, '<button></button>1')
+  expect(screen.getByTestId('B').innerHTML).toBe('<button></button>1')
   fireEvent.click(screen.getByRole('button'))
 })
 
-test.serial('it should return the same value when call .get multiple times for one snapshot', t => {
-  t.plan(4)
+test('it should return the same value when call .get multiple times for one snapshot', () => {
   let S = createConnectedStore({
     a: 0,
   })
@@ -893,11 +873,11 @@ test.serial('it should return the same value when call .get multiple times for o
           onClick={(a) => {
             switch (call) {
               case 0:
-                return t.is(a, 1)
+                return expect(a).toBe(1)
               case 1:
-                return t.is(a, 1)
+                return expect(a).toBe(1)
               case 2:
-                return t.is(a, 1)
+                return expect(a).toBe(1)
             }
             call++
           }}
@@ -905,11 +885,11 @@ test.serial('it should return the same value when call .get multiple times for o
       </div>
     </S.Container>,
   )
-  t.is(screen.getByTestId('B').innerHTML, '<button></button>1')
+  expect(screen.getByTestId('B').innerHTML).toBe('<button></button>1')
   fireEvent.click(screen.getByRole('button'))
 })
 
-test.serial('it should return the same value when call .get multiple times for one snapshot, even when using shouldComponentUpdate', t => {
+test('it should return the same value when call .get multiple times for one snapshot, even when using shouldComponentUpdate', () => {
   let S = createConnectedStore({
     a: 'a',
   })
@@ -961,23 +941,23 @@ test.serial('it should return the same value when call .get multiple times for o
       </div>
     </S.Container>,
   )
-  t.is(store!.get('a'), 'a')
-  t.is(screen.getByTestId('A').innerHTML, '<button>a</button>')
+  expect(store!.get('a')).toBe('a')
+  expect(screen.getByTestId('A').innerHTML).toBe('<button>a</button>')
 
   fireEvent.click(screen.getByRole('button'))
-  t.is(store!.get('a'), 'x')
-  t.is(screen.getByTestId('A').innerHTML, '<button>x</button>')
+  expect(store!.get('a')).toBe('x')
+  expect(screen.getByTestId('A').innerHTML).toBe('<button>x</button>')
 
   fireEvent.click(screen.getByRole('button'))
-  t.is(store!.get('a'), 'y')
-  t.is(screen.getByTestId('A').innerHTML, '<button>y</button>')
+  expect(store!.get('a')).toBe('y')
+  expect(screen.getByTestId('A').innerHTML).toBe('<button>y</button>')
 
   fireEvent.click(screen.getByRole('button'))
-  t.is(store!.get('a'), 'z')
-  t.is(screen.getByTestId('A').innerHTML, '<button>z</button>')
+  expect(store!.get('a')).toBe('z')
+  expect(screen.getByTestId('A').innerHTML).toBe('z')
 })
 
-test.serial('it should fail for async updates by default', t => {
+test('it should fail for async updates by default', () => {
   type State = {
     as: number[]
   }
@@ -1020,10 +1000,10 @@ test.serial('it should fail for async updates by default', t => {
       <B />
     </S.Container>,
   )
-  t.deepEqual(store!.get('as'), [2])
+  expect(store!.get('as')).toEqual([2])
 })
 
-test.serial('it should work for async updates using setFrom_EXPERIMENTAL', t => {
+test('it should work for async updates using setFrom_EXPERIMENTAL', () => {
   type State = {
     as: number[]
   }
@@ -1068,10 +1048,10 @@ test.serial('it should work for async updates using setFrom_EXPERIMENTAL', t => 
       <B />
     </S.Container>,
   )
-  t.deepEqual(store!.get('as'), [0, 1, 2])
+  expect(store!.get('as')).toEqual([0, 1, 2])
 })
 
-test.serial('setFrom_EXPERIMENTAL should compose', t => {
+test('setFrom_EXPERIMENTAL should compose', () => {
   type State = {
     as: number[]
   }
@@ -1122,10 +1102,10 @@ test.serial('setFrom_EXPERIMENTAL should compose', t => {
       <B />
     </S.Container>,
   )
-  t.deepEqual(store!.get('as'), [0, 1, 2, 3, 4, 5])
+  expect(store!.get('as')).toEqual([0, 1, 2, 3, 4, 5])
 })
 
-test.serial('setFrom_EXPERIMENTAL should chain', t => {
+test('setFrom_EXPERIMENTAL should chain', () => {
   type State = {
     as: number
   }
@@ -1164,5 +1144,5 @@ test.serial('setFrom_EXPERIMENTAL should chain', t => {
       <A1 />
     </S.Container>,
   )
-  t.deepEqual(store!.get('as'), 3)
+  expect(store!.get('as')).toEqual(3)
 })
