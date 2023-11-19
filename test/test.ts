@@ -4,6 +4,7 @@ import './cyclical-dependencies'
 import './emitter'
 import './immutable'
 import './react/createConnectedStore'
+import './utils'
 
 // Mock console.error so it doesn't spam the terminal
 // for expect.toThrow assertions.
@@ -18,4 +19,3 @@ afterEach(() => f!.mockRestore())
 // import './react/createConnectedStoreAs-context'
 // import './stateful'
 // import './stateless'
-// import './utils'
