@@ -1,38 +1,37 @@
-import test from 'ava'
 import * as React from 'react'
-import { Simulate } from 'react-dom/test-utils'
 import { connect, createStore, Store } from '../src'
-import { withElement } from './testUtils'
+import { fireEvent, render, screen } from '@testing-library/react'
+import { expect, test } from '@jest/globals'
 
-test('[cyclical dependencies] it should show a console error when there is a cycle (1)', (t) => {
-  t.plan(1)
-  console.error = (e: string) => t.regex(e, /Cyclical dependency detected/)
+test('[cyclical dependencies] it should show a console error when there is a cycle (1)', () => {
+  console.error = (e: string) =>
+    expect(e).toMatch(/Cyclical dependency detected/)
   let store = createStore({ a: 1 }, { isDevMode: true })
   store.on('a').subscribe((a) => store.set('a')(a))
   store.set('a')(2)
 })
 
-test('[cyclical dependencies] it should show a console error when there is a cycle (2)', (t) => {
-  t.plan(1)
-  console.error = (e: string) => t.regex(e, /Cyclical dependency detected/)
+test('[cyclical dependencies] it should show a console error when there is a cycle (2)', () => {
+  console.error = (e: string) =>
+    expect(e).toMatch(/Cyclical dependency detected/)
   let store = createStore({ a: 1, b: 2 }, { isDevMode: true })
   store.on('a').subscribe((a) => store.set('b')(a))
   store.on('b').subscribe((a) => store.set('a')(a))
   store.set('a')(2)
 })
 
-test('[cyclical dependencies] it should show a console error when there is a cycle (3)', (t) => {
-  t.plan(1)
-  console.error = (e: string) => t.regex(e, /Cyclical dependency detected/)
+test('[cyclical dependencies] it should show a console error when there is a cycle (3)', () => {
+  console.error = (e: string) =>
+    expect(e).toMatch(/Cyclical dependency detected/)
   let store = createStore({ a: 1, b: 2 }, { isDevMode: true })
   store.on('a').subscribe((a) => store.set('b')(a))
   store.on('b').subscribe((a) => store.set('a')(a))
   store.set('b')(3)
 })
 
-test('[cyclical dependencies] it should show a console error when there is a cycle (4)', (t) => {
-  t.plan(1)
-  console.error = (e: string) => t.regex(e, /Cyclical dependency detected/)
+test('[cyclical dependencies] it should show a console error when there is a cycle (4)', () => {
+  console.error = (e: string) =>
+    expect(e).toMatch(/Cyclical dependency detected/)
 
   let store = createStore({ a: 1 }, { isDevMode: true })
   let withStore = connect(store)
@@ -45,20 +44,19 @@ test('[cyclical dependencies] it should show a console error when there is a cyc
     store: Store<State>
   }
 
-  store.on('a').subscribe((a) => store.set('a')(2))
+  store.on('a').subscribe(() => store.set('a')(2))
 
   let A = withStore(({ store }: Props) => (
     <button onClick={() => store.set('a')(2)} />
   ))
 
-  withElement(A, (_) => {
-    Simulate.click(_.querySelector('button')!)
-  })
+  render(<A />)
+  fireEvent.click(screen.getByRole('button'))
 })
 
-test('[cyclical dependencies] it should show a console error when there is a cycle (5)', (t) => {
-  t.plan(1)
-  console.error = (e: string) => t.regex(e, /Cyclical dependency detected/)
+test('[cyclical dependencies] it should show a console error when there is a cycle (5)', () => {
+  console.error = (e: string) =>
+    expect(e).toMatch(/Cyclical dependency detected/)
 
   let storeA = createStore({ a: 1 }, { isDevMode: true })
   let storeB = createStore({ b: 2 }, { isDevMode: true })
@@ -87,14 +85,13 @@ test('[cyclical dependencies] it should show a console error when there is a cyc
     <button onClick={() => storeB.set('b')(1)} />
   ))
 
-  withElement(A, (_) => {
-    Simulate.click(_.querySelector('button')!)
-  })
+  render(<A />)
+  fireEvent.click(screen.getByRole('button'))
 })
 
-test('[cyclical dependencies] it should show a console error when there is a cycle (6)', (t) => {
-  t.plan(1)
-  console.error = (e: string) => t.regex(e, /Cyclical dependency detected/)
+test('[cyclical dependencies] it should show a console error when there is a cycle (6)', () => {
+  console.error = (e: string) =>
+    expect(e).toMatch(/Cyclical dependency detected/)
 
   let storeA = createStore({ a: 1 }, { isDevMode: true })
   let storeB = createStore({ b: 2 }, { isDevMode: true })
@@ -124,7 +121,6 @@ test('[cyclical dependencies] it should show a console error when there is a cyc
     <button onClick={() => storeA.set('a')(1)} />
   ))
 
-  withElement(A, (_) => {
-    Simulate.click(_.querySelector('button')!)
-  })
+  render(<A />)
+  fireEvent.click(screen.getByRole('button'))
 })
