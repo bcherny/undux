@@ -64,7 +64,7 @@ export class Emitter<Messages extends object> {
     return this.createChannel(ALL) as any
   }
 
-  ///////////////////// privates /////////////////////
+  /// private
 
   private createChannel<K extends keyof Messages>(key: K | ALL) {
     if (!this.state.observers.has(key)) {
@@ -73,7 +73,7 @@ export class Emitter<Messages extends object> {
     if (!this.state.observables.has(key)) {
       this.state.observables.set(key, [])
     }
-    const observable = new Observable<Messages[K]>((_) => {
+    const observable: Observable<Messages[K]> = new Observable((_) => {
       this.state.observers.get(key)!.push(_)
       return () => this.deleteChannel(key, observable)
     })

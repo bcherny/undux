@@ -12,17 +12,17 @@ import type { Effects, Store } from '../dist/src'
 import * as React from 'react'
 import { debounceTime, filter } from 'rxjs/operators'
 
-type State = {|
+type State = {
   isTrue: boolean,
   users: string[],
-|}
+}
 
 let initialState: State = {
   isTrue: true,
   users: [],
 }
 
-let withEffects: Effects<State> = (store) => {
+let withEffects: Effects<State> = (store: Store<State>) => {
   store.onAll().subscribe(({ key, value, previousValue }) => {
     key.toUpperCase()
     if (typeof previousValue === 'boolean' || typeof value === 'boolean') {
@@ -45,19 +45,19 @@ let debugStore = createStore(initialState, { isDevMode: true })
 let state = store.getState().users.concat(4)
 let snapshot = store.getCurrentSnapshot().get('users').concat(4)
 
-type Props = {|
+type Props = {
   foo: number,
   bar: string,
-|}
+}
 
-type StoreProps = {|
+type StoreProps = {
   store: Store<State>,
-|}
+}
 
-type PropsWithStore = {|
+type PropsWithStore = {
   ...StoreProps,
   ...Props,
-|}
+}
 
 /////////////////// A ///////////////////
 
@@ -153,8 +153,8 @@ store.setFrom_EXPERIMENTAL((store) => {
 
 /////////////////// connectAs ///////////////////
 
-type CombinedA = {| a: number |}
-type CombinedB = {| b: string |}
+type CombinedA = { a: number }
+type CombinedB = { b: string }
 
 let initA: CombinedA = { a: 1 }
 let initB: CombinedB = { b: 'c' }
@@ -162,15 +162,15 @@ let initB: CombinedB = { b: 'c' }
 let storeA = createStore(initA)
 let storeB = createStore(initB)
 
-type CombinedComponentProps = {|
+type CombinedComponentProps = {
   a: Store<CombinedA>,
   b: Store<CombinedB>,
-|}
+}
 
-type CombinedAugmentedComponentProps = {|
+type CombinedAugmentedComponentProps = {
   ...CombinedComponentProps,
   x: number,
-|}
+}
 
 /////////////////// createConnectedStore ///////////////////
 
@@ -179,9 +179,9 @@ let StoreC = createConnectedStore({
   b: 2,
 })
 
-type StoreCProps = {|
-  store: Store<{| a: number, b: number |}>,
-|}
+type StoreCProps = {
+  store: Store<{ a: number, b: number }>,
+}
 
 let StoreCElement = StoreC.withStore(
   class extends React.Component<StoreCProps> {
@@ -214,10 +214,10 @@ let StoreD = createConnectedStoreAs({
   },
 })
 
-type StoreDProps = {|
-  D: Store<{| a: number, b: number |}>,
-  E: Store<{| c: string |}>,
-|}
+type StoreDProps = {
+  D: Store<{ a: number, b: number }>,
+  E: Store<{ c: string }>,
+}
 
 let StoreDElement = StoreD.withStores(
   class extends React.Component<StoreDProps> {
