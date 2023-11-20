@@ -6,6 +6,7 @@ import './immutable'
 import './react/createConnectedStore'
 import './react/createConnectedStore-context'
 import './react/createConnectedStoreAs'
+import './react/createConnectedStoreAs-context'
 import './react/createStore-class'
 import './react/createStore-function'
 import './utils'
@@ -17,5 +18,3 @@ beforeEach(() => {
   f = jest.spyOn(console, 'error').mockImplementation(jest.fn)
 })
 afterEach(() => f!.mockRestore())
-
-// import './react/createConnectedStoreAs-context'

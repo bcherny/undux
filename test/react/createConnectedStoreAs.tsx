@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { EffectsAs } from '../../src'
 import { createConnectedStoreAs } from '../../src/react'
-import { fireEvent, render } from '@testing-library/react'
+import { fireEvent, render, within } from '@testing-library/react'
 import { describe, expect, test } from '@jest/globals'
 
 describe('createConnectedStoreAs', () => {
@@ -89,39 +89,46 @@ describe('createConnectedStoreAs', () => {
       </>
     ))
 
-    let { getAllByRole: getAllByRoleA } = render(
-      <Container>
-        <C />
-      </Container>,
+    let { getByTestId } = render(
+      <>
+        <div data-testid="A">
+          <Container>
+            <C />
+          </Container>
+        </div>
+        <div data-testid="B">
+          <Container>
+            <C />
+          </Container>
+        </div>
+      </>,
     )
-    let { getAllByRole: getAllByRoleB } = render(
-      <Container>
-        <C />
-      </Container>,
-    )
 
-    expect(getAllByRoleA('button')[0].innerHTML).toBe('1')
-    expect(getAllByRoleA('button')[1].innerHTML).toBe('2')
-    expect(getAllByRoleB('button')[0].innerHTML).toBe('1')
-    expect(getAllByRoleB('button')[1].innerHTML).toBe('2')
+    let A = within(getByTestId('A'))
+    let B = within(getByTestId('B'))
 
-    fireEvent.click(getAllByRoleA('button')[0])
-    expect(getAllByRoleA('button')[0].innerHTML).toBe('2')
-    expect(getAllByRoleA('button')[1].innerHTML).toBe('2')
-    expect(getAllByRoleB('button')[0].innerHTML).toBe('1')
-    expect(getAllByRoleB('button')[1].innerHTML).toBe('2')
+    expect(A.getAllByRole('button')[0].innerHTML).toBe('1')
+    expect(A.getAllByRole('button')[1].innerHTML).toBe('2')
+    expect(B.getAllByRole('button')[0].innerHTML).toBe('1')
+    expect(B.getAllByRole('button')[1].innerHTML).toBe('2')
 
-    fireEvent.click(getAllByRoleB('button')[0])
-    expect(getAllByRoleA('button')[0].innerHTML).toBe('2')
-    expect(getAllByRoleA('button')[1].innerHTML).toBe('2')
-    expect(getAllByRoleB('button')[0].innerHTML).toBe('2')
-    expect(getAllByRoleB('button')[1].innerHTML).toBe('2')
+    fireEvent.click(A.getAllByRole('button')[0])
+    expect(A.getAllByRole('button')[0].innerHTML).toBe('2')
+    expect(A.getAllByRole('button')[1].innerHTML).toBe('2')
+    expect(B.getAllByRole('button')[0].innerHTML).toBe('1')
+    expect(B.getAllByRole('button')[1].innerHTML).toBe('2')
 
-    fireEvent.click(getAllByRoleB('button')[1])
-    expect(getAllByRoleA('button')[0].innerHTML).toBe('2')
-    expect(getAllByRoleA('button')[1].innerHTML).toBe('2')
-    expect(getAllByRoleB('button')[0].innerHTML).toBe('2')
-    expect(getAllByRoleB('button')[1].innerHTML).toBe('3')
+    fireEvent.click(B.getAllByRole('button')[0])
+    expect(A.getAllByRole('button')[0].innerHTML).toBe('2')
+    expect(A.getAllByRole('button')[1].innerHTML).toBe('2')
+    expect(B.getAllByRole('button')[0].innerHTML).toBe('2')
+    expect(B.getAllByRole('button')[1].innerHTML).toBe('2')
+
+    fireEvent.click(B.getAllByRole('button')[1])
+    expect(A.getAllByRole('button')[0].innerHTML).toBe('2')
+    expect(A.getAllByRole('button')[1].innerHTML).toBe('2')
+    expect(B.getAllByRole('button')[0].innerHTML).toBe('2')
+    expect(B.getAllByRole('button')[1].innerHTML).toBe('3')
   })
 
   test('it should support custom initialStates for multiple stores', () => {
