@@ -7,11 +7,12 @@ module.exports = {
   mode: 'development',
   devtool: 'eval',
   devServer: {
-    contentBase: DIST,
     compress: true,
     https: false,
     port: 8081,
-    disableHostCheck: true,
+    static: {
+      directory: DIST,
+    },
   },
   entry: './src/index.tsx',
   output: {
@@ -26,11 +27,6 @@ module.exports = {
       {
         test: /\.tsx?$/,
         loader: 'ts-loader',
-      },
-      {
-        enforce: 'pre',
-        test: /\.js$/,
-        loader: 'source-map-loader',
       },
     ],
   },

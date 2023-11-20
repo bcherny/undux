@@ -12,8 +12,8 @@ The updated Undux `createConnectedStore` API correctly deallocates a store once 
 
 ```sh
 cd perf/memory
-yarn install
-yarn watch
+npm install
+npm run watch
 ```
 
 1. Open _http://localhost:8081_ in Chrome
