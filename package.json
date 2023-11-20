@@ -46,7 +46,6 @@
     "@types/testing-library__user-event": "^4.2.0",
     "@typescript-eslint/eslint-plugin": "^6.11.0",
     "@typescript-eslint/parser": "^6.11.0",
-    "ava": "^5.3.1",
     "babel-jest": "^29.7.0",
     "concurrently": "^5.0.2",
     "eslint": "^8.54.0",
