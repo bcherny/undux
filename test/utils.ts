@@ -1,54 +1,96 @@
-import test from 'ava'
 import * as Immutable from 'immutable'
 import { isImmutable, keys, mapValues, some } from '../src/utils'
+import { describe, expect, test } from '@jest/globals'
 
-test('isImmutable', t => {
-  t.is(isImmutable(Immutable.List()), true)
-  t.is(isImmutable(Immutable.Map()), true)
-  t.is(isImmutable(Immutable.OrderedMap()), true)
-  t.is(isImmutable(Immutable.Set()), true)
-  t.is(isImmutable(Immutable.OrderedSet()), true)
-  t.is(isImmutable(Immutable.Stack()), true)
-  t.is(isImmutable(Immutable.Range()), true)
-  t.is(isImmutable(Immutable.Repeat('a')), true)
-  t.is(isImmutable(Immutable.Record({})()), true)
-  t.is(isImmutable(Immutable.Seq()), true)
-  t.is(isImmutable(Immutable.Seq.Keyed()), true)
-  t.is(isImmutable(Immutable.Seq.Indexed()), true)
-  t.is(isImmutable(Immutable.Seq.Set()), true)
-  t.is(isImmutable(true), false)
-  t.is(isImmutable([]), false)
-  t.is(isImmutable({}), false)
-  t.is(isImmutable(Object.freeze({})), false)
-  t.is(isImmutable(() => {}), false)
-  t.is(isImmutable(null), false)
-  t.is(isImmutable(undefined), false)
-  t.is(isImmutable('a'), false)
-  t.is(isImmutable(42), false)
-})
+describe('utils', () => {
+  test('isImmutable', () => {
+    expect(isImmutable(Immutable.List())).toBe(true)
+    expect(isImmutable(Immutable.Map())).toBe(true)
+    expect(isImmutable(Immutable.OrderedMap())).toBe(true)
+    expect(isImmutable(Immutable.Set())).toBe(true)
+    expect(isImmutable(Immutable.OrderedSet())).toBe(true)
+    expect(isImmutable(Immutable.Stack())).toBe(true)
+    expect(isImmutable(Immutable.Range())).toBe(true)
+    expect(isImmutable(Immutable.Repeat('a'))).toBe(true)
+    expect(isImmutable(Immutable.Record({})())).toBe(true)
+    expect(isImmutable(Immutable.Seq())).toBe(true)
+    expect(isImmutable(Immutable.Seq.Keyed())).toBe(true)
+    expect(isImmutable(Immutable.Seq.Indexed())).toBe(true)
+    expect(isImmutable(Immutable.Seq.Set())).toBe(true)
+    expect(isImmutable(true)).toBe(false)
+    expect(isImmutable([])).toBe(false)
+    expect(isImmutable({})).toBe(false)
+    expect(isImmutable(Object.freeze({}))).toBe(false)
+    expect(isImmutable(() => {})).toBe(false)
+    expect(isImmutable(null)).toBe(false)
+    expect(isImmutable(undefined)).toBe(false)
+    expect(isImmutable('a')).toBe(false)
+    expect(isImmutable(42)).toBe(false)
+  })
 
-test('keys', t => {
-  t.deepEqual(keys({}), [])
-  t.deepEqual(keys({ a: 1, b: 2 }), ['a', 'b'])
-  t.deepEqual(keys(Object.create({ a: 1, b: 2 }, { c: { enumerable: true, value: 3 }, d: { enumerable: true, value: 4 } })), ['c', 'd'])
-})
+  test('keys', () => {
+    expect(keys({})).toEqual([])
+    expect(keys({ a: 1, b: 2 })).toEqual(['a', 'b'])
+    expect(
+      keys(
+        Object.create(
+          { a: 1, b: 2 },
+          {
+            c: { enumerable: true, value: 3 },
+            d: { enumerable: true, value: 4 },
+          },
+        ),
+      ),
+    ).toEqual(['c', 'd'])
+  })
 
-test('mapValues', t => {
-  t.deepEqual(mapValues({}, _ => _ * 2), {})
-  t.deepEqual(mapValues({ a: 1 }, _ => _ * 2), { a: 2 })
-  t.deepEqual(mapValues({ a: 1, b: 2 }, _ => _ * 2), { a: 2, b: 4 })
-  t.deepEqual(mapValues({ a: 1, b: 2 }, (_, k) => k), { a: 'a', b: 'b' })
-  t.deepEqual(mapValues(
-    Object.create({ a: 1, b: 2 }, { c: { enumerable: true, value: 3 }, d: { enumerable: true, value: 4 } }),
-    (_, k) => k
-  ), { c: 'c', d: 'd' })
-})
+  test('mapValues', () => {
+    expect(mapValues({}, (_) => _ * 2)).toEqual({})
+    expect(mapValues({ a: 1 }, (_) => _ * 2)).toEqual({ a: 2 })
+    expect(mapValues({ a: 1, b: 2 }, (_) => _ * 2)).toEqual({ a: 2, b: 4 })
+    expect(mapValues({ a: 1, b: 2 }, (_, k) => k)).toEqual({ a: 'a', b: 'b' })
+    expect(
+      mapValues(
+        Object.create(
+          { a: 1, b: 2 },
+          {
+            c: { enumerable: true, value: 3 },
+            d: { enumerable: true, value: 4 },
+          },
+        ),
+        (_, k) => k,
+      ),
+    ).toEqual({ c: 'c', d: 'd' })
+  })
 
-test('some', t => {
-  t.is(some({}, () => true), false)
-  t.is(some({ a: 1 }, v => v < 2), true)
-  t.is(some({ a: 1 }, v => v > 1), false)
-  t.is(some({ a: 1, b: 2 }, (_, k) => k === 'b'), true)
-  t.is(some(Object.create({ a: 1, b: 2 }, { c: { enumerable: true, value: 3 }, d: { enumerable: true, value: 4 } }), (_, k) => k === 'b'), false)
-  t.is(some(Object.create({ a: 1, b: 2 }, { c: { enumerable: true, value: 3 }, d: { enumerable: true, value: 4 } }), (_, k) => k === 'd'), true)
+  test('some', () => {
+    expect(some({}, () => true)).toBe(false)
+    expect(some({ a: 1 }, (v) => v < 2)).toBe(true)
+    expect(some({ a: 1 }, (v) => v > 1)).toBe(false)
+    expect(some({ a: 1, b: 2 }, (_, k) => k === 'b')).toBe(true)
+    expect(
+      some(
+        Object.create(
+          { a: 1, b: 2 },
+          {
+            c: { enumerable: true, value: 3 },
+            d: { enumerable: true, value: 4 },
+          },
+        ),
+        (_, k) => k === 'b',
+      ),
+    ).toBe(false)
+    expect(
+      some(
+        Object.create(
+          { a: 1, b: 2 },
+          {
+            c: { enumerable: true, value: 3 },
+            d: { enumerable: true, value: 4 },
+          },
+        ),
+        (_, k) => k === 'd',
+      ),
+    ).toBe(true)
+  })
 })

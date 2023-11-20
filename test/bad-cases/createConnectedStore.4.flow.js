@@ -5,16 +5,16 @@ import * as React from 'react'
 
 type State = {|
   a: number,
-  b: number
+  b: number,
 |}
 
 let initialState: State = {
   a: 1,
-  b: 2
+  b: 2,
 }
 
-let withEffects: Effects<State> = store => {
-  store.on('a').subscribe(a => a.toUpperCase())
+let withEffects: Effects<State> = (store) => {
+  store.on('a').subscribe((a) => a.toUpperCase())
   return store
 }
 
@@ -22,7 +22,7 @@ let { Container, withStore } = createConnectedStore(initialState, withEffects)
 
 type Props = {|
   store: Store<State>,
-  x: boolean
+  x: boolean,
 |}
 
 let A = ({ store }: Props) => store.get('c') + 2 // Error: c is not a valid key

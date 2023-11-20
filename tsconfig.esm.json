@@ -1,12 +1,11 @@
 {
   "compilerOptions": {
+    "allowJs": false,
     "baseUrl": ".",
+    "checkJs": false,
     "forceConsistentCasingInFileNames": true,
     "jsx": "react",
-    "lib": [
-      "dom",
-      "es2015"
-    ],
+    "lib": ["dom", "es2015"],
     "module": "esnext",
     "moduleResolution": "node",
     "newLine": "LF",
@@ -20,8 +19,5 @@
       "typed-rx-emitter": ["node_modules/typed-rx-emitter/dist.esnext"]
     }
   },
-  "files": [
-    "types.d.ts",
-    "src/index.ts"
-  ]
+  "files": ["types.d.ts", "src/index.ts"]
 }

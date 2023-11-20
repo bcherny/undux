@@ -5,44 +5,44 @@ import * as React from 'react'
 
 type StateX = {|
   a: number,
-  b: number
+  b: number,
 |}
 
 type StateY = {|
   c: string,
-  d: string
+  d: string,
 |}
 
 type State = {|
   X: StateX,
-  Y: StateY
+  Y: StateY,
 |}
 
 let initialState: State = {
   X: {
     a: 1,
-    b: 2
+    b: 2,
   },
   Y: {
     c: 'i',
-    d: 'j'
-  }
+    d: 'j',
+  },
 }
 
-let withEffects: EffectsAs<State> = store => {
-  store.X.on('a').subscribe(a => a * 4)
-  store.Y.on('d').subscribe(d => d.toLowerCase())
+let withEffects: EffectsAs<State> = (store) => {
+  store.X.on('a').subscribe((a) => a * 4)
+  store.Y.on('d').subscribe((d) => d.toLowerCase())
   return store
 }
 
 let { Container, withStores } = createConnectedStoreAs(
   initialState,
-  withEffects
+  withEffects,
 )
 
 type Props = {|
   X: Store<StateX>,
-  Y: Store<StateY>
+  Y: Store<StateY>,
 |}
 
 let A = withStores((props: Props) => (

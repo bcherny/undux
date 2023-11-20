@@ -10,11 +10,13 @@
 
 > Dead simple state management for React
 
-------
-## 📖 Official docs: https://undux.org
-------
+---
 
-## Install (with RxJS v5 or v6 - recommended)
+## 📖 Official docs: https://undux.org
+
+---
+
+## Install
 
 ```sh
 # Using Yarn:
@@ -24,7 +26,7 @@ yarn add undux
 npm install undux --save
 ```
 
-## Install (with RxJS v4)
+## Install (with RxJS v4-)
 
 ```sh
 # Using Yarn:
@@ -52,82 +54,85 @@ import { createConnectedStore } from 'undux'
 // Create a store with an initial value.
 export default createConnectedStore({
   one: 0,
-  two: 0
+  two: 0,
 })
 ```
 
-*Be sure to define a key for each value in your model, even if the value is initially `undefined`.*
+_Be sure to define a key for each value in your model, even if the value is initially `undefined`._
 
 ### 2. Connect your React components
 
-#### With [React Hooks](https://reactjs.org/docs/hooks-intro.html):
+#### With [React Hooks](https://reactjs.org/docs/hooks-intro.html): `useStore`
 
 ```jsx
-import Store from './MyStore'
+import { useStore } from './MyStore'
 
 // Re-render the component when the store updates.
 function MyComponent() {
-  let store = Store.useStore()
-  return <div>
-    <NumberInput onChange={store.set('one')} value={store.get('one')} />
-    <NumberInput onChange={store.set('two')} value={store.get('two')} />
-    Sum: {store.get('one') + store.get('two')}
-  </div>
+  const store = useStore()
+  return (
+    <>
+      <NumberInput onChange={store.set('one')} value={store.get('one')} />
+      <NumberInput onChange={store.set('two')} value={store.get('two')} />
+      Sum: {store.get('one') + store.get('two')}
+    </>
+  )
 }
 
-function NumberInput() {
-  return <input
-    onChange={e => this.props.onChange(parseInt(e.target.value, 10))}
-    type="number"
-    value={this.props.value}
-  />
+function NumberInput({ onChange, value }) {
+  return (
+    <input
+      onChange={(e) => onChange(parseInt(e.target.value, 10))}
+      type="number"
+      value={value}
+    />
+  )
 }
 
 export default MyComponent
 ```
 
-#### Without React Hooks:
+#### Without React Hooks: `withStore`
 
 ```jsx
-import Store from './MyStore'
+import { withStore } from './MyStore'
 
 // Re-render the component when the store updates.
-class MyComponent extends React.Component {
-  render() {
-    let store = this.props.store
-    return <div>
+function MyComponent({ store }) {
+  return (
+    <>
       <NumberInput onChange={store.set('one')} value={store.get('one')} />
       <NumberInput onChange={store.set('two')} value={store.get('two')} />
       Sum: {store.get('one') + store.get('two')}
-    </div>
-  }
+    </>
+  )
 }
 
-class NumberInput extends React.Component {
-  render() {
-    return <input
-      onChange={e => this.props.onChange(parseInt(e.target.value, 10))}
+function NumberInput({ onChange, value }) {
+  return (
+    <input
+      onChange={(e) => onChange(parseInt(e.target.value, 10))}
       type="number"
-      value={this.props.value}
+      value={value}
     />
-  }
+  )
 }
 
-export default Store.withStore(MyComponent)
+export default withStore(MyComponent)
 ```
 
 ### 3. Put your app in an Undux Container
 
 ```jsx
 import MyComponent from './MyComponent'
-import Store from './MyStore'
+import { Container } from './MyStore'
 
-class MyApp extends React.Component {
-  render() {
-    return <Store.Container>
+function MyApp() {
+  return (
+    <Container>
       <MyComponent />
-    </Store.Container>
-  }
+    </Container>
+  )
 }
 
 export default MyApp
@@ -143,30 +148,26 @@ export default MyApp
 
 Though Undux automatically re-renders your connected React components for you when the store updates, it also lets you subscribe to changes to specific fields on your store. Undux subscriptions are full [Rx observables](http://reactivex.io/rxjs/class/es6/Observable.js~Observable.html), so you have fine control over how you react to a change:
 
-```ts
+```js
 import { debounce, filter } from 'rxjs/operators'
 
 store
   .on('today')
   .pipe(
-    filter(date => date.getTime() % 2 === 0), // Only even timestamps.
-    debounce(100) // Fire at most once every 100ms.
+    filter((date) => date.getTime() % 2 === 0), // Only even timestamps.
+    debounce(100), // Fire at most once every 100ms.
   )
-  .subscribe(date =>
-    console.log('Date changed to', date)
-  )
+  .subscribe((date) => console.log('Date changed to', date))
 ```
 
 You can even use Effects to trigger a change in response to an update:
 
-```ts
+```js
 store
   .on('today')
-  .pipe(
-    debounce(100)
-  )
-  .subscribe(async date => {
-    let users = await api.get({ since: date })
+  .pipe(debounce(100))
+  .subscribe(async (date) => {
+    const users = await api.get({ since: date })
     store.set('users')(users)
   })
 ```
@@ -182,7 +183,7 @@ npm install rxjs --save
 Partially apply the `set` function to yield a convenient setter:
 
 ```tsx
-let setUsers = store.set('users')
+const setUsers = store.set('users')
 setUsers(['amy'])
 setUsers(['amy', 'bob'])
 ```
@@ -191,10 +192,10 @@ setUsers(['amy', 'bob'])
 
 Undux works out of the box with the Redux Devtools browser extension (download: [Chrome](https://chrome.google.com/webstore/detail/redux-devtools/lmhkpmbekcpmknklioeibfkpmmfibljd), [Firefox](https://addons.mozilla.org/firefox/addon/remotedev/), [React Native](https://github.com/zalmoxisus/remote-redux-devtools)). To enable it, just wrap your store with the Redux Devtools plugin:
 
-```ts
+```js
 import { createConnectedStore, withReduxDevtools } from 'undux'
 
-let store = createConnectedStore(initialState, withReduxDevtools)
+const store = createConnectedStore(initialState, withReduxDevtools)
 ```
 
 Redux Devtools has an inspector, a time travel debugger, and jump-to-state built in. All of these features are enabled for Undux as well. It looks like this:
@@ -219,7 +220,7 @@ The logger will produce logs that look like this:
 
 Undux is easy to modify with effects. Just define a function that takes a store as an argument, adding listeners along the way. For generic plugins that work across different stores, use the `.onAll` method to listen on all changes on a store:
 
-```ts
+```js
 // MyStore.ts (if using TypeScript)
 import { Effects } from 'undux'
 
@@ -232,13 +233,13 @@ export type StoreEffects = Effects<State>
 // MyEffects.ts
 import { StoreEffects } from './MyStore'
 
-let withLocalStorage: StoreEffects = store => {
-
+const withLocalStorage: StoreEffects = (store) => {
   // Listen on all changes to the store.
-  store.onAll().subscribe(({ key, value, previousValue }) =>
-    console.log(key, 'changed from', previousValue, 'to', value)
-  )
-
+  store
+    .onAll()
+    .subscribe(({ key, value, previousValue }) =>
+      console.log(key, 'changed from', previousValue, 'to', value),
+    )
 }
 ```
 
@@ -247,61 +248,77 @@ let withLocalStorage: StoreEffects = store => {
 ### Creating a store (TypeScript)
 
 ```ts
-import { createConnectedStore, Effects, Store } from 'undux'
+// MyStore.ts
+import { createConnectedStore, type Effects, type Store } from 'undux'
 
 type State = {
   foo: number
   bar: string[]
 }
 
-let initialState: State = {
+const initialState: State = {
   foo: 12,
-  bar: []
+  bar: [],
 }
 
 export default createConnectedStore(initialState)
 
+// If using effects..
+export type StoreEffects = Effects<State>
+
+// If using class components..
 export type StoreProps = {
   store: Store<State>
 }
-
-export type StoreEffects = Effects<State>
 ```
 
 [See full example (in JavaScript, TypeScript, or Flow) here](https://undux.org/#examples/basic-usage).
 
-### Stateless component with props (TypeScript)
+### Function component (TypeScript)
 
-Have your own props? No problem.
+```tsx
+// MyComponent.ts
+import { useStore, type StoreProps } from './MyStore'
 
-```ts
-import MyStore, { StoreProps } from './MyStore'
-
-type Props = StoreProps & {
+type Props = {
   foo: number
 }
 
-function MyComponent(props: Props) {
-  return <>
-    Today is {props.store.get('today')}
-    Foo is {props.foo}
-  </>
+function MyComponent({ foo }: Props) {
+  const { store } = useStore()
+  return (
+    <>
+      Today is {store.get('today')}
+      Foo is {foo}
+    </>
+  )
 }
 
-export default MyStore.withStore(MyComponent)
+export default MyComponent
 
-// Usage
-<MyComponent foo={3} />
+// App.ts
+import { Container } from './MyStore'
+
+function App() {
+  return (
+    <Container>
+      <MyComponent foo={3} />
+    </Container>
+  )
+}
+
+export default App
 ```
 
 [See full example (in JavaScript, TypeScript, or Flow) here](https://undux.org/#examples/stateless-component-with-props).
 
-### Stateful component with props (TypeScript)
+### Class component (TypeScript)
 
-Undux is as easy to use with stateful components as with stateless ones.
+Undux is as easy to use with class components as with function components.
 
 ```tsx
-import MyStore, { StoreProps } from './MyStore'
+// MyComponent.ts
+import { withStore, type StoreProps } from './MyStore'
 
 type Props = StoreProps & {
   foo: number
@@ -309,17 +326,29 @@ type Props = StoreProps & {
 
 class MyComponent extends React.Component<Props> {
   render() {
-    return <>
-      Today is {this.props.store.get('today')}
-      Foo is {this.props.foo}
-    </>
+    return (
+      <>
+        Today is {this.props.store.get('today')}
+        Foo is {this.props.foo}
+      </>
+    )
   }
 }
 
-export default MyStore.withStore(MyComponent)
+export default withStore(MyComponent)
 
-// Usage
-<MyComponent foo={3} />
+// App.ts
+import { Container } from './MyStore'
+
+function App() {
+  return (
+    <Container>
+      <MyComponent foo={3} />
+    </Container>
+  )
+}
+
+export default App
 ```
 
 [See full example (in JavaScript, TypeScript, or Flow) here](https://undux.org/#examples/class-component-with-props).
@@ -349,7 +378,7 @@ No need to learn about Actions, Reducers, or any of that. Just call `get` and `s
 ## Tests
 
 ```sh
-yarn test
+npm test
 ```
 
 ## License

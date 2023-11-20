@@ -5,32 +5,33 @@ console.log('dist', DIST)
 
 module.exports = {
   mode: 'development',
-  devtool: 'source-map',
+  devtool: 'eval',
   devServer: {
     contentBase: DIST,
     compress: true,
     https: false,
     port: 8081,
-    disableHostCheck: true
+    disableHostCheck: true,
   },
   entry: './src/index.tsx',
   output: {
     filename: 'bundle.js',
-    path: DIST
+    path: DIST,
   },
   resolve: {
-    extensions: ['.ts', '.tsx', '.js']
+    extensions: ['.ts', '.tsx', '.js'],
   },
   module: {
-    rules: [{
-      test: /\.tsx?$/,
-      loader: 'awesome-typescript-loader'
-    },
-    {
-      enforce: 'pre',
-      test: /\.js$/,
-      loader: 'source-map-loader'
-    },
-    ]
-  }
+    rules: [
+      {
+        test: /\.tsx?$/,
+        loader: 'ts-loader',
+      },
+      {
+        enforce: 'pre',
+        test: /\.js$/,
+        loader: 'source-map-loader',
+      },
+    ],
+  },
 }

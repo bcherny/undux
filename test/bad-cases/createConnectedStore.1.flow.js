@@ -5,18 +5,18 @@ import * as React from 'react'
 
 type State = {|
   a: number,
-  b: number
+  b: number,
 |}
 
 let initialState: State = {
   a: 1,
-  b: 2
+  b: 2,
 }
 
 let { Container, withStore } = createConnectedStore(initialState)
 
 type Props = {|
-  store: Store<State>
+  store: Store<State>,
 |}
 
 let A = withStore(
@@ -24,7 +24,7 @@ let A = withStore(
     render() {
       return this.props.store.get('a').push(4) // Error: Can't call .push on a number
     }
-  }
+  },
 )
 
 let StoreContainer = () => (

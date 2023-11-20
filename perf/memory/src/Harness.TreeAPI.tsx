@@ -32,7 +32,7 @@ let HarnessRaw = withStore(class HarnessRaw extends React.Component<Props> {
   }
 })
 
-export let Harness: React.StatelessComponent = () =>
+export let Harness: React.FunctionComponent = () =>
   <Container><HarnessRaw /></Container>
 
 Harness.displayName = 'Harness'

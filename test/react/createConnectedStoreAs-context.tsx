@@ -1,38 +1,37 @@
-import test from 'ava'
 import * as React from 'react'
-import { Simulate } from 'react-dom/test-utils'
-import { createConnectedStoreAs, createStore, Store } from '../../src'
-import { withElement } from '../testUtils'
+import { createConnectedStoreAs } from '../../src'
+import { fireEvent, render } from '@testing-library/react'
+import { describe, expect, test } from '@jest/globals'
 
-test('it should expose a hooks API (createConnectedStoreAs)', t => {
-  let S = createConnectedStoreAs({ a: { b: 1 } })
-  let A = () => {
-    let stores = S.useStores()
-    return (
-      <button onClick={() => stores.a.set('b')(stores.a.get('b') + 1)}>
-        {stores.a.get('b')}
-      </button>
+describe('createConnectedStoreAs (context)', () => {
+  test('it should expose a hooks API (createConnectedStoreAs)', () => {
+    let S = createConnectedStoreAs({ a: { b: 1 } })
+    let A = () => {
+      let stores = S.useStores()
+      return (
+        <button onClick={() => stores.a.set('b')(stores.a.get('b') + 1)}>
+          {stores.a.get('b')}
+        </button>
+      )
+    }
+    let { getByRole } = render(
+      <S.Container>
+        <A />
+      </S.Container>,
     )
-  }
-  let B = () => (
-    <S.Container>
-      <A />
-    </S.Container>
-  )
-  withElement(B, _ => {
-    t.is(_.querySelector('button')!.innerHTML, '1')
-    Simulate.click(_.querySelector('button')!)
-    t.is(_.querySelector('button')!.innerHTML, '2')
+    expect(getByRole('button').innerHTML).toBe('1')
+    fireEvent.click(getByRole('button'))
+    expect(getByRole('button').innerHTML).toBe('2')
   })
-})
 
-test("it should throw if you don't give it a Provider (createConnectedStoreAs)", t => {
-  let S = createConnectedStoreAs({ a: { b: 1 } })
-  let A = () => {
-    let stores = S.useStores()
-    return <>{stores.a.get('b')}</>
-  }
-  t.throws(() => withElement(A, _ => {}), {
-    message: 'Cannot read properties of undefined (reading \'get\')'
+  test("it should throw if you don't give it a Provider (createConnectedStoreAs)", () => {
+    let S = createConnectedStoreAs({ a: { b: 1 } })
+    let A = () => {
+      let stores = S.useStores()
+      return <>{stores.a.get('b')}</>
+    }
+    expect(() => render(<A />)).toThrow(
+      "Cannot read properties of undefined (reading 'get')",
+    )
   })
 })

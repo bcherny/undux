@@ -1,45 +1,44 @@
-import test from 'ava'
 import * as I from 'immutable'
 import * as React from 'react'
-import { Simulate } from 'react-dom/test-utils'
-import { connect, createStore, Store } from '../src'
-import { withElement } from './testUtils'
+import { connect, createStore } from '../src'
+import { fireEvent, render, screen } from '@testing-library/react'
+import { describe, expect, test } from '@jest/globals'
 
-interface AppStore {
-  fruits: I.Map<string, number>
-}
+describe('immutable', () => {
+  interface AppStore {
+    fruits: I.Map<string, number>
+  }
 
-const initialFruits = {
-  banana: 100
-}
+  const initialFruits = {
+    banana: 100,
+  }
 
-const store = createStore<AppStore>({
-  fruits: I.Map(initialFruits)
-})
-
-const withStore = connect(store)
-
-test('[immutable] it should only re-render if something actually changed', t => {
-  let renderCount = 0
-
-  const TestingComponent = withStore(({ store }) => {
-    const fruits = store.get('fruits')
-    const updateBanana = () =>
-      store.set('fruits')(I.Map(initialFruits))
-
-    renderCount++
-    return (
-      <div>
-        <button onClick={updateBanana}>Update</button>
-        <div>{fruits.get('banana')}</div>
-      </div>
-    )
+  const store = createStore<AppStore>({
+    fruits: I.Map(initialFruits),
   })
 
-  withElement(TestingComponent, _ => {
-    Simulate.click(_.querySelector('button')!)
-    Simulate.click(_.querySelector('button')!)
-    Simulate.click(_.querySelector('button')!)
-    t.is(renderCount, 1)
+  const withStore = connect(store)
+
+  test('it should only re-render if something actually changed', () => {
+    let renderCount = 0
+
+    const TestingComponent = withStore(({ store }) => {
+      const fruits = store.get('fruits')
+      const updateBanana = () => store.set('fruits')(I.Map(initialFruits))
+
+      renderCount++
+      return (
+        <div>
+          <button onClick={updateBanana}>Update</button>
+          <div>{fruits.get('banana')}</div>
+        </div>
+      )
+    })
+
+    render(<TestingComponent />)
+    fireEvent.click(screen.getByRole('button'))
+    fireEvent.click(screen.getByRole('button'))
+    fireEvent.click(screen.getByRole('button'))
+    expect(renderCount).toBe(1)
   })
 })

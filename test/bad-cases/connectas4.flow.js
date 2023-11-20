@@ -14,7 +14,7 @@ let storeB = createStore(initB)
 
 type Props = {|
   a: Store<A>,
-  b: Store<B>
+  b: Store<B>,
 |}
 
 class Component extends React.Component<Props> {
@@ -31,5 +31,5 @@ class Component extends React.Component<Props> {
 
 let ConnectedComponent = connectAs({
   a: storeA,
-  b: storeB
+  b: storeB,
 })(Component)

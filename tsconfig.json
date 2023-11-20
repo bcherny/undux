@@ -1,11 +1,10 @@
 {
   "compilerOptions": {
+    "allowJs": false,
+    "checkJs": false,
     "forceConsistentCasingInFileNames": true,
     "jsx": "react",
-    "lib": [
-      "dom",
-      "es2015"
-    ],
+    "lib": ["dom", "es2015"],
     "module": "commonjs",
     "moduleResolution": "node",
     "newLine": "LF",

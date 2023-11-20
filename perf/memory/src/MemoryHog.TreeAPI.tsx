@@ -27,6 +27,6 @@ let MemoryHogRaw = withStore(class MemoryHogRaw extends React.Component<Props> {
   }
 })
 
-export let MemoryHog: React.StatelessComponent = () =>
+export let MemoryHog: React.FunctionComponent = () =>
   <Container><MemoryHogRaw /></Container>
 MemoryHog.displayName = 'MemoryHog'
