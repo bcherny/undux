@@ -5,6 +5,7 @@ import './emitter'
 import './immutable'
 import './react/createConnectedStore'
 import './react/createStore-class'
+import './react/createStore-function'
 import './utils'
 
 // Mock console.error so it doesn't spam the terminal
@@ -18,4 +19,3 @@ afterEach(() => f!.mockRestore())
 // import './react/createConnectedStore-context'
 // import './react/createConnectedStoreAs'
 // import './react/createConnectedStoreAs-context'
-// import './stateless'
