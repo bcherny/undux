@@ -5,6 +5,7 @@ import './emitter'
 import './immutable'
 import './react/createConnectedStore'
 import './react/createConnectedStore-context'
+import './react/createConnectedStoreAs'
 import './react/createStore-class'
 import './react/createStore-function'
 import './utils'
@@ -17,5 +18,4 @@ beforeEach(() => {
 })
 afterEach(() => f!.mockRestore())
 
-// import './react/createConnectedStoreAs'
 // import './react/createConnectedStoreAs-context'
